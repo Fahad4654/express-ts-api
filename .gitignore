@@ -2,6 +2,7 @@
 *.class
 .env
 node_modules
+build
 
 # Log file
 *.log
