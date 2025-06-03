@@ -3,6 +3,8 @@
 .env
 node_modules
 build
+pgdata
+data
 
 # Log file
 *.log
