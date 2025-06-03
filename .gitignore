@@ -6,6 +6,8 @@ build
 pgdata
 data
 
+package-lock.json
+
 # Log file
 *.log
 
