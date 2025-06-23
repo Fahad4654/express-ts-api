@@ -1,6 +1,7 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import { sampleRouter } from './routes/sample.route';
+import { userCreateRouter } from './routes/createuser.route';
 
 
 const createApp = (): Application => {
@@ -11,6 +12,9 @@ const createApp = (): Application => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use('/api/sample', sampleRouter);
+  app.use('/api/createuser', userCreateRouter)
+
+
 
   // Simple health check
   app.get('/health', (req, res) => {
