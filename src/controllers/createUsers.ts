@@ -8,7 +8,8 @@ export async function createUser(req: Request, res: Response) {
       name: req.body.name,
       email: req.body.email,
       password: req.body.password,
-      address: req.body.address
+      address: req.body.address,
+      isAdmin: req.body.isAdmin
     });
     console.log('Created user:', newUser.toJSON());
     res.status(201).json({

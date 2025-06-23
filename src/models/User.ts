@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, Unique, AllowNull } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, Unique, AllowNull, Default } from 'sequelize-typescript';
 
 @Table({
   tableName: 'users',
@@ -26,6 +26,11 @@ export class User extends Model {
   @AllowNull(false)
   @Column(DataType.STRING(256))
   address!: string;
+
+  @AllowNull(false)
+  @Default(false)
+  @Column(DataType.BOOLEAN)
+  isAdmin!: boolean;
 
   @Column(DataType.DATE)
   createdAt!: Date;
