@@ -1,24 +1,14 @@
 import { User } from "../models/User";
 import { Request, Response } from 'express';
 
-const getSampleData = (req: Request, res: Response) => {
-  res.json({ message: 'user created' });
-};
-
-
-export const sampleController = {
-  getSampleData
-};
-
 
 export async function createUser(req: Request, res: Response) {
   try {
     const newUser = await User.create({
-      id: 1,
-      name: 'John Doe',
-      email: 'john23@example.com',
-      password: 'securePassword123',
-      address: '123 Main St, Anytown, USA'
+      name: req.body.name,
+      email: req.body.email,
+      password: req.body.password,
+      address: req.body.address
     });
     console.log('Created user:', newUser.toJSON());
     res.status(201).json({
@@ -28,7 +18,6 @@ export async function createUser(req: Request, res: Response) {
     });
   } catch (error) {
     console.error('Error creating user:', error);
+      res.status(500).json(error);
   }
 }
-
-// Call the function
