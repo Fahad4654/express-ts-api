@@ -17,8 +17,8 @@ export async function createUser(req: Request, res: Response) {
       user: newUser.toJSON(),
       status: "success"
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating user:', error);
-      res.status(500).json(error);
+    res.status(500).json({ status: 500, message: error.errors[0]?.message });
   }
 }
