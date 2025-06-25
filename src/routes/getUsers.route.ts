@@ -6,3 +6,4 @@ const router = Router();
 router.get('/', getUsers);
 
 export { router as userListRouter };
+export { router };

@@ -7,3 +7,4 @@ const router = Router();
 router.delete('/', deleteUser);
 
 export { router as userDeleteRouter };
+export { router };

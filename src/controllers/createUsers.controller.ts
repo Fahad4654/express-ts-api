@@ -11,10 +11,12 @@ export async function createUser(req: Request, res: Response) {
       address: req.body.address,
       isAdmin: req.body.isAdmin
     });
-    console.log('Created user:', newUser.toJSON());
+
+    const { password, ...userWithoutPassword } = newUser.toJSON();
+    console.log('Created user:', userWithoutPassword);
     res.status(201).json({
       message: "User created successfully",
-      user: newUser.toJSON(),
+      user: userWithoutPassword,
       status: "success"
     });
   } catch (error: any) {
