@@ -1,3 +1,4 @@
+import { Profile } from "../models/Profile";
 import { User } from "../models/User";
 import { Request, Response } from 'express';
 
@@ -11,6 +12,7 @@ export async function createUser(req: Request, res: Response) {
       address: req.body.address,
       isAdmin: req.body.isAdmin
     });
+    await Profile.create({ userId: newUser.id, bio: "Please Edit" });
 
     const { password, ...userWithoutPassword } = newUser.toJSON();
     console.log('Created user:', userWithoutPassword);

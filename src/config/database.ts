@@ -1,6 +1,7 @@
 import { Sequelize } from 'sequelize-typescript';
 import { User } from '../models/User'; // Your models
 import dotenv from 'dotenv';
+import { Profile } from '../models/Profile';
 
 
 dotenv.config();
@@ -18,7 +19,7 @@ const sequelize = new Sequelize({
   password: DB_PASSWORD,
   host: DB_HOST,
   port: DB_PORT,
-  models: [User], // Add all models here
+  models: [User, Profile], // Add all models here
   logging: false,
   dialectOptions: {
     ssl: process.env.DB_SSL === 'true' ? {

@@ -26,6 +26,6 @@ export const deleteUser: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error('Error deleting user:', error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ status: 500, message: error });;
   }
 };
