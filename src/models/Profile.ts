@@ -1,5 +1,5 @@
 // Profile.ts
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo, AllowNull, Unique } from 'sequelize-typescript';
 import { User } from './User';
 
 @Table({
@@ -29,6 +29,8 @@ export class Profile extends Model {
   @Column(DataType.STRING(100))
   avatarUrl?: string;
 
+  @AllowNull(false)
+  @Unique
   @Column(DataType.STRING(100))
   phoneNumber?: string;
 
