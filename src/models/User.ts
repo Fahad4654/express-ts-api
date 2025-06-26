@@ -1,4 +1,5 @@
-import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, Unique, AllowNull, Default } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, Unique, AllowNull, Default, HasOne } from 'sequelize-typescript';
+import { Profile } from './Profile';
 
 @Table({
   tableName: 'users',
@@ -37,4 +38,7 @@ export class User extends Model {
 
   @Column(DataType.DATE)
   updatedAt!: Date;
+
+  @HasOne(() => Profile)
+  profile!: Profile;
 }
