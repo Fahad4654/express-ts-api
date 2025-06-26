@@ -7,3 +7,4 @@ router.get('/', sampleController.getSampleData);
 router.post('/', sampleController.createSampleData);
 
 export { router as sampleRouter };
+export { router };
