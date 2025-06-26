@@ -1,8 +1,19 @@
-import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, Unique, AllowNull, Default, HasOne } from 'sequelize-typescript';
-import { Profile } from './Profile';
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  PrimaryKey,
+  AutoIncrement,
+  Unique,
+  AllowNull,
+  Default,
+  HasOne,
+} from "sequelize-typescript";
+import { Profile } from "./Profile";
 
 @Table({
-  tableName: 'users',
+  tableName: "users",
   timestamps: true, // adds createdAt and updatedAt
 })
 export class User extends Model {

@@ -1,6 +1,6 @@
-import { databaseService } from './services/database.service';
-import { PORT } from './config';
-import createApp from './app';
+import { databaseService } from "./services/database.service";
+import { PORT } from "./config";
+import createApp from "./app";
 
 const startServer = async () => {
   // Initialize database

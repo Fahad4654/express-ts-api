@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 
 const getSampleData = (req: Request, res: Response) => {
-  res.json({ message: 'Sample GET response' });
+  res.json({ message: "Sample GET response" });
 };
 
 const createSampleData = (req: Request, res: Response) => {
@@ -11,5 +11,5 @@ const createSampleData = (req: Request, res: Response) => {
 
 export const sampleController = {
   getSampleData,
-  createSampleData
+  createSampleData,
 };
