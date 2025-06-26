@@ -1,44 +1,49 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import fs from 'fs';
 import path from 'path';
 
 const mainRouter = Router();
 const routesPath = __dirname;
 
-// Get all route files (handles both .ts and .js extensions)
+// Get all route files
 const routeFiles = fs.readdirSync(routesPath).filter(file => {
-  const isRouteFile = 
-    file !== 'index.ts' && 
-    file !== 'index.js' && 
-    (file.endsWith('.route.ts') || file.endsWith('.route.js'));
-  return isRouteFile;
+  return file !== 'index.ts' && 
+         file !== 'index.js' && 
+         (file.endsWith('.route.ts') || file.endsWith('.route.js'));
 });
 
-// Dynamically import and register each route
+// Global route logging middleware
+mainRouter.use((req: Request, res: Response, next: NextFunction) => {
+  console.log(`[${new Date().toISOString()}] Route called: ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// Register routes
 routeFiles.forEach(async (file) => {
   try {
-    // Remove both .ts and .js extensions for route path
     const baseName = file.replace('.route.ts', '').replace('.route.js', '');
     const routePath = `/v1/api/${baseName
       .replace(/([a-z])([A-Z])/g, '$1-$2')
       .toLowerCase()}`;
     
-    console.log(`Registering route: ${routePath}`);
+    console.log(`[Route Loader] Registering route: ${routePath}`);
 
-    // Dynamic import works with both .ts and .js
     const module = await import(path.join(routesPath, file));
-    
-    // Check for common export patterns
     const router = module.router || module.default?.router || module.default;
     
     if (router) {
+      // Add route-specific logging
+      router.use((req: Request, res: Response, next: NextFunction) => {
+        console.log(`[${new Date().toISOString()}] Route handler executed: ${req.method} ${routePath}`);
+        next();
+      });
+      
       mainRouter.use(routePath, router);
     } else {
-      console.warn(`Route file ${file} doesn't export a router properly`);
-      console.warn(`Available exports:`, Object.keys(module));
+      console.warn(`[Route Loader] Route file ${file} doesn't export a valid router`);
     }
   } catch (err) {
-    console.error(`Error loading route ${file}:`, err);
+    console.error(`[Route Loader] Error loading route ${file}:`, err);
   }
 });
 
