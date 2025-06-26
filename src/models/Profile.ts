@@ -1,9 +1,18 @@
 // Profile.ts
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo, AllowNull, Unique } from 'sequelize-typescript';
-import { User } from './User';
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  ForeignKey,
+  BelongsTo,
+  AllowNull,
+  Unique,
+} from "sequelize-typescript";
+import { User } from "./User";
 
 @Table({
-  tableName: 'profiles',
+  tableName: "profiles",
   timestamps: true,
 })
 export class Profile extends Model {

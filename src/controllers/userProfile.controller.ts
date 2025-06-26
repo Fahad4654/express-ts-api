@@ -57,7 +57,7 @@ export async function createUserProfile(req: Request, res: Response) {
     }
 
     const newUserProfile = await Profile.create({
-      userId: req.body.id,
+      userId: req.body.userId,
       bio: req.body.bio,
       avatarUrl: req.body.avatarUrl,
       phoneNumber: req.body.phoneNumber,

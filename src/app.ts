@@ -1,12 +1,12 @@
-import express, { Application } from 'express';
-import cors from 'cors';
-import { sampleRouter } from './routes/sample.route';
+import express, { Application } from "express";
+import cors from "cors";
+import { sampleRouter } from "./routes/sample.route";
 // import { userCreateRouter } from './routes/createuser.route';
 // import { userDeleteRouter } from './routes/deleteuser.route';
 // import { userListRouter } from './routes/getUsers.route';
-import { router } from './routes/auth.route';
-import { authenticate } from './middlewares/auth.middleware';
-import { allRoutes } from './routes';
+import { router } from "./routes/auth.route";
+import { authenticate } from "./middlewares/auth.middleware";
+import { allRoutes } from "./routes";
 
 const createApp = (): Application => {
   const app = express();
@@ -17,10 +17,10 @@ const createApp = (): Application => {
   app.use(express.urlencoded({ extended: true }));
 
   // Public routes
-  app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'UP' });
+  app.get("/health", (req, res) => {
+    res.status(200).json({ status: "UP" });
   });
-  app.use('/auth', router);
+  app.use("/auth", router);
 
   // Authentication middleware
   app.use(authenticate);
