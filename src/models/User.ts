@@ -42,7 +42,7 @@ export class User extends Model {
   @AllowNull(false)
   @Unique
   @Column(DataType.STRING(100))
-  phoneNumber?: string;
+  phoneNumber!: string;
 
   @Column(DataType.DATE)
   createdAt!: Date;
