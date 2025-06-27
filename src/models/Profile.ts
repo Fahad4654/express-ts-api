@@ -1,4 +1,3 @@
-// Profile.ts
 import {
   Table,
   Column,
@@ -8,29 +7,34 @@ import {
   BelongsTo,
   AllowNull,
   Unique,
+  PrimaryKey,
+  Default,
 } from "sequelize-typescript";
 import { User } from "./User";
 
 @Table({
   tableName: "profiles",
   timestamps: true,
+  indexes: [
+    {
+      unique: true,
+      fields: ["userId"],
+    },
+  ],
 })
 export class Profile extends Model {
-  @Column({
-    type: DataType.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  })
-  id!: number;
+  @PrimaryKey
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  id!: string;
 
   @ForeignKey(() => User)
+  @AllowNull(false)
   @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    primaryKey: true,
-    unique: true, // One-to-one relationship
+    type: DataType.UUID,
+    unique: true,
   })
-  userId!: number;
+  userId!: string;
 
   @Column(DataType.STRING(100))
   bio?: string;
@@ -38,10 +42,9 @@ export class Profile extends Model {
   @Column(DataType.STRING(100))
   avatarUrl?: string;
 
-  @AllowNull(false)
-  @Unique
-  @Column(DataType.STRING(100))
-  phoneNumber?: string;
+  @AllowNull(true)
+  @Column(DataType.STRING(256))
+  address?: string;
 
   @BelongsTo(() => User)
   user!: User;

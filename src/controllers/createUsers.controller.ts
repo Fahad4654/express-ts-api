@@ -9,10 +9,14 @@ export async function createUser(req: Request, res: Response) {
       name: req.body.name,
       email: req.body.email,
       password: req.body.password,
-      address: req.body.address,
+      phoneNumber: req.body.phoneNumber,
       isAdmin: req.body.isAdmin,
     });
-    await Profile.create({ userId: newUser.id, bio: "Please Edit",phoneNumber:randomInt(99999999999) });
+    await Profile.create({
+      userId: newUser.id,
+      bio: "Please Edit",
+      address: "Please Edit",
+    });
 
     const { password, ...userWithoutPassword } = newUser.toJSON();
     console.log("Created user:", userWithoutPassword);
@@ -23,6 +27,6 @@ export async function createUser(req: Request, res: Response) {
     });
   } catch (error: any) {
     console.error("Error creating user:", error);
-    res.status(500).json({ status: 500, message: error.errors[0]?.message });
+    res.status(500).json({ status: 500, message: error });
   }
 }

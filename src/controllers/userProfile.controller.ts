@@ -50,6 +50,7 @@ export const getUsersProfile: RequestHandler = async (req, res) => {
 
 //Create User Profile
 export async function createUserProfile(req: Request, res: Response) {
+  console.log(req.body);
   try {
     if (!req.body) {
       res.status(400).json({ error: "request body is required" });
@@ -60,19 +61,17 @@ export async function createUserProfile(req: Request, res: Response) {
       userId: req.body.userId,
       bio: req.body.bio,
       avatarUrl: req.body.avatarUrl,
-      phoneNumber: req.body.phoneNumber,
+      address: req.body.address,
     });
 
-    const { phoneNumber, ...userWithoutphoneNumber } = newUserProfile.toJSON();
-    console.log("Created user:", userWithoutphoneNumber);
     res.status(201).json({
       message: "User created successfully",
-      user: userWithoutphoneNumber,
+      user: newUserProfile,
       status: "success",
     });
   } catch (error: any) {
     console.error("Error creating user:", error);
-    res.status(500).json({ status: 500, message: error.errors[0]?.message });
+    res.status(500).json({ status: 500, message: error });
   }
 }
 
@@ -122,27 +121,28 @@ export async function updateUserProfile(req: Request, res: Response) {
   try {
     if (!req.body) {
       res.status(400).json({ error: "request body is required" });
+      console.log("request body is required");
       return;
     }
     const { userId } = req.body;
 
     if (!userId) {
-      return res.status(400).json({ error: "UserId is required" });
+      res.status(400).json({ error: "UserId is required" });
+      console.log("UserId is required");
+      return;
     }
 
     // Find the profile associated with the user
     const profile = await Profile.findOne({ where: { userId } });
 
     if (!profile) {
-      return res.status(404).json({ error: "Profile not found" });
+      res.status(404).json({ error: "Profile not found" });
+      console.log("Profile not found");
+      return;
     }
 
     // Define allowed fields that can be updated with type safety
-    const allowedFields: Array<keyof Profile> = [
-      "bio",
-      "avatarUrl",
-      "phoneNumber",
-    ];
+    const allowedFields: Array<keyof Profile> = ["bio", "avatarUrl", "address"];
     const updates: Partial<Profile> = {};
 
     // Filter and only take allowed fields from req.body with type checking
@@ -154,9 +154,9 @@ export async function updateUserProfile(req: Request, res: Response) {
 
     // If no valid updates were provided
     if (Object.keys(updates).length === 0) {
-      return res
-        .status(400)
-        .json({ error: "No valid fields provided for update" });
+      res.status(400).json({ error: "No valid fields provided for update" });
+      console.log("No valid fields provided for update");
+      return;
     }
 
     // Perform the update
@@ -167,6 +167,7 @@ export async function updateUserProfile(req: Request, res: Response) {
       attributes: { exclude: ["createdAt", "updatedAt"] },
     });
 
+    console.log("Profile updated successfully, Profile: ", updatedProfile);
     res.status(200).json({
       message: "Profile updated successfully",
       profile: updatedProfile,

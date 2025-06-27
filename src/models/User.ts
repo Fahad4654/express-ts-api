@@ -4,7 +4,6 @@ import {
   Model,
   DataType,
   PrimaryKey,
-  AutoIncrement,
   Unique,
   AllowNull,
   Default,
@@ -14,13 +13,13 @@ import { Profile } from "./Profile";
 
 @Table({
   tableName: "users",
-  timestamps: true, // adds createdAt and updatedAt
+  timestamps: true,
 })
 export class User extends Model {
   @PrimaryKey
-  @AutoIncrement
-  @Column(DataType.INTEGER)
-  id!: number;
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  id!: string;
 
   @AllowNull(false)
   @Column(DataType.STRING(100))
@@ -36,13 +35,14 @@ export class User extends Model {
   password!: string;
 
   @AllowNull(false)
-  @Column(DataType.STRING(256))
-  address!: string;
-
-  @AllowNull(false)
   @Default(false)
   @Column(DataType.BOOLEAN)
   isAdmin!: boolean;
+
+  @AllowNull(false)
+  @Unique
+  @Column(DataType.STRING(100))
+  phoneNumber?: string;
 
   @Column(DataType.DATE)
   createdAt!: Date;
