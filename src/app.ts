@@ -4,7 +4,7 @@ import { sampleRouter } from "./routes/sample.route";
 // import { userCreateRouter } from './routes/createuser.route';
 // import { userDeleteRouter } from './routes/deleteuser.route';
 // import { userListRouter } from './routes/getUsers.route';
-import { router } from "./routes/auth.route";
+import { authRouter } from "./routes/auth.route";
 import { authenticate } from "./middlewares/auth.middleware";
 import { allRoutes } from "./routes";
 
@@ -16,13 +16,15 @@ const createApp = (): Application => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  // Public routes
+  // Health check
   app.get("/health", (req, res) => {
     res.status(200).json({ status: "UP" });
   });
-  app.use("/v1/api/auth", router);
 
-  // Authentication middleware
+  // Public routes
+  app.use("/v1/api/auth", authRouter);
+
+  // Protected routes
   app.use(authenticate);
 
   // Protected routes
