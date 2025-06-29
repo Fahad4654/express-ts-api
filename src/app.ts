@@ -20,18 +20,13 @@ const createApp = (): Application => {
   app.get("/health", (req, res) => {
     res.status(200).json({ status: "UP" });
   });
-  app.use("/auth", router);
+  app.use("/v1/api/auth", router);
 
   // Authentication middleware
   app.use(authenticate);
 
   // Protected routes
   app.use(allRoutes);
-  // app.use('/api/sample', sampleRouter);
-  // app.use('/api/createuser', userCreateRouter);
-  // app.use('/api/deleteuser', userDeleteRouter);
-  // app.use('/api/users', userListRouter);
-
   return app;
 };
 
