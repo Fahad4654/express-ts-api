@@ -6,7 +6,7 @@ import { Token } from "../models/Token";
 import { SECRET, ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION } from "../config";
 
 
-
+console.log(ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION )
 // Helper function to generate tokens
 const generateTokens = async (user: User) => {
   const accessToken = jwt.sign(

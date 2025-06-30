@@ -10,7 +10,18 @@ const DB_PASSWORD = process.env.DB_PASSWORD || "";
 const DB_HOST = process.env.DB_HOST || "localhost";
 const DB_PORT = process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432;
 const SECRET = process.env.JWT_SECRET || "your_jwt_secret";
-const ACCESS_TOKEN_EXPIRATION = "15m";
-const REFRESH_TOKEN_EXPIRATION = "7d";
+const ACCESS_TOKEN_EXPIRATION = process.env.ACCESS_TOKEN_EXPIRATION?.toString() || "15m";
+const REFRESH_TOKEN_EXPIRATION = process.env.REFRESH_TOKEN_EXPIRATION?.toString() || "7d";
 
-export { PORT, NODE_ENV, DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, SECRET, ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION };
+export {
+  PORT,
+  NODE_ENV,
+  DB_NAME,
+  DB_USER,
+  DB_PASSWORD,
+  DB_HOST,
+  DB_PORT,
+  SECRET,
+  ACCESS_TOKEN_EXPIRATION,
+  REFRESH_TOKEN_EXPIRATION,
+};

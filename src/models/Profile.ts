@@ -11,6 +11,7 @@ import {
   Default,
 } from "sequelize-typescript";
 import { User } from "./User";
+import { nanoid } from "nanoid";
 
 @Table({
   tableName: "profiles",
@@ -45,6 +46,11 @@ export class Profile extends Model {
   @AllowNull(true)
   @Column(DataType.STRING(256))
   address?: string;
+
+  @Default(() => nanoid(8)) // generates a 6-character unique ID
+  @Unique
+  @Column(DataType.STRING)
+  referralCode!: string;
 
   @BelongsTo(() => User)
   user!: User;
