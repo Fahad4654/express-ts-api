@@ -10,6 +10,7 @@ const routeFiles = fs.readdirSync(routesPath).filter((file) => {
   return (
     file !== "index.ts" &&
     file !== "index.js" &&
+    file !== "auth.route.ts" &&
     (file.endsWith(".route.ts") || file.endsWith(".route.js"))
   );
 });

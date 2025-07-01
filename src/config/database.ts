@@ -1,15 +1,10 @@
 import { Sequelize } from "sequelize-typescript";
-import { User } from "../models/User"; // Your models
-import dotenv from "dotenv";
+import { User } from "../models/User";
 import { Profile } from "../models/Profile";
+import { Token } from "../models/Token";
+import { DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER } from "../config";
 
-dotenv.config();
 
-const DB_NAME = process.env.DB_NAME || "express";
-const DB_USER = process.env.DB_USER || "postgres";
-const DB_PASSWORD = process.env.DB_PASSWORD || "";
-const DB_HOST = process.env.DB_HOST || "localhost";
-const DB_PORT = process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432;
 
 const sequelize = new Sequelize({
   database: DB_NAME,
@@ -18,7 +13,7 @@ const sequelize = new Sequelize({
   password: DB_PASSWORD,
   host: DB_HOST,
   port: DB_PORT,
-  models: [User, Profile], // Add all models here
+  models: [User, Profile, Token], // Add all models here
   logging: false,
   dialectOptions: {
     ssl:
