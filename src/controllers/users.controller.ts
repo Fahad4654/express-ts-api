@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { Profile } from "../models/Profile";
 import { User } from "../models/User";
 import { Request, RequestHandler, Response } from "express";
@@ -39,11 +40,14 @@ export async function getUsers(req: Request, res: Response) {
 
 //Create Users
 export async function createUser(req: Request, res: Response) {
+  
+  const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
   try {
     const newUser = await User.create({
       name: req.body.name,
       email: req.body.email,
-      password: req.body.password,
+      password: hashedPassword,
       phoneNumber: req.body.phoneNumber,
       isAdmin: req.body.isAdmin,
     });
