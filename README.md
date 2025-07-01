@@ -8,7 +8,7 @@ PORT=3030
 
 NODE_ENV=development
 
-# NODE_ENV=production
+#NODE_ENV=production
 
 DB_NAME=express
 
