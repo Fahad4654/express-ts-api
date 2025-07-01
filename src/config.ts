@@ -10,8 +10,15 @@ const DB_PASSWORD = process.env.DB_PASSWORD || "";
 const DB_HOST = process.env.DB_HOST || "localhost";
 const DB_PORT = process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432;
 const SECRET = process.env.JWT_SECRET || "your_jwt_secret";
-const ACCESS_TOKEN_EXPIRATION = process.env.ACCESS_TOKEN_EXPIRATION?.toString() || "15m";
-const REFRESH_TOKEN_EXPIRATION = process.env.REFRESH_TOKEN_EXPIRATION?.toString() || "7d";
+const ACCESS_TOKEN_EXPIRATION =
+  process.env.ACCESS_TOKEN_EXPIRATION?.toString() || "15m";
+const REFRESH_TOKEN_EXPIRATION =
+  process.env.REFRESH_TOKEN_EXPIRATION?.toString() || "7d";
+const CREATE_ADMIN = JSON.parse(process.env.CREATE_ADMIN || "true");
+const ADMIN_NAME = process.env.ADMIN_NAME || "superadmin";
+const ADMIN_MAIL = process.env.ADMIN_MAIL || "superadmin@mail.com";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "password";
+const ADMIN_PHONENUMBER = process.env.ADMIN_PHONENUMBER || "+8801711223344";
 
 export {
   PORT,
@@ -24,4 +31,9 @@ export {
   SECRET,
   ACCESS_TOKEN_EXPIRATION,
   REFRESH_TOKEN_EXPIRATION,
+  ADMIN_NAME,
+  ADMIN_MAIL,
+  ADMIN_PASSWORD,
+  ADMIN_PHONENUMBER,
+  CREATE_ADMIN,
 };
