@@ -2,8 +2,7 @@ import bcrypt from "bcryptjs";
 import { Profile } from "../models/Profile";
 import { User } from "../models/User";
 import { Request, RequestHandler, Response } from "express";
-
-
+import { v4 as uuidv4 } from "uuid";
 
 //User List
 export async function getUsers(req: Request, res: Response) {
@@ -38,9 +37,12 @@ export async function getUsers(req: Request, res: Response) {
   }
 }
 
+export const generateToken = (id: string): string => {
+  return id.slice(-9).toUpperCase(); // Take first N chars
+};
+
 //Create Users
 export async function createUser(req: Request, res: Response) {
-  
   const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
   try {
@@ -51,10 +53,13 @@ export async function createUser(req: Request, res: Response) {
       phoneNumber: req.body.phoneNumber,
       isAdmin: req.body.isAdmin,
     });
+    const referralCode = `FK-${generateToken(newUser.id)}`;
+
     await Profile.create({
       userId: newUser.id,
       bio: "Please Edit",
       address: "Please Edit",
+      referralCode: referralCode,
     });
 
     const { password, ...userWithoutPassword } = newUser.toJSON();
@@ -69,8 +74,6 @@ export async function createUser(req: Request, res: Response) {
     res.status(500).json({ status: 500, message: error });
   }
 }
-
-
 
 //Update Users
 export async function updateUser(req: Request, res: Response) {
@@ -144,7 +147,6 @@ export async function updateUser(req: Request, res: Response) {
     });
   }
 }
-
 
 //Delete Users
 export const deleteUser: RequestHandler = async (req, res) => {

@@ -47,10 +47,13 @@ export class Profile extends Model {
   @Column(DataType.STRING(256))
   address?: string;
 
-  @Default(() => nanoid(8)) // generates a 6-character unique ID
   @Unique
+  @AllowNull(false)
   @Column(DataType.STRING)
   referralCode!: string;
+
+  @Column(DataType.STRING)
+  referredCode?: string;
 
   @BelongsTo(() => User)
   user!: User;
