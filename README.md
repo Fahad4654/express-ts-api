@@ -48,14 +48,13 @@ git clone https://github.com/Fahad4654/express-ts-api.git
 
 ### 2. Docker postgres Setup (configure the `docker-compose.yml` file according to `.env` file )
 ``` code 
-cd express-ts-api.git
+cd express-ts-api
 docker compose up -d
 ```
 ### 3.Install Node.js v24 (using NVM)
 
 
 ```code
-
 nvm install 24
 nvm use 24
 ```
@@ -63,7 +62,6 @@ nvm use 24
 ### 4. Install dependencies
 
 ```code 
-
 npm install
 ```
 
@@ -71,14 +69,12 @@ npm install
 
 ```code
 npm run dev
-
 ```
 
 
 ## ⚙️ Running in Background with PM2 (Recommended for Production)
 
 ```code
-
 nvm install 24
 npm install
 npm install -g pm2@latest
