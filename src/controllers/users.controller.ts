@@ -2,7 +2,6 @@ import bcrypt from "bcryptjs";
 import { Profile } from "../models/Profile";
 import { User } from "../models/User";
 import { Request, RequestHandler, Response } from "express";
-import { v4 as uuidv4 } from "uuid";
 
 //User List
 export async function getUsers(req: Request, res: Response) {

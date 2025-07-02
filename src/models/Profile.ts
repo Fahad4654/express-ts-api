@@ -11,7 +11,6 @@ import {
   Default,
 } from "sequelize-typescript";
 import { User } from "./User";
-import { nanoid } from "nanoid";
 
 @Table({
   tableName: "profiles",
