@@ -48,8 +48,12 @@ export class Profile extends Model {
   address?: string;
 
   @Unique
+  @AllowNull(false)
   @Column(DataType.STRING)
   referralCode!: string;
+
+  @Column(DataType.STRING)
+  referredCode?: string;
 
   @BelongsTo(() => User)
   user!: User;
