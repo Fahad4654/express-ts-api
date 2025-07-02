@@ -58,13 +58,13 @@ export async function createUserProfile(req: Request, res: Response) {
       return;
     }
 
-    const referralCode = `FK-${(generateToken(req.body.userId))}`
+    const referralCode = `FK-${generateToken(req.body.userId)}`;
     const newUserProfile = await Profile.create({
       userId: req.body.userId,
       bio: req.body.bio,
       avatarUrl: req.body.avatarUrl,
       address: req.body.address,
-      referralCode: referralCode
+      referralCode: referralCode,
     });
 
     res.status(201).json({
