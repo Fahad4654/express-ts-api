@@ -47,7 +47,6 @@ export class Profile extends Model {
   @Column(DataType.STRING(256))
   address?: string;
 
-  @Default(() => nanoid(8)) // generates a 6-character unique ID
   @Unique
   @Column(DataType.STRING)
   referralCode!: string;

@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { Profile } from "../models/Profile";
 import { User } from "../models/User";
 import { Request, RequestHandler, Response } from "express";
-
+import { v4 as uuidv4 } from 'uuid';
 
 
 //User List
@@ -38,6 +38,11 @@ export async function getUsers(req: Request, res: Response) {
   }
 }
 
+
+export const generateToken = (id: string): string => {
+  return id.slice(-9).toUpperCase(); // Take first N chars
+};
+
 //Create Users
 export async function createUser(req: Request, res: Response) {
   
@@ -51,10 +56,13 @@ export async function createUser(req: Request, res: Response) {
       phoneNumber: req.body.phoneNumber,
       isAdmin: req.body.isAdmin,
     });
+    const referralCode = `FK-${(generateToken(newUser.id))}`
+    
     await Profile.create({
       userId: newUser.id,
       bio: "Please Edit",
       address: "Please Edit",
+      referralCode: referralCode
     });
 
     const { password, ...userWithoutPassword } = newUser.toJSON();

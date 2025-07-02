@@ -1,6 +1,7 @@
 import { Profile } from "../models/Profile";
 import { Request, RequestHandler, Response } from "express";
 import { User } from "../models/User";
+import { generateToken } from "./users.controller";
 
 //User Profile
 export const getUsersProfile: RequestHandler = async (req, res) => {
@@ -57,11 +58,13 @@ export async function createUserProfile(req: Request, res: Response) {
       return;
     }
 
+    const referralCode = `FK-${(generateToken(req.body.userId))}`
     const newUserProfile = await Profile.create({
       userId: req.body.userId,
       bio: req.body.bio,
       avatarUrl: req.body.avatarUrl,
       address: req.body.address,
+      referralCode: referralCode
     });
 
     res.status(201).json({
