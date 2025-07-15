@@ -57,6 +57,12 @@ export class Profile extends Model {
   @BelongsTo(() => User)
   user!: User;
 
+  @Column(DataType.STRING)
+  createdBy?: string;
+
+  @Column(DataType.STRING)
+  updatedBy?: string;
+
   @Column(DataType.DATE)
   createdAt!: Date;
 
