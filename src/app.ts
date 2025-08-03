@@ -17,7 +17,7 @@ const createApp = (): Application => {
   app.use(express.urlencoded({ extended: true }));
 
   // Health check
-  app.get("/health", (req, res) => {
+  app.get("/v1/api/health", (req, res) => {
     res.status(200).json({ status: "UP" });
   });
 
