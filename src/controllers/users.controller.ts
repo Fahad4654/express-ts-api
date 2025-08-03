@@ -2,7 +2,6 @@ import bcrypt from "bcryptjs";
 import { Profile } from "../models/Profile";
 import { User } from "../models/User";
 import { Request, RequestHandler, Response } from "express";
-import { v4 as uuidv4 } from "uuid";
 
 //User List
 export async function getUsers(req: Request, res: Response) {
@@ -34,6 +33,49 @@ export async function getUsers(req: Request, res: Response) {
   } catch (error) {
     console.error("Error fetching user:", error);
     res.status(500).json(error);
+  }
+}
+
+export async function getUsersById(req: Request, res: Response) {
+  try {
+    // Better: Use route parameter instead of body for GET requests
+    const userId = req.params.id; // Change to req.query.id if using query params
+
+    if (!userId) {
+      res.status(400).json({
+        status: 400,
+        error: "User ID is required as a route parameter (e.g., /users/:id)",
+      });
+      return;
+    }
+
+    const foundUser = await User.findOne({
+      where: { id: userId },
+      attributes: ["id", "name", "email"],
+    });
+
+    if (!foundUser) {
+      res.status(404).json({
+        status: 404,
+        message: "User not found",
+      });
+      return;
+    }
+
+    console.log("User's Profile found:", foundUser.email);
+    res.status(200).json({
+      status: 200,
+      data: foundUser,
+    });
+    return;
+  } catch (error) {
+    console.error("Error finding user:", error);
+    res.status(500).json({
+      status: 500,
+      message: "Internal server error",
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return;
   }
 }
 
