@@ -3,7 +3,11 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { User } from "../models/User";
 import { Token } from "../models/Token";
-import { SECRET, ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION } from "../config";
+import {
+  SECRET,
+  ACCESS_TOKEN_EXPIRATION,
+  REFRESH_TOKEN_EXPIRATION,
+} from "../config";
 
 // Helper function to generate tokens
 const generateTokens = async (user: User) => {
@@ -109,6 +113,7 @@ export const login: RequestHandler = async (req, res) => {
     // Return response without password
     const userResponse = user.toJSON();
     delete userResponse.password;
+    console.log(userResponse.email, "logged in");
 
     res.json({
       message: "Login successful",
@@ -129,14 +134,31 @@ export const logout: RequestHandler = async (req, res) => {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
+      console.log("Refresh token is required");
       res.status(400).json({ message: "Refresh token is required" });
       return;
     }
 
+    // Find token first
+    const tokenData = await Token.findOne({ where: { token: refreshToken } });
+
+    if (!tokenData) {
+      console.log("Token not found or already logged out");
+      res
+        .status(404)
+        .json({ message: "Token not found or already logged out" });
+      return;
+    }
+
+    // Find the user before deleting token
+    const user = await User.findOne({ where: { id: tokenData.userId } });
+
     // Delete the refresh token
     await Token.destroy({ where: { token: refreshToken } });
 
-    res.json({ message: "Logged out successfully" });
+    console.log(user?.email || "Unknown user", "Logged out successfully");
+
+    res.status(200).json({ message: "Logged out successfully" });
     return;
   } catch (error) {
     console.error("Logout error:", error);
