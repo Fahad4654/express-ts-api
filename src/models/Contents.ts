@@ -31,6 +31,7 @@ export class Contents extends Model {
   @AllowNull(false)
   @Column({
     type: DataType.UUID,
+    unique: false
   })
   userId!: string;
 
