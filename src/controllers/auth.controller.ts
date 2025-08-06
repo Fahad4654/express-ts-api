@@ -8,6 +8,8 @@ import {
   ACCESS_TOKEN_EXPIRATION,
   REFRESH_TOKEN_EXPIRATION,
 } from "../config";
+import { Profile } from "../models/Profile";
+import { generateToken } from "./users.controller";
 
 // Helper function to generate tokens
 const generateTokens = async (user: User) => {
@@ -53,19 +55,41 @@ export const register: RequestHandler = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    const user = await User.create({
+    // const user = await User.create({
+    //   name,
+    //   email,
+    //   password: hashedPassword,
+    //   phoneNumber,
+    //   isAdmin: false,
+    // });
+    //     await Profile.create({
+    //       userId: newUser.id,
+    //       bio: "Please Edit",
+    //       address: "Please Edit",
+    //       referralCode: referralCode,
+    //     });
+
+    const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
       phoneNumber,
       isAdmin: false,
     });
+    const referralCode = `FK-${generateToken(newUser.id)}`;
+
+    await Profile.create({
+      userId: newUser.id,
+      bio: "Please Edit",
+      address: "Please Edit",
+      referralCode: referralCode,
+    });
 
     // Generate tokens
-    const { accessToken, refreshToken } = await generateTokens(user);
+    const { accessToken, refreshToken } = await generateTokens(newUser);
 
     // Return response without password
-    const userResponse = user.toJSON();
+    const userResponse = newUser.toJSON();
     delete userResponse.password;
 
     res.status(201).json({
