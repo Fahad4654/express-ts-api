@@ -7,6 +7,7 @@ import {
   AllowNull,
   PrimaryKey,
   Default,
+  Unique,
 } from "sequelize-typescript";
 import { User } from "./User";
 
@@ -30,10 +31,10 @@ export class Contents extends Model {
   @AllowNull(false)
   @Column({
     type: DataType.UUID,
-    unique: true,
   })
   userId!: string;
 
+  @Unique
   @Column(DataType.STRING(100))
   name?: string;
 
