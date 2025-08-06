@@ -69,7 +69,7 @@ export async function getUserProfileById(req: Request, res: Response) {
         {
           model: User,
           // Optionally exclude profile fields if needed
-          attributes: ["id", "name", "email","phoneNumber"],
+          attributes: ["id", "name", "email", "phoneNumber"],
         },
       ],
       nest: true, // Preserves nested structure
