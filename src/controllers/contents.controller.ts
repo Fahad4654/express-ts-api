@@ -27,8 +27,7 @@ export async function getContents(req: Request, res: Response) {
 
 export async function getContentsById(req: Request, res: Response) {
   try {
-    // Better: Use route parameter instead of body for GET requests
-    const contentsId = req.params.id; // Change to req.query.id if using query params
+    const contentsId = req.params.id;
 
     if (!contentsId) {
       res.status(400).json({
