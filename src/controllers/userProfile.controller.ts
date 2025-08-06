@@ -49,6 +49,58 @@ export const getUsersProfile: RequestHandler = async (req, res) => {
   }
 };
 
+//get User Profile by ID
+export async function getUserProfileById(req: Request, res: Response) {
+  try {
+    // Better: Use route parameter instead of body for GET requests
+    const userId = req.params.id; // Change to req.query.id if using query params
+
+    if (!userId) {
+      res.status(400).json({
+        status: 400,
+        error: "User ID is required as a route parameter (e.g., /users/:id)",
+      });
+      return;
+    }
+
+    const foundUserProfile = await Profile.findOne({
+      where: { userId: userId },
+      include: [
+        {
+          model: User,
+          // Optionally exclude profile fields if needed
+          attributes: ["id", "name", "email"],
+        },
+      ],
+      nest: true, // Preserves nested structure
+      raw: true, // Returns plain objects
+    });
+
+    if (!foundUserProfile) {
+      res.status(404).json({
+        status: 404,
+        message: "User Profile not found",
+      });
+      return;
+    }
+
+    console.log("User's Profile found:", foundUserProfile);
+    res.status(200).json({
+      status: 200,
+      data: foundUserProfile,
+    });
+    return;
+  } catch (error) {
+    console.error("Error finding user:", error);
+    res.status(500).json({
+      status: 500,
+      message: "Internal server error",
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return;
+  }
+}
+
 //Create User Profile
 export async function createUserProfile(req: Request, res: Response) {
   console.log(req.body);
