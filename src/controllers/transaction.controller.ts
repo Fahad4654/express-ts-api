@@ -12,7 +12,7 @@ export const getTransaction: RequestHandler = async (req, res) => {
     }
     const { order, asc } = req.body;
     if (!order) {
-      res.status(400).json({ error: "Field is required" });
+      res.status(400).json({ error: "Field to sort is required" });
       return;
     }
     if (!asc) {
@@ -41,14 +41,14 @@ export const getTransaction: RequestHandler = async (req, res) => {
         ],
       ], //{'property':'ASC/DESC'}}
     });
-    console.log("Users list:", userTransactions);
+    console.log("Transaction list:", userTransactions);
     res.status(201).json({
-      message: "User fetching successfully",
-      userTransactions: userTransactions,
+      message: "Transaction list fetching successfully",
+      transactions: userTransactions,
       status: "success",
     });
   } catch (error) {
-    console.error("Error fetching user:", error);
+    console.error("Error fetching Transaction list:", error);
     res.status(500).json(error);
   }
 };
@@ -56,7 +56,7 @@ export const getTransaction: RequestHandler = async (req, res) => {
 //get Transaction by Transaction ID
 export async function getTransactionsByID(req: Request, res: Response) {
   try {
-    const { id, userId } = req.params; // Assuming /transaction/:id or /transaction/user/:userId
+    const { id, userId } = req.params; // Assuming /transaction/:id or /transaction/transaction/:userId
 
     if (!id && !userId) {
       res.status(400).json({
@@ -175,12 +175,12 @@ export async function createTransaction(req: Request, res: Response) {
     });
 
     res.status(201).json({
-      message: "User Account created successfully",
+      message: "Transaction created successfully",
       transaction: newTransaction,
       status: "success",
     });
   } catch (error: any) {
-    console.error("Error creating user:", error);
+    console.error("Error creating transaction:", error);
     res.status(500).json({ status: 500, message: error });
   }
 }
@@ -239,6 +239,7 @@ export const deleteTransaction: RequestHandler = async (req, res) => {
   }
 };
 
+//Update Transaction
 export async function updateTransaction(req: Request, res: Response) {
   try {
     if (!req.body) {
@@ -297,17 +298,20 @@ export async function updateTransaction(req: Request, res: Response) {
       attributes: { exclude: ["createdAt", "updatedAt"] },
     });
 
-    console.log("Account updated successfully, account: ", updatedTransaction);
+    console.log(
+      "Transaction updated successfully, Transaction: ",
+      updatedTransaction
+    );
     res.status(200).json({
-      message: "Account updated successfully",
+      message: "Transaction updated successfully",
       data: updatedTransaction,
       status: "success",
     });
   } catch (error) {
-    console.error("Error updating account:", error);
+    console.error("Error updating Transaction:", error);
     res.status(500).json({
       status: "error",
-      message: "Failed to update account",
+      message: "Failed to update Transaction",
       error: error instanceof Error ? error.message : error,
     });
   }
