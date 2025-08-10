@@ -11,6 +11,7 @@ const router = Router();
 
 router.get("/", getTransaction);
 router.get("/:id", getTransactionsByID);
+router.get("/user/:userId", getTransactionsByID);
 router.post("/", createTransaction);
 router.put("/", updateTransaction);
 router.delete("/", deleteTransaction);

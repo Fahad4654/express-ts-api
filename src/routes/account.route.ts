@@ -10,7 +10,7 @@ import {
 const router = Router();
 
 router.get("/", getAccounts);
-router.get("/:id", getAccountById);
+router.get("/:userId", getAccountById);
 router.post("/", createAccount);
 router.put("/", updateAccount);
 router.delete("/", deleteAccount);

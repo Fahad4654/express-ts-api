@@ -10,7 +10,7 @@ import {
 const router = Router();
 
 router.get("/", getBalance);
-router.get("/:id", getBalanceByAccountId);
+router.get("/:accountId", getBalanceByAccountId);
 router.post("/", createBalance);
 router.put("/", updateBalance);
 router.delete("/", deleteBalance);
