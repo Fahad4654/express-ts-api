@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { 
+import {
   register,
   login,
   logout,
-  refreshToken
+  refreshToken,
 } from "../controllers/auth.controller";
 
 const router = Router();

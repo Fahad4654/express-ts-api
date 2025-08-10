@@ -1,0 +1,66 @@
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  ForeignKey,
+  BelongsTo,
+  AllowNull,
+  PrimaryKey,
+  Default,
+  HasMany
+} from "sequelize-typescript";
+import { Account } from "./Account";
+import { BalanceTransaction } from "./BalanceTransaction";
+
+@Table({
+  tableName: "balance",
+  timestamps: true,
+})
+export class Balance extends Model {
+  @PrimaryKey
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  id!: string;
+
+  @ForeignKey(() => Account)
+  @AllowNull(false)
+  @Column(DataType.UUID)
+  accountId!: string;
+
+  @BelongsTo(() => Account)
+  account!: Account;
+
+  /** Spendable amount */
+  @Default(0.00)
+  @Column(DataType.DECIMAL(15, 2))
+  availableBalance!: number;
+
+  /** Pending incoming funds */
+  @Default(0.00)
+  @Column(DataType.DECIMAL(15, 2))
+  pendingBalance!: number;
+
+  /** Held funds */
+  @Default(0.00)
+  @Column(DataType.DECIMAL(15, 2))
+  holdBalance!: number;
+
+  /** Currency */
+  @Default("BDT")
+  @Column(DataType.STRING(3))
+  currency!: string;
+
+  /** Last transaction timestamp */
+  @Column(DataType.DATE)
+  lastTransactionAt!: Date;
+
+  @HasMany(() => BalanceTransaction)
+  transactions!: BalanceTransaction[];
+
+  @Column(DataType.DATE)
+  createdAt!: Date;
+
+  @Column(DataType.DATE)
+  updatedAt!: Date;
+}
