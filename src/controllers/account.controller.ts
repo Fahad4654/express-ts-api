@@ -11,7 +11,7 @@ export const getAccounts: RequestHandler = async (req, res) => {
     }
     const { order, asc } = req.body;
     if (!order) {
-      res.status(400).json({ error: "Field is required" });
+      res.status(400).json({ error: "Field to sort is required" });
       return;
     }
     if (!asc) {
@@ -36,14 +36,14 @@ export const getAccounts: RequestHandler = async (req, res) => {
         ],
       ], //{'property':'ASC/DESC'}}
     });
-    console.log("Users list:", userAccounts);
+    console.log("User's Accounts list:", userAccounts);
     res.status(201).json({
-      message: "User fetching successfully",
+      message: "User's Accounts fetching successfully",
       userAccounts: userAccounts,
       status: "success",
     });
   } catch (error) {
-    console.error("Error fetching user:", error);
+    console.error("Error fetching user's accounts:", error);
     res.status(500).json(error);
   }
 };
@@ -51,23 +51,21 @@ export const getAccounts: RequestHandler = async (req, res) => {
 //get User Account by ID
 export async function getAccountById(req: Request, res: Response) {
   try {
-    // Better: Use route parameter instead of body for GET requests
-    const userId = req.params.id; // Change to req.query.id if using query params
+    const userId = req.params.userId; // Change to req.query.id if using query params
 
     if (!userId) {
       res.status(400).json({
         status: 400,
-        error: "User ID is required as a route parameter (e.g., /users/:id)",
+        error: "User ID is required as a route parameter (e.g., /account/:id)",
       });
       return;
     }
 
     const foundUserAccount = await Account.findOne({
-      where: { userId: userId },
+      where: { userId },
       include: [
         {
           model: User,
-          // Optionally exclude profile fields if needed
           attributes: ["id", "name", "email", "phoneNumber"],
         },
       ],
@@ -78,7 +76,7 @@ export async function getAccountById(req: Request, res: Response) {
     if (!foundUserAccount) {
       res.status(404).json({
         status: 404,
-        message: "User Account not found",
+        message: "User's Account not found",
       });
       return;
     }
@@ -90,7 +88,7 @@ export async function getAccountById(req: Request, res: Response) {
     });
     return;
   } catch (error) {
-    console.error("Error finding user Account:", error);
+    console.error("Error finding user's account:", error);
     res.status(500).json({
       status: 500,
       message: "Internal server error",
@@ -105,6 +103,7 @@ export function generateAccountNumber(): string {
   const random = Math.floor(1000 + Math.random() * 9000); // 4 random digits
   return `AC-${timestamp}${random}`;
 }
+
 //Create User Account
 export async function createAccount(req: Request, res: Response) {
   console.log(req.body);
@@ -121,12 +120,12 @@ export async function createAccount(req: Request, res: Response) {
     });
 
     res.status(201).json({
-      message: "User Account created successfully",
+      message: "User's Account created successfully",
       user: newUserAccount,
       status: "success",
     });
   } catch (error: any) {
-    console.error("Error creating user:", error);
+    console.error("Error creating user's account:", error);
     res.status(500).json({ status: 500, message: error });
   }
 }
@@ -168,7 +167,7 @@ export const deleteAccount: RequestHandler = async (req, res) => {
       email: foundUser?.email,
     });
   } catch (error) {
-    console.error("Error deleting user:", error);
+    console.error("Error deleting user's account:", error);
     res.status(500).json({ status: 500, message: error });
   }
 };
