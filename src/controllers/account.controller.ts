@@ -172,6 +172,7 @@ export const deleteAccount: RequestHandler = async (req, res) => {
   }
 };
 
+//update User Account
 export async function updateAccount(req: Request, res: Response) {
   try {
     if (!req.body) {

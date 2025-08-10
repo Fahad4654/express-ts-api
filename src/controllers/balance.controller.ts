@@ -2,8 +2,9 @@ import { Balance } from "../models/Balance";
 import { Request, RequestHandler, Response } from "express";
 import { Account } from "../models/Account";
 import { sequelize } from "../config/database";
+import { User } from "../models/User";
 
-//User Balanace
+//All User Balanace
 export const getBalance: RequestHandler = async (req, res) => {
   try {
     if (!req.body) {
@@ -12,7 +13,7 @@ export const getBalance: RequestHandler = async (req, res) => {
     }
     const { order, asc } = req.body;
     if (!order) {
-      res.status(400).json({ error: "Field is required" });
+      res.status(400).json({ error: "Field to sort is required" });
       return;
     }
     if (!asc) {
@@ -32,7 +33,7 @@ export const getBalance: RequestHandler = async (req, res) => {
       raw: true, // Returns plain objects
       order: [
         [
-          `${req.body.order ? req.body.order : "id"}`,
+          `${req.body.order ? req.body.order : "createdAt"}`,
           `${req.body.asc ? req.body.asc : "ASC"}`,
         ],
       ], //{'property':'ASC/DESC'}}
@@ -40,7 +41,7 @@ export const getBalance: RequestHandler = async (req, res) => {
     console.log("Balanace list:", balanceList);
     res.status(201).json({
       message: "Balance List fetching successfully",
-      userBalances: balanceList,
+      usersBalances: balanceList,
       status: "success",
     });
   } catch (error) {
@@ -53,22 +54,22 @@ export const getBalance: RequestHandler = async (req, res) => {
 export async function getBalanceByAccountId(req: Request, res: Response) {
   try {
     // Better: Use route parameter instead of body for GET requests
-    const accountId = req.params.id; // Change to req.query.id if using query params
+    const accountId = req.params.accountId; // Change to req.query.id if using query params
 
     if (!accountId) {
       res.status(400).json({
         status: 400,
-        error: "account ID is required as a route parameter (e.g., /users/:id)",
+        error:
+          "account ID is required as a route parameter (e.g., /balance/:accountId)",
       });
       return;
     }
 
     const foundBalance = await Balance.findOne({
-      where: { accountId: accountId },
+      where: { accountId },
       include: [
         {
           model: Account,
-          // Optionally exclude profile fields if needed
           attributes: ["id", "userId", "accountNumber"],
         },
       ],
@@ -101,7 +102,7 @@ export async function getBalanceByAccountId(req: Request, res: Response) {
   }
 }
 
-//Create User Account
+//Create Balance
 export async function createBalance(req: Request, res: Response) {
   console.log(req.body);
   const { accountId, availableBalance, pendingBalance, holdBalance, currency } =
@@ -130,7 +131,7 @@ export async function createBalance(req: Request, res: Response) {
   }
 }
 
-//Delete User Account
+//Delete balance
 export const deleteBalance: RequestHandler = async (req, res) => {
   try {
     if (!req.body) {
@@ -143,10 +144,10 @@ export const deleteBalance: RequestHandler = async (req, res) => {
       return;
     }
 
-    const foundBalance = await Balance.findOne({
-      where: { id: req.body.accountId },
-      attributes: ["id", "accountId"],
-    });
+    const foundUser = await User.findOne({
+          where: { id: req.body.userId },
+          attributes: [ "name", "email"],
+        });
 
     const deletedCount = await Balance.destroy({
       where: { accountId: req.body.accountId },
@@ -154,24 +155,25 @@ export const deleteBalance: RequestHandler = async (req, res) => {
 
     if (deletedCount === 0) {
       res.status(404).json({
-        error: "User's Account not found",
-        message: `User: ${foundBalance?.accountId} doesn't have a Account`,
+        error: "User's Balance not found",
+        message: `User: ${foundUser?.name} doesn't have a Balance`,
       });
-      console.log("User's Account not found: ", foundBalance?.accountId);
+      console.log("User's Balance not found: ", foundUser?.email);
       return;
     }
 
-    console.log("User's Account found: ", foundBalance?.accountId);
+    console.log("User's Balance found: ", foundUser?.name);
     res.status(200).json({
-      message: `User: ${foundBalance?.accountId}'s Account is being Deleted`,
-      email: foundBalance?.accountId,
+      message: `User: ${foundUser?.name}'s Balance is being Deleted`,
+      email: foundUser?.email,
     });
   } catch (error) {
-    console.error("Error deleting user:", error);
+    console.error("Error deleting user balances:", error);
     res.status(500).json({ status: 500, message: error });
   }
 };
 
+//Update Balance
 export async function updateBalance(req: Request, res: Response) {
   try {
     if (!req.body) {
