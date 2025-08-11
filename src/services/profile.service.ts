@@ -1,0 +1,81 @@
+import { Profile } from "../models/Profile";
+import { User } from "../models/User";
+import { generateToken } from "./user.service";
+
+export async function findAllProfiles(order = "id", asc = "ASC") {
+  return Profile.findAll({
+    include: [
+      {
+        model: User,
+        attributes: ["id", "name", "email"],
+      },
+    ],
+    nest: true,
+    raw: true,
+    order: [[order, asc]],
+  });
+}
+export function referralCode(userId: string) {
+  return `FK-${generateToken(userId)}`;
+}
+export async function findProfileByUserId(userId: string) {
+  return Profile.findOne({
+    where: { userId },
+    include: [
+      {
+        model: User,
+        attributes: ["id", "name", "email", "phoneNumber"],
+      },
+    ],
+    nest: true,
+    raw: true,
+  });
+}
+
+export async function createProfile(data: {
+  userId: string;
+  bio?: string;
+  avatarUrl?: string;
+  address?: string;
+}) {
+  return Profile.create({
+    userId: data.userId,
+    bio: data.bio ?? "",
+    avatarUrl: data.avatarUrl ?? "",
+    address: data.address ?? "",
+    referralCode: referralCode(data.userId),
+  });
+}
+
+export async function deleteProfileByUserId(userId: string) {
+  const user = await User.findOne({
+    where: { id: userId },
+    attributes: ["id", "name", "email"],
+  });
+
+  const deletedCount = await Profile.destroy({ where: { userId } });
+  return { deletedCount, user };
+}
+
+export async function updateProfileByUserId(
+  userId: string,
+  updates: Partial<Profile>
+) {
+  const profile = await Profile.findOne({ where: { userId } });
+  if (!profile) return null;
+
+  const allowedFields: Array<keyof Profile> = ["bio", "avatarUrl", "address"];
+  const filteredUpdates: Partial<Profile> = {};
+
+  for (const key of allowedFields) {
+    if (updates[key] !== undefined) filteredUpdates[key] = updates[key];
+  }
+
+  if (Object.keys(filteredUpdates).length === 0) return null;
+
+  await profile.update(filteredUpdates);
+
+  return Profile.findByPk(profile.id, {
+    attributes: { exclude: ["createdAt", "updatedAt"] },
+  });
+}

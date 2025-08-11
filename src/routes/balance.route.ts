@@ -2,18 +2,18 @@ import { Router } from "express";
 import {
   getBalance,
   getBalanceByAccountId,
-  createBalance,
-  updateBalance,
-  deleteBalance,
+  createBalanceController,
+  updateBalanceController,
+  deleteBalanceController,
 } from "../controllers/balance.controller";
 
 const router = Router();
 
 router.get("/", getBalance);
 router.get("/:accountId", getBalanceByAccountId);
-router.post("/", createBalance);
-router.put("/", updateBalance);
-router.delete("/", deleteBalance);
+router.post("/", createBalanceController);
+router.put("/", updateBalanceController);
+router.delete("/", deleteBalanceController);
 
 export { router as balanceRouter };
 export { router };

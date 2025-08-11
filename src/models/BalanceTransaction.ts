@@ -8,7 +8,7 @@ import {
   AllowNull,
   PrimaryKey,
   Default,
-  Index
+  Index,
 } from "sequelize-typescript";
 import { Balance } from "./Balance";
 import { Account } from "./Account";
@@ -22,8 +22,8 @@ import { User } from "./User";
     { fields: ["accountId"] },
     { fields: ["balanceId"] },
     { fields: ["type"] },
-    { fields: ["status"] }
-  ]
+    { fields: ["status"] },
+  ],
 })
 export class BalanceTransaction extends Model {
   @PrimaryKey
@@ -36,7 +36,7 @@ export class BalanceTransaction extends Model {
   @Column(DataType.UUID)
   balanceId!: string;
 
-  @BelongsTo(() => Balance)
+  @BelongsTo(() => Balance, { onDelete: "CASCADE" })
   balance!: Balance;
 
   @ForeignKey(() => Account)
@@ -44,7 +44,7 @@ export class BalanceTransaction extends Model {
   @Column(DataType.UUID)
   accountId!: string;
 
-  @BelongsTo(() => Account)
+  @BelongsTo(() => Account, { onDelete: "CASCADE" })
   account!: Account;
 
   @ForeignKey(() => User)
@@ -52,12 +52,14 @@ export class BalanceTransaction extends Model {
   @Column(DataType.UUID)
   userId!: string;
 
-  @BelongsTo(() => User)
+  @BelongsTo(() => User, { onDelete: "CASCADE" })
   user!: User;
 
   /** Transaction type */
   @AllowNull(false)
-  @Column(DataType.ENUM("deposit", "withdrawal", "payment", "refund", "adjustment"))
+  @Column(
+    DataType.ENUM("deposit", "withdrawal", "payment", "refund", "adjustment")
+  )
   type!: "deposit" | "withdrawal" | "payment" | "refund" | "adjustment";
 
   /** Direction of funds */

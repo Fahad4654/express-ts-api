@@ -8,7 +8,8 @@ import {
   AllowNull,
   PrimaryKey,
   Default,
-  HasMany
+  HasMany,
+  Unique,
 } from "sequelize-typescript";
 import { Account } from "./Account";
 import { BalanceTransaction } from "./BalanceTransaction";
@@ -25,24 +26,25 @@ export class Balance extends Model {
 
   @ForeignKey(() => Account)
   @AllowNull(false)
+  @Unique // One balance per account
   @Column(DataType.UUID)
   accountId!: string;
 
-  @BelongsTo(() => Account)
+  @BelongsTo(() => Account, { onDelete: "CASCADE" }) // Cascade delete from Account → Balance
   account!: Account;
 
   /** Spendable amount */
-  @Default(0.00)
+  @Default(0.0)
   @Column(DataType.DECIMAL(15, 2))
   availableBalance!: number;
 
   /** Pending incoming funds */
-  @Default(0.00)
+  @Default(0.0)
   @Column(DataType.DECIMAL(15, 2))
   pendingBalance!: number;
 
   /** Held funds */
-  @Default(0.00)
+  @Default(0.0)
   @Column(DataType.DECIMAL(15, 2))
   holdBalance!: number;
 

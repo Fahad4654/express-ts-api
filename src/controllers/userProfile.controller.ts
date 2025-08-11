@@ -1,228 +1,162 @@
-import { Profile } from "../models/Profile";
-import { Request, RequestHandler, Response } from "express";
-import { User } from "../models/User";
-import { generateToken } from "./users.controller";
+import { Request, Response } from "express";
+import {
+  findAllProfiles,
+  findProfileByUserId,
+  createProfile,
+  deleteProfileByUserId,
+  updateProfileByUserId,
+} from "../services/profile.service";
 
-//User Profile
-export const getUsersProfile: RequestHandler = async (req, res) => {
+// User Profile List
+export async function getUsersProfile(req: Request, res: Response) {
   try {
     if (!req.body) {
+      console.log("request body is required");
       res.status(400).json({ error: "request body is required" });
       return;
     }
     const { order, asc } = req.body;
     if (!order) {
-      res.status(400).json({ error: "UserId is required" });
+      console.log("Field to sort is required");
+      res.status(400).json({ error: "Field to sort is required" });
       return;
     }
     if (!asc) {
-      res.status(400).json({ error: "asc is required" });
+      console.log("Order direction is required");
+      res.status(400).json({ error: "Order direction is required" });
       return;
     }
 
-    const usersProfileList = await Profile.findAll({
-      include: [
-        {
-          model: User,
-          // Optionally exclude profile fields if needed
-          attributes: ["id", "name", "email"],
-        },
-      ],
-      nest: true, // Preserves nested structure
-      raw: true, // Returns plain objects
-      order: [
-        [
-          `${req.body.order ? req.body.order : "id"}`,
-          `${req.body.asc ? req.body.asc : "ASC"}`,
-        ],
-      ], //{'property':'ASC/DESC'}}
-    });
-    console.log("Users list:", usersProfileList);
-    res.status(201).json({
-      message: "User fetching successfully",
-      userProfiles: usersProfileList,
+    const profiles = await findAllProfiles(order, asc);
+    console.log("User Profile fetched successfully", profiles);
+
+    res.status(200).json({
+      message: "User Profile fetched successfully",
+      userProfiles: profiles,
       status: "success",
     });
   } catch (error) {
     console.error("Error fetching user:", error);
     res.status(500).json(error);
   }
-};
+}
 
-//get User Profile by ID
+// Get User Profile by ID
 export async function getUserProfileById(req: Request, res: Response) {
   try {
-    // Better: Use route parameter instead of body for GET requests
-    const userId = req.params.id; // Change to req.query.id if using query params
+    const userId = req.params.id;
 
     if (!userId) {
+      console.log(
+        "User ID is required as a route parameter (e.g., /users/:id)"
+      );
       res.status(400).json({
-        status: 400,
         error: "User ID is required as a route parameter (e.g., /users/:id)",
       });
       return;
     }
 
-    const foundUserProfile = await Profile.findOne({
-      where: { userId: userId },
-      include: [
-        {
-          model: User,
-          // Optionally exclude profile fields if needed
-          attributes: ["id", "name", "email", "phoneNumber"],
-        },
-      ],
-      nest: true, // Preserves nested structure
-      raw: true, // Returns plain objects
-    });
+    const profile = await findProfileByUserId(userId);
 
-    if (!foundUserProfile) {
-      res.status(404).json({
-        status: 404,
-        message: "User Profile not found",
-      });
+    if (!profile) {
+      console.log("User Profile not found");
+      res.status(404).json({ message: "User Profile not found" });
       return;
     }
 
-    console.log("User's Profile found:", foundUserProfile);
+    console.log("User found", profile);
     res.status(200).json({
-      status: 200,
-      data: foundUserProfile,
+      status: "success",
+      data: profile,
     });
     return;
   } catch (error) {
     console.error("Error finding user:", error);
     res.status(500).json({
-      status: 500,
+      status: "error",
       message: "Internal server error",
       error: error instanceof Error ? error.message : String(error),
     });
-    return;
   }
 }
 
-//Create User Profile
+// Create User Profile
 export async function createUserProfile(req: Request, res: Response) {
-  console.log(req.body);
   try {
     if (!req.body) {
+      console.log("request body is required");
       res.status(400).json({ error: "request body is required" });
       return;
     }
+    const newProfile = await createProfile(req.body);
 
-    const referralCode = `FK-${generateToken(req.body.userId)}`;
-    const newUserProfile = await Profile.create({
-      userId: req.body.userId,
-      bio: req.body.bio,
-      avatarUrl: req.body.avatarUrl,
-      address: req.body.address,
-      referralCode: referralCode,
-    });
-
+    console.log("User created successfully", newProfile);
     res.status(201).json({
       message: "User created successfully",
-      user: newUserProfile,
+      user: newProfile,
       status: "success",
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ status: 500, message: error });
   }
 }
 
-//Delete User Profile
-export const deleteUserProfile: RequestHandler = async (req, res) => {
+// Delete User Profile
+export async function deleteUserProfile(req: Request, res: Response) {
   try {
-    if (!req.body) {
-      res.status(400).json({ error: "request body is required" });
-      return;
-    }
-    if (!req.body.userId) {
+    if (!req.body || !req.body.userId) {
+      console.log("UserId is required");
       res.status(400).json({ error: "UserId is required" });
-      console.log(req.body.userId);
       return;
     }
 
-    const foundUser = await User.findOne({
-      where: { id: req.body.userId },
-      attributes: ["id", "name", "email"],
-    });
-
-    const deletedCount = await Profile.destroy({
-      where: { userId: req.body.userId },
-    });
+    const { deletedCount, user } = await deleteProfileByUserId(req.body.userId);
 
     if (deletedCount === 0) {
+      console.log(`User: ${user?.name} doesn't have a profile`);
       res.status(404).json({
         error: "User's Profile not found",
-        message: `User: ${foundUser?.name} doesn't have a profile`,
+        message: `User: ${user?.name} doesn't have a profile`,
       });
-      console.log("User's Profile not found: ", foundUser?.email);
       return;
     }
 
-    console.log("User's Profile found: ", foundUser?.email);
+    console.log(`User: ${user?.name}'s profile is being deleted`);
     res.status(200).json({
-      message: `User: ${foundUser?.name}'s profile is being Deleted`,
-      email: foundUser?.email,
+      message: `User: ${user?.name}'s profile is being deleted`,
+      email: user?.email,
     });
+    return;
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ status: 500, message: error });
   }
-};
+}
 
+// Update User Profile
 export async function updateUserProfile(req: Request, res: Response) {
   try {
-    if (!req.body) {
-      res.status(400).json({ error: "request body is required" });
-      console.log("request body is required");
-      return;
-    }
-    const { userId } = req.body;
-
-    if (!userId) {
-      res.status(400).json({ error: "UserId is required" });
+    if (!req.body || !req.body.userId) {
       console.log("UserId is required");
+      res.status(400).json({ error: "UserId is required" });
       return;
     }
 
-    // Find the profile associated with the user
-    const profile = await Profile.findOne({ where: { userId } });
+    const updatedProfile = await updateProfileByUserId(
+      req.body.userId,
+      req.body
+    );
 
-    if (!profile) {
-      res.status(404).json({ error: "Profile not found" });
-      console.log("Profile not found");
+    if (!updatedProfile) {
+      console.log("No valid fields provided for update or profile not found");
+      res.status(400).json({
+        error: "No valid fields provided for update or profile not found",
+      });
       return;
     }
 
-    // Define allowed fields that can be updated with type safety
-    const allowedFields: Array<keyof Profile> = ["bio", "avatarUrl", "address"];
-    const updates: Partial<Profile> = {};
-
-    // Filter and only take allowed fields from req.body with type checking
-    for (const key of allowedFields) {
-      if (req.body[key] !== undefined) {
-        updates[key] = req.body[key];
-      }
-    }
-
-    // If no valid updates were provided
-    if (Object.keys(updates).length === 0) {
-      res.status(400).json({ error: "No valid fields provided for update" });
-      console.log("No valid fields provided for update");
-      return;
-    }
-
-    // Perform the update
-    await profile.update(updates);
-
-    // Get the updated profile (excluding sensitive fields if needed)
-    const updatedProfile = await Profile.findByPk(profile.id, {
-      attributes: { exclude: ["createdAt", "updatedAt"] },
-    });
-
-    console.log("Profile updated successfully, Profile: ", updatedProfile);
+    console.log("Profile updated successfully", updatedProfile);
     res.status(200).json({
       message: "Profile updated successfully",
       profile: updatedProfile,

@@ -1,16 +1,21 @@
-import { Account } from "../models/Account";
-import { Request, RequestHandler, Response } from "express";
-import { User } from "../models/User";
+import { Request, Response } from "express";
+import {
+  findAllTransactions,
+  findTransactionById,
+  findTransactionsByUserId,
+  createTransaction,
+  deleteTransactionByIdOrUserId,
+  updateTransactionById,
+} from "../services/transaction.service";
 import { BalanceTransaction } from "../models/BalanceTransaction";
+import { User } from "../models/User";
+import { Account } from "../models/Account";
 
-//User Transaction
-export const getTransaction: RequestHandler = async (req, res) => {
+export const getTransaction = async (req: Request, res: Response) => {
   try {
-    if (!req.body) {
-      res.status(400).json({ error: "request body is required" });
-      return;
-    }
-    const { order, asc } = req.body;
+    const order = req.body.order;
+    const asc = req.body.asc;
+
     if (!order) {
       res.status(400).json({ error: "Field to sort is required" });
       return;
@@ -20,57 +25,33 @@ export const getTransaction: RequestHandler = async (req, res) => {
       return;
     }
 
-    const userTransactions = await BalanceTransaction.findAll({
-      include: [
-        {
-          model: User,
-          // Optionally exclude account fields if needed
-          attributes: ["id", "name", "email", "phoneNumber"],
-        },
-        {
-          model: Account,
-          attributes: ["id", "accountNumber", "status"],
-        },
-      ],
-      nest: true, // Preserves nested structure
-      raw: true, // Returns plain objects
-      order: [
-        [
-          `${req.body.order ? req.body.order : "id"}`,
-          `${req.body.asc ? req.body.asc : "ASC"}`,
-        ],
-      ], //{'property':'ASC/DESC'}}
-    });
-    console.log("Transaction list:", userTransactions);
-    res.status(201).json({
-      message: "Transaction list fetching successfully",
-      transactions: userTransactions,
+    const transactions = await findAllTransactions(order, asc);
+
+    res.status(200).json({
+      message: "Transaction list fetched successfully",
+      transactions,
       status: "success",
     });
   } catch (error) {
     console.error("Error fetching Transaction list:", error);
-    res.status(500).json(error);
+    res.status(500).json({ status: 500, message: "Internal server error" });
   }
 };
 
-//get Transaction by Transaction ID
 export async function getTransactionsByID(req: Request, res: Response) {
   try {
-    const { id, userId } = req.params; // Assuming /transaction/:id or /transaction/transaction/:userId
+    const { id, userId } = req.params;
 
     if (!id && !userId) {
-      res.status(400).json({
-        status: 400,
-        error:
-          "Either transaction ID or userId is required as a route parameter",
-      });
+      res
+        .status(400)
+        .json({ error: "Either transaction ID or userId is required" });
       return;
     }
 
     let result;
 
     if (id) {
-      // Get transaction by ID
       result = await BalanceTransaction.findOne({
         where: { id },
         include: [
@@ -94,8 +75,7 @@ export async function getTransactionsByID(req: Request, res: Response) {
         });
         return;
       }
-    } else if (userId) {
-      // Get all transactions by userId
+    } else {
       result = await BalanceTransaction.findAll({
         where: { userId },
         include: [
@@ -118,7 +98,7 @@ export async function getTransactionsByID(req: Request, res: Response) {
         ],
       });
 
-      if (!result || result.length === 0) {
+      if (!result.length) {
         res.status(404).json({
           status: 404,
           message: `No transactions found for userId ${userId}`,
@@ -127,53 +107,16 @@ export async function getTransactionsByID(req: Request, res: Response) {
       }
     }
 
-    res.status(200).json({
-      status: 200,
-      data: result,
-    });
+    res.status(200).json({ status: 200, data: result });
   } catch (error) {
     console.error("Error fetching transactions:", error);
-    res.status(500).json({
-      status: 500,
-      message: "Internal server error",
-      error: error instanceof Error ? error.message : String(error),
-    });
+    res.status(500).json({ status: 500, message: "Internal server error" });
   }
 }
 
-//Create Transaction
-export async function createTransaction(req: Request, res: Response) {
-  console.log(req.body);
-  const {
-    balanceId,
-    accountId,
-    userId,
-    type,
-    direction,
-    amount,
-    currency,
-    description,
-    referenceId,
-    status,
-  } = req.body;
+export async function createTransactionController(req: Request, res: Response) {
   try {
-    if (!req.body) {
-      res.status(400).json({ error: "request body is required" });
-      return;
-    }
-    const newTransaction = await BalanceTransaction.create({
-      balanceId,
-      accountId,
-      userId,
-      type,
-      direction,
-      amount,
-      currency,
-      description,
-      referenceId,
-      status,
-    });
-
+    const newTransaction = await createTransaction(req.body);
     res.status(201).json({
       message: "Transaction created successfully",
       transaction: newTransaction,
@@ -181,12 +124,14 @@ export async function createTransaction(req: Request, res: Response) {
     });
   } catch (error: any) {
     console.error("Error creating transaction:", error);
-    res.status(500).json({ status: 500, message: error });
+    res.status(500).json({
+      status: 500,
+      message: error.message || String(error),
+    });
   }
 }
 
-//Delete User Account
-export const deleteTransaction: RequestHandler = async (req, res) => {
+export const deleteTransaction = async (req: Request, res: Response) => {
   try {
     const { id, userId } = req.body;
 
@@ -194,9 +139,8 @@ export const deleteTransaction: RequestHandler = async (req, res) => {
       res.status(400).json({ error: "id or userId is required" });
       return;
     }
-
     if (id && userId) {
-      res.status(400).json({ error: "Provide only id OR userId, not both" });
+      res.status(400).json({ error: "Provide only id OR userId" });
       return;
     }
 
@@ -204,115 +148,51 @@ export const deleteTransaction: RequestHandler = async (req, res) => {
 
     const foundTransaction = await BalanceTransaction.findOne({
       where: whereClause,
-      attributes: ["id", "userId", "accountId"],
     });
-
     if (!foundTransaction) {
       res.status(404).json({
-        error: "Transaction not found",
-        message: id
+        error: id
           ? `Transaction with id ${id} not found`
           : `No transactions found for user ${userId}`,
       });
       return;
     }
 
-    const deletedCount = await BalanceTransaction.destroy({
-      where: whereClause,
-    });
-
-    if (deletedCount === 0) {
-      res.status(404).json({ error: "Nothing deleted" });
-      return;
-    }
+    await BalanceTransaction.destroy({ where: whereClause });
 
     res.status(200).json({
       message: id
         ? `Transaction ${id} deleted successfully`
         : `All transactions for user ${userId} deleted successfully`,
     });
-    return;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error deleting transaction:", error);
-    res.status(500).json({ status: 500, message: error });
-    return;
+    res
+      .status(500)
+      .json({ status: 500, message: error.message || "Internal server error" });
   }
 };
 
-//Update Transaction
 export async function updateTransaction(req: Request, res: Response) {
   try {
-    if (!req.body) {
-      res.status(400).json({ error: "request body is required" });
-      console.log("request body is required");
-      return;
-    }
-    const { id } = req.body;
-
+    const id = req.body.id;
     if (!id) {
       res.status(400).json({ error: "Id is required" });
-      console.log("Id is required");
       return;
     }
 
-    // Find the account associated with the user
-    const transaction = await BalanceTransaction.findOne({ where: { id } });
+    const updatedTransaction = await updateTransactionById(id, req.body);
 
-    if (!transaction) {
-      res.status(404).json({ error: "Transaction not found" });
-      console.log("Transaction not found");
-      return;
-    }
-
-    // Define allowed fields that can be updated with type safety
-    const allowedFields: Array<keyof BalanceTransaction> = [
-      "type",
-      "direction",
-      "amount",
-      "currency",
-      "description",
-      "referenceId",
-      "status",
-    ];
-    const updates: Partial<BalanceTransaction> = {};
-
-    // Filter and only take allowed fields from req.body with type checking
-    for (const key of allowedFields) {
-      if (req.body[key] !== undefined) {
-        updates[key] = req.body[key];
-      }
-    }
-
-    // If no valid updates were provided
-    if (Object.keys(updates).length === 0) {
-      res.status(400).json({ error: "No valid fields provided for update" });
-      console.log("No valid fields provided for update");
-      return;
-    }
-
-    // Perform the update
-    await transaction.update(updates);
-
-    // Get the updated account (excluding sensitive fields if needed)
-    const updatedTransaction = await Account.findByPk(transaction.id, {
-      attributes: { exclude: ["createdAt", "updatedAt"] },
-    });
-
-    console.log(
-      "Transaction updated successfully, Transaction: ",
-      updatedTransaction
-    );
     res.status(200).json({
       message: "Transaction updated successfully",
       data: updatedTransaction,
       status: "success",
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error updating Transaction:", error);
     res.status(500).json({
       status: "error",
-      message: "Failed to update Transaction",
-      error: error instanceof Error ? error.message : error,
+      message: error.message || "Failed to update Transaction",
     });
   }
 }
