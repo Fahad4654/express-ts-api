@@ -117,7 +117,7 @@ export const refreshToken: RequestHandler = async (req, res) => {
       return;
     }
     if (error.name === "JsonWebTokenError") {
-      console.log("Invalid refresh token" );
+      console.log("Invalid refresh token");
       res.status(403).json({ message: "Invalid refresh token" });
       return;
     }

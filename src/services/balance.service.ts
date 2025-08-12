@@ -9,6 +9,12 @@ export async function findAllBalances(order = "createdAt", asc = "ASC") {
       {
         model: Account,
         attributes: ["id", "userId", "accountNumber"],
+        include: [
+          {
+            model: User,
+            attributes: ["id", "name", "email"],
+          },
+        ],
       },
     ],
     nest: true,
@@ -24,6 +30,12 @@ export async function findBalanceByAccountId(accountId: string) {
       {
         model: Account,
         attributes: ["id", "userId", "accountNumber"],
+        include: [
+          {
+            model: User,
+            attributes: ["id", "name", "email"],
+          },
+        ],
       },
     ],
     nest: true,
@@ -41,14 +53,10 @@ export async function deleteBalanceByAccountId(accountId: string) {
   return deletedCount;
 }
 
-export async function findUserById(userId: string) {
-  return User.findOne({
-    where: { id: userId },
-    attributes: ["name", "email"],
-  });
-}
-
-export async function updateBalanceByAccountId(accountId: string, updates: Partial<Balance>) {
+export async function updateBalanceByAccountId(
+  accountId: string,
+  updates: Partial<Balance>
+) {
   return sequelize.transaction(async (t) => {
     const balance = await Balance.findOne({
       where: { accountId },

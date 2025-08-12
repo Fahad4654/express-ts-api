@@ -4,27 +4,38 @@ import {
   findBalanceByAccountId,
   createBalance,
   deleteBalanceByAccountId,
-  findUserById,
   updateBalanceByAccountId,
 } from "../services/balance.service";
+import { findUserById } from "../services/user.service";
 
 export async function getBalance(req: Request, res: Response) {
   try {
     if (!req.body) {
-      res.status(400).json({ error: "request body is required" });
+      console.log("Request body is required");
+      res.status(400).json({ error: "Request body is required" });
+      return;
+    }
+    const { order, asc } = req.body;
+    if (!order) {
+      console.log("Field to sort is required");
+      res.status(400).json({ error: "Field to sort is required" });
+      return;
+    }
+    if (!asc) {
+      console.log("Order direction is required");
+      res.status(400).json({ error: "Order direction is required" });
       return;
     }
 
-    const order = req.body.order || "createdAt";
-    const asc = req.body.asc || "ASC";
-
     const balanceList = await findAllBalances(order, asc);
+    console.log("Balance list fetched successfully", balanceList);
 
     res.status(201).json({
       message: "Balance list fetched successfully",
       usersBalances: balanceList,
       status: "success",
     });
+    return;
   } catch (error) {
     console.error("Error fetching balance list:", error);
     res.status(500).json({
@@ -38,17 +49,20 @@ export async function getBalanceByAccountId(req: Request, res: Response) {
   try {
     const accountId = req.params.accountId;
     if (!accountId) {
-      res.status(400).json({ error: "account ID is required" });
+      console.log("Account ID is required");
+      res.status(400).json({ error: "Account ID is required" });
       return;
     }
 
     const foundBalance = await findBalanceByAccountId(accountId);
     if (!foundBalance) {
+      console.log("Balance not found");
       res.status(404).json({ error: "Balance not found" });
       return;
     }
 
-    res.status(200).json({ status: 200, data: foundBalance });
+    console.log("Balance found", foundBalance);
+    res.status(200).json({ status: 200, balance: foundBalance });
   } catch (error) {
     console.error("Error finding balance:", error);
     res.status(500).json({
@@ -61,13 +75,15 @@ export async function getBalanceByAccountId(req: Request, res: Response) {
 export async function createBalanceController(req: Request, res: Response) {
   try {
     if (!req.body) {
-      res.status(400).json({ error: "request body is required" });
+      console.log("Request body is required");
+      res.status(400).json({ error: "Request body is required" });
       return;
     }
     const newBalance = await createBalance(req.body);
+    console.log("Balance created successfully", newBalance);
     res.status(201).json({
       message: "Balance created successfully",
-      user: newBalance,
+      balance: newBalance,
       status: "success",
     });
   } catch (error) {
@@ -82,11 +98,18 @@ export async function createBalanceController(req: Request, res: Response) {
 export const deleteBalanceController = async (req: Request, res: Response) => {
   try {
     if (!req.body) {
-      res.status(400).json({ error: "request body is required" });
+      console.log("Request body is required");
+      res.status(400).json({ error: "Request body is required" });
       return;
     }
     if (!req.body.accountId) {
-      res.status(400).json({ error: "accountId is required" });
+      console.log("Account Id is required");
+      res.status(400).json({ error: "AccountId is required" });
+      return;
+    }
+    if (!req.body.userId) {
+      console.log("User Id is required");
+      res.status(400).json({ error: "User Id is required" });
       return;
     }
 
@@ -94,10 +117,12 @@ export const deleteBalanceController = async (req: Request, res: Response) => {
 
     await deleteBalanceByAccountId(req.body.accountId);
 
+    console.log(`User: ${foundUser?.name}'s Balance is deleted`);
     res.status(200).json({
       message: `User: ${foundUser?.name}'s Balance is deleted`,
       email: foundUser?.email,
     });
+    return;
   } catch (error) {
     console.error("Error deleting user balances:", error);
     res.status(500).json({
@@ -110,11 +135,13 @@ export const deleteBalanceController = async (req: Request, res: Response) => {
 export async function updateBalanceController(req: Request, res: Response) {
   try {
     if (!req.body) {
-      res.status(400).json({ error: "request body is required" });
+      console.log("Request body is required");
+      res.status(400).json({ error: "Request body is required" });
       return;
     }
     if (!req.body.accountId) {
-      res.status(400).json({ error: "accountId is required" });
+      console.log("Account Id is required");
+      res.status(400).json({ error: "AccountId is required" });
       return;
     }
 
@@ -123,11 +150,13 @@ export async function updateBalanceController(req: Request, res: Response) {
       req.body
     );
 
+    console.log("Balance updated successfully", updatedBalance);
     res.status(200).json({
       message: "Balance updated successfully",
       balance: updatedBalance,
       status: "success",
     });
+    return;
   } catch (error) {
     console.error("Error updating Balance:", error);
     res.status(500).json({

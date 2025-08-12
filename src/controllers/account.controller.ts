@@ -59,13 +59,11 @@ export async function getAccountById(req: Request, res: Response) {
       return;
     }
     console.log("User's Account found", foundUserAccount);
-    res
-      .status(200)
-      .json({
-        status: 200,
-        message: "User's Account found",
-        account: foundUserAccount,
-      });
+    res.status(200).json({
+      status: 200,
+      message: "User's Account found",
+      account: foundUserAccount,
+    });
     return;
   } catch (error) {
     console.error("Error finding user's account:", error);
@@ -76,8 +74,8 @@ export async function getAccountById(req: Request, res: Response) {
 export async function createAccount(req: Request, res: Response) {
   try {
     if (!req.body) {
-      console.log("request body is required");
-      res.status(400).json({ error: "request body is required" });
+      console.log("Request body is required");
+      res.status(400).json({ error: "Request body is required" });
       return;
     }
     const { userId, currency } = req.body;
@@ -99,14 +97,14 @@ export async function createAccount(req: Request, res: Response) {
 export async function deleteAccount(req: Request, res: Response) {
   try {
     if (!req.body) {
-      console.log("request body is required");
-      res.status(400).json({ error: "request body is required" });
+      console.log("Request body is required");
+      res.status(400).json({ error: "Request body is required" });
       return;
     }
     const { userId } = req.body;
     if (!userId) {
-      console.log("UserId is required");
-      res.status(400).json({ error: "UserId is required" });
+      console.log("User Id is required");
+      res.status(400).json({ error: "User Id is required" });
       return;
     }
 
@@ -137,14 +135,14 @@ export async function deleteAccount(req: Request, res: Response) {
 export async function updateAccount(req: Request, res: Response) {
   try {
     if (!req.body) {
-      console.log("request body is required");
-      res.status(400).json({ error: "request body is required" });
+      console.log("Request body is required");
+      res.status(400).json({ error: "Request body is required" });
       return;
     }
     const { userId } = req.body;
     if (!userId) {
-      console.log("UserId is required");
-      res.status(400).json({ error: "UserId is required" });
+      console.log("User Id is required");
+      res.status(400).json({ error: "User Id is required" });
       return;
     }
 
