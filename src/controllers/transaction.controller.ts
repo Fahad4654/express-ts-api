@@ -3,196 +3,147 @@ import {
   findAllTransactions,
   findTransactionById,
   findTransactionsByUserId,
-  createTransaction,
+  createNewTransaction,
   deleteTransactionByIdOrUserId,
   updateTransactionById,
 } from "../services/transaction.service";
-import { BalanceTransaction } from "../models/BalanceTransaction";
-import { User } from "../models/User";
-import { Account } from "../models/Account";
 
+// GET ALL
 export const getTransaction = async (req: Request, res: Response) => {
   try {
-    const order = req.body.order;
-    const asc = req.body.asc;
-
+    const { order, asc } = req.body;
+    if (!req.body) {
+      console.log("Request body is required")
+      res.status(400).json({ error: "Request body is required" });
+      return;
+    }
     if (!order) {
+      console.log("Field to sort is required")
       res.status(400).json({ error: "Field to sort is required" });
       return;
     }
     if (!asc) {
+      console.log("Order direction is required")
       res.status(400).json({ error: "Order direction is required" });
       return;
     }
 
     const transactions = await findAllTransactions(order, asc);
-
+    console.log("Transaction list fetched successfully", transactions);
     res.status(200).json({
       message: "Transaction list fetched successfully",
       transactions,
       status: "success",
     });
+    return;
   } catch (error) {
     console.error("Error fetching Transaction list:", error);
-    res.status(500).json({ status: 500, message: "Internal server error" });
+    res.status(500).json({ status: 500, message: String(error) });
   }
 };
 
-export async function getTransactionsByID(req: Request, res: Response) {
+// GET BY ID / USER ID
+export const getTransactionsByID = async (req: Request, res: Response) => {
   try {
     const { id, userId } = req.params;
-
     if (!id && !userId) {
+      console.log("Either transaction ID or userId is required");
       res
         .status(400)
         .json({ error: "Either transaction ID or userId is required" });
       return;
     }
+    const result = id
+      ? await findTransactionById(id)
+      : await findTransactionsByUserId(
+          userId!,
+          String(req.query.order || "id"),
+          String(req.query.asc || "ASC")
+        );
 
-    let result;
-
-    if (id) {
-      result = await BalanceTransaction.findOne({
-        where: { id },
-        include: [
-          {
-            model: User,
-            attributes: ["id", "name", "email", "phoneNumber"],
-          },
-          {
-            model: Account,
-            attributes: ["id", "accountNumber", "status"],
-          },
-        ],
-        nest: true,
-        raw: true,
-      });
-
-      if (!result) {
-        res.status(404).json({
-          status: 404,
-          message: `Transaction with ID ${id} not found`,
-        });
-        return;
-      }
-    } else {
-      result = await BalanceTransaction.findAll({
-        where: { userId },
-        include: [
-          {
-            model: User,
-            attributes: ["id", "name", "email", "phoneNumber"],
-          },
-          {
-            model: Account,
-            attributes: ["id", "accountNumber", "status"],
-          },
-        ],
-        nest: true,
-        raw: true,
-        order: [
-          [
-            `${req.query.order ? String(req.query.order) : "id"}`,
-            `${req.query.asc ? String(req.query.asc) : "ASC"}`,
-          ],
-        ],
-      });
-
-      if (!result.length) {
-        res.status(404).json({
-          status: 404,
-          message: `No transactions found for userId ${userId}`,
-        });
-        return;
-      }
+    if (!result || (Array.isArray(result) && !result.length)) {
+      console.log("Transaction(s) not found");
+      res.status(404).json({ error: "Transaction(s) not found" });
+      return;
     }
 
-    res.status(200).json({ status: 200, data: result });
+    console.log("Transction fetched successfully", result);
+    res.status(200).json({ status: 200, transactions: result });
+    return;
   } catch (error) {
     console.error("Error fetching transactions:", error);
-    res.status(500).json({ status: 500, message: "Internal server error" });
+    res.status(500).json({ status: 500, message: String(error) });
   }
-}
+};
 
-export async function createTransactionController(req: Request, res: Response) {
+// CREATE
+export const createTransaction = async (req: Request, res: Response) => {
   try {
-    const newTransaction = await createTransaction(req.body);
+    const transaction = await createNewTransaction(req.body);
     res.status(201).json({
       message: "Transaction created successfully",
-      transaction: newTransaction,
+      transaction,
       status: "success",
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error creating transaction:", error);
-    res.status(500).json({
-      status: 500,
-      message: error.message || String(error),
-    });
+    res.status(500).json({ status: 500, message: String(error) });
   }
-}
+  return;
+};
 
+// DELETE
 export const deleteTransaction = async (req: Request, res: Response) => {
   try {
     const { id, userId } = req.body;
-
     if (!id && !userId) {
-      res.status(400).json({ error: "id or userId is required" });
+      console.log("Id or userId is required");
+      res.status(400).json({ error: "Id or userId is required" });
       return;
     }
     if (id && userId) {
+      console.log("Provide only id OR userId");
       res.status(400).json({ error: "Provide only id OR userId" });
       return;
     }
-
-    const whereClause = id ? { id } : { userId };
-
-    const foundTransaction = await BalanceTransaction.findOne({
-      where: whereClause,
-    });
-    if (!foundTransaction) {
-      res.status(404).json({
-        error: id
-          ? `Transaction with id ${id} not found`
-          : `No transactions found for user ${userId}`,
-      });
-      return;
-    }
-
-    await BalanceTransaction.destroy({ where: whereClause });
-
+    await deleteTransactionByIdOrUserId(id, userId);
+    console.log(
+      id
+        ? `Transaction ${id} deleted successfully`
+        : `All transactions for user ${userId} deleted successfully`
+    );
     res.status(200).json({
       message: id
         ? `Transaction ${id} deleted successfully`
         : `All transactions for user ${userId} deleted successfully`,
     });
-  } catch (error: any) {
+    return;
+  } catch (error) {
     console.error("Error deleting transaction:", error);
-    res
-      .status(500)
-      .json({ status: 500, message: error.message || "Internal server error" });
+    res.status(500).json({ status: 500, message: String(error) });
   }
 };
 
-export async function updateTransaction(req: Request, res: Response) {
+// UPDATE
+export const updateTransaction = async (req: Request, res: Response) => {
   try {
-    const id = req.body.id;
+    const { id } = req.body;
     if (!id) {
+      console.log("Id is required");
       res.status(400).json({ error: "Id is required" });
       return;
     }
 
     const updatedTransaction = await updateTransactionById(id, req.body);
-
+    console.log("Transaction updated successfully", updatedTransaction);
     res.status(200).json({
       message: "Transaction updated successfully",
-      data: updatedTransaction,
+      transaction: updatedTransaction,
       status: "success",
     });
-  } catch (error: any) {
+    return;
+  } catch (error) {
     console.error("Error updating Transaction:", error);
-    res.status(500).json({
-      status: "error",
-      message: error.message || "Failed to update Transaction",
-    });
+    res.status(500).json({ status: 500, message: String(error) });
   }
-}
+};

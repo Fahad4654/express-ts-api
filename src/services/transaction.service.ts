@@ -1,107 +1,158 @@
-import { BalanceTransaction } from "../models/BalanceTransaction";
-import { User } from "../models/User";
 import { Account } from "../models/Account";
+import { User } from "../models/User";
 import { Balance } from "../models/Balance";
+import { BalanceTransaction } from "../models/BalanceTransaction";
+import { findUserById } from "./user.service";
+import { getAccountByUserId } from "./account.service";
 
-export async function findAllTransactions(order = "id", asc = "ASC") {
-  return BalanceTransaction.findAll({
+export async function findAllTransactions(order: string, asc: string) {
+  console.log(`Fetching all transactions, order: ${order}, asc: ${asc}`);
+  const transactions = await BalanceTransaction.findAll({
     include: [
-      { model: User, attributes: ["id", "name", "email", "phoneNumber"] },
-      { model: Account, attributes: ["id", "accountNumber", "status"] },
+      {
+        model: User,
+        attributes: ["id", "name", "email", "phoneNumber"],
+      },
+      {
+        model: Account,
+        attributes: ["id", "accountNumber", "status"],
+      },
     ],
     nest: true,
     raw: true,
-    order: [[order, asc]],
+    order: [[order || "id", asc || "ASC"]],
   });
+  console.log(`Found ${transactions.length} transactions`);
+  return transactions;
 }
 
 export async function findTransactionById(id: string) {
-  return BalanceTransaction.findOne({
+  console.log(`[Service] Fetching transaction with ID: ${id}`);
+  const transaction = await BalanceTransaction.findOne({
     where: { id },
     include: [
-      { model: User, attributes: ["id", "name", "email", "phoneNumber"] },
-      { model: Account, attributes: ["id", "accountNumber", "status"] },
+      {
+        model: User,
+        attributes: ["id", "name", "email", "phoneNumber"],
+      },
+      {
+        model: Account,
+        attributes: ["id", "accountNumber", "status"],
+      },
     ],
     nest: true,
     raw: true,
   });
+  console.log(`[Service] Transaction ${id} ${transaction ? "found" : "not found"}`);
+  return transaction;
 }
 
-export async function findTransactionsByUserId(userId: string, order = "id", asc = "ASC") {
-  return BalanceTransaction.findAll({
+export async function findTransactionsByUserId(
+  userId: string,
+  order = "id",
+  asc = "ASC"
+) {
+  console.log(`[Service] Fetching transactions for userId: ${userId}`);
+  const transactions = await BalanceTransaction.findAll({
     where: { userId },
     include: [
-      { model: User, attributes: ["id", "name", "email", "phoneNumber"] },
-      { model: Account, attributes: ["id", "accountNumber", "status"] },
+      {
+        model: User,
+        attributes: ["id", "name", "email", "phoneNumber"],
+      },
+      {
+        model: Account,
+        attributes: ["id", "accountNumber", "status"],
+      },
     ],
     nest: true,
     raw: true,
     order: [[order, asc]],
   });
+  console.log(`[Service] Found ${transactions.length} transactions for userId: ${userId}`);
+  return transactions;
 }
 
-export async function createTransaction(data: {
-  balanceId: string;
-  accountId: string;
-  userId: string;
-  type?: string;
-  direction?: string;
-  amount?: number;
-  currency?: string;
-  description?: string;
-  referenceId?: string;
-  status?: string;
-}) {
-  // Validate user exists
-  const user = await User.findByPk(data.userId);
+export async function createNewTransaction(data: any) {
+  console.log(`[Service] Creating new transaction`, data);
+
+  const { balanceId, accountId, userId } = data;
+
+  const user = await findUserById(userId);
   if (!user) throw new Error("User not found");
 
-  // Validate account exists and belongs to user
-  const account = await Account.findByPk(data.accountId);
+  const account = await getAccountByUserId(accountId);
   if (!account) throw new Error("Account not found");
-  if (account.userId !== data.userId) throw new Error("Account does not belong to the specified user");
 
-  // Validate balance exists and belongs to account
-  const balance = await Balance.findByPk(data.balanceId);
+  if (account.userId !== userId)
+    throw new Error("Account does not belong to the specified user");
+
+  const balance = await Balance.findByPk(balanceId);
   if (!balance) throw new Error("Balance not found");
-  if (balance.accountId !== data.accountId) throw new Error("Balance does not belong to the specified account");
 
-  // Create the transaction
-  return BalanceTransaction.create(data);
+  if (balance.accountId !== accountId)
+    throw new Error("Balance does not belong to the specified account");
+
+  const newTransaction = await BalanceTransaction.create(data);
+  console.log(`[Service] Transaction created successfully with ID: ${newTransaction.id}`);
+  return newTransaction;
 }
 
 export async function deleteTransactionByIdOrUserId(id?: string, userId?: string) {
-  if (!id && !userId) throw new Error("id or userId is required");
-  if (id && userId) throw new Error("Provide only id OR userId");
-
+  console.log(
+    `[Service] Deleting transaction(s) by ${id ? `id: ${id}` : `userId: ${userId}`}`
+  );
   const whereClause = id ? { id } : { userId };
+  const foundTransaction = await BalanceTransaction.findOne({ where: whereClause });
 
-  const transaction = await BalanceTransaction.findOne({ where: whereClause });
-  if (!transaction) {
-    throw new Error(id ? `Transaction with id ${id} not found` : `No transactions found for user ${userId}`);
-  }
+  if (!foundTransaction)
+    throw new Error(
+      id
+        ? `Transaction with id ${id} not found`
+        : `No transactions found for user ${userId}`
+    );
 
   await BalanceTransaction.destroy({ where: whereClause });
 
-  return whereClause;
+  console.log(
+    `[Service] ${id ? `Transaction ${id}` : `All transactions for user ${userId}`} deleted`
+  );
+
+  return { id, userId };
 }
 
-export async function updateTransactionById(id: string, updates: Partial<BalanceTransaction>) {
+export async function updateTransactionById(id: string, updates: any) {
+  console.log(`[Service] Updating transaction with ID: ${id}`, updates);
+
   const transaction = await BalanceTransaction.findOne({ where: { id } });
   if (!transaction) throw new Error("Transaction not found");
 
   const allowedFields: Array<keyof BalanceTransaction> = [
-    "type", "direction", "amount", "currency", "description", "referenceId", "status",
+    "type",
+    "direction",
+    "amount",
+    "currency",
+    "description",
+    "referenceId",
+    "status",
   ];
 
   const filteredUpdates: Partial<BalanceTransaction> = {};
   for (const key of allowedFields) {
-    if (updates[key] !== undefined) filteredUpdates[key] = updates[key];
+    if (updates[key] !== undefined) {
+      filteredUpdates[key] = updates[key];
+    }
   }
 
-  if (Object.keys(filteredUpdates).length === 0) throw new Error("No valid fields provided for update");
+  if (!Object.keys(filteredUpdates).length) {
+    throw new Error("No valid fields provided for update");
+  }
 
   await transaction.update(filteredUpdates);
 
-  return BalanceTransaction.findByPk(id, { attributes: { exclude: ["createdAt", "updatedAt"] } });
+  console.log(`[Service] Transaction ${id} updated successfully`);
+
+  return BalanceTransaction.findByPk(id, {
+    attributes: { exclude: ["createdAt", "updatedAt"] },
+  });
 }

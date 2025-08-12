@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   getTransaction,
   getTransactionsByID,
-  createTransactionController,
+  createTransaction,
   deleteTransaction,
   updateTransaction,
 } from "../controllers/transaction.controller";
@@ -16,7 +16,7 @@ router.get("/user/:userId", getTransactionsByID);
 router.get("/", getTransaction);
 router.get("/:id", getTransactionsByID);
 
-router.post("/", createTransactionController);
+router.post("/", createTransaction);
 router.put("/", updateTransaction);
 router.delete("/", deleteTransaction);
 

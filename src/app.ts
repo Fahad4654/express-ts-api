@@ -1,9 +1,5 @@
 import express, { Application } from "express";
 import cors from "cors";
-import { sampleRouter } from "./routes/sample.route";
-// import { userCreateRouter } from './routes/createuser.route';
-// import { userDeleteRouter } from './routes/deleteuser.route';
-// import { userListRouter } from './routes/getUsers.route';
 import { authRouter } from "./routes/auth.route";
 import { authenticate } from "./middlewares/auth.middleware";
 import { allRoutes } from "./routes";
