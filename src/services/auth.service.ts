@@ -2,13 +2,14 @@ import jwt, { SignOptions } from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { User } from "../models/User";
 import { Token } from "../models/Token";
-import { Profile } from "../models/Profile";
+import * as accountService from "./account.service";
 import {
   SECRET,
   ACCESS_TOKEN_EXPIRATION,
   REFRESH_TOKEN_EXPIRATION,
 } from "../config";
-import { generateToken } from "./user.service";
+import { createBalance } from "./balance.service";
+import { createProfile } from "./profile.service";
 
 export class AuthService {
   static async hashPassword(password: string): Promise<string> {
@@ -66,15 +67,24 @@ export class AuthService {
       isAdmin: false,
     });
 
-    const referralCode = `FK-${generateToken(newUser.id)}`;
+    // const referralCode = `FK-${generateToken(newUser.id)}`;
 
-    await Profile.create({
+    await createProfile({
       userId: newUser.id,
       bio: "Please Edit",
       address: "Please Edit",
-      referralCode,
     });
-
+    console.log("Profile created for", newUser.email);
+    const newAccount = await accountService.createAccount(newUser.id, "BDT");
+    console.log("Account created for", newUser.email);
+    await createBalance({
+      accountId: newAccount.id,
+      availableBalance: 0,
+      pendingBalance: 0,
+      holdBalance: 0,
+      currency: newAccount.currency,
+    });
+    console.log("Balance created for", newUser.email);
     return newUser;
   }
 

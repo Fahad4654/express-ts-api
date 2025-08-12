@@ -4,25 +4,30 @@ import * as accountService from "../services/account.service";
 export async function getAccounts(req: Request, res: Response) {
   try {
     if (!req.body) {
-      res.status(400).json({ error: "request body is required" });
+      console.log("Request body is required");
+      res.status(400).json({ error: "Request body is required" });
       return;
     }
     const { order, asc } = req.body;
     if (!order) {
+      console.log("Field to sort is required");
       res.status(400).json({ error: "Field to sort is required" });
       return;
     }
     if (!asc) {
+      console.log("Order direction is required");
       res.status(400).json({ error: "Order direction is required" });
       return;
     }
 
     const userAccounts = await accountService.getAccounts(order, asc);
+    console.log("User's Accounts fetched successfully", userAccounts);
     res.status(201).json({
-      message: "User's Accounts fetching successfully",
+      message: "User's Accounts fetched successfully",
       userAccounts,
       status: "success",
     });
+    return;
   } catch (error) {
     console.error("Error fetching user's accounts:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -33,23 +38,35 @@ export async function getAccountById(req: Request, res: Response) {
   try {
     const userId = req.params.userId;
     if (!userId) {
+      console.log(
+        "User ID is required as a route parameter (e.g., /account/:userId)"
+      );
       res.status(400).json({
         status: 400,
-        error: "User ID is required as a route parameter (e.g., /account/:userId)",
+        error:
+          "User ID is required as a route parameter (e.g., /account/:userId)",
       });
       return;
     }
 
     const foundUserAccount = await accountService.getAccountByUserId(userId);
     if (!foundUserAccount) {
+      console.log("User's Account not found");
       res.status(404).json({
         status: 404,
         message: "User's Account not found",
       });
       return;
     }
-
-    res.status(200).json({ status: 200, data: foundUserAccount });
+    console.log("User's Account found", foundUserAccount);
+    res
+      .status(200)
+      .json({
+        status: 200,
+        message: "User's Account found",
+        account: foundUserAccount,
+      });
+    return;
   } catch (error) {
     console.error("Error finding user's account:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -59,17 +76,20 @@ export async function getAccountById(req: Request, res: Response) {
 export async function createAccount(req: Request, res: Response) {
   try {
     if (!req.body) {
+      console.log("request body is required");
       res.status(400).json({ error: "request body is required" });
       return;
     }
     const { userId, currency } = req.body;
 
     const newUserAccount = await accountService.createAccount(userId, currency);
+    console.log("User's Account created successfully", newUserAccount);
     res.status(201).json({
       message: "User's Account created successfully",
       user: newUserAccount,
       status: "success",
     });
+    return;
   } catch (error) {
     console.error("Error creating user's account:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -79,18 +99,22 @@ export async function createAccount(req: Request, res: Response) {
 export async function deleteAccount(req: Request, res: Response) {
   try {
     if (!req.body) {
+      console.log("request body is required");
       res.status(400).json({ error: "request body is required" });
       return;
     }
     const { userId } = req.body;
     if (!userId) {
+      console.log("UserId is required");
       res.status(400).json({ error: "UserId is required" });
       return;
     }
 
-    const { deletedCount, foundUser } = await accountService.deleteAccountByUserId(userId);
+    const { deletedCount, foundUser } =
+      await accountService.deleteAccountByUserId(userId);
 
     if (deletedCount === 0) {
+      console.log(`User: ${foundUser?.name} doesn't have an Account`);
       res.status(404).json({
         error: "User's Account not found",
         message: `User: ${foundUser?.name} doesn't have an Account`,
@@ -98,10 +122,12 @@ export async function deleteAccount(req: Request, res: Response) {
       return;
     }
 
+    console.log(`User: ${foundUser?.name}'s Account is being Deleted`);
     res.status(200).json({
       message: `User: ${foundUser?.name}'s Account is being Deleted`,
       email: foundUser?.email,
     });
+    return;
   } catch (error) {
     console.error("Error deleting user's account:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -111,11 +137,13 @@ export async function deleteAccount(req: Request, res: Response) {
 export async function updateAccount(req: Request, res: Response) {
   try {
     if (!req.body) {
+      console.log("request body is required");
       res.status(400).json({ error: "request body is required" });
       return;
     }
     const { userId } = req.body;
     if (!userId) {
+      console.log("UserId is required");
       res.status(400).json({ error: "UserId is required" });
       return;
     }
@@ -130,21 +158,28 @@ export async function updateAccount(req: Request, res: Response) {
     }
 
     if (Object.keys(updates).length === 0) {
+      console.log("No valid fields provided for update");
       res.status(400).json({ error: "No valid fields provided for update" });
       return;
     }
 
-    const updatedAccount = await accountService.updateAccountByUserId(userId, updates);
+    const updatedAccount = await accountService.updateAccountByUserId(
+      userId,
+      updates
+    );
     if (!updatedAccount) {
+      console.log("Account not found");
       res.status(404).json({ error: "Account not found" });
       return;
     }
 
+    console.log("Account updated successfully", updatedAccount);
     res.status(200).json({
       message: "Account updated successfully",
       account: updatedAccount,
       status: "success",
     });
+    return;
   } catch (error) {
     console.error("Error updating account:", error);
     res.status(500).json({ message: "Internal server error" });

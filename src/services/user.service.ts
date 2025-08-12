@@ -73,7 +73,7 @@ export async function createUser(data: {
     holdBalance: 0,
     currency: newAccount.currency,
   });
-  console.log("Profile created for", newUser.email)
+  console.log("Balance created for", newUser.email)
   return newUser;
 }
 
