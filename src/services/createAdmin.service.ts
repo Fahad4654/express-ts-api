@@ -1,14 +1,17 @@
 import { User } from "../models/User"; // Adjust path
 import bcrypt from "bcryptjs";
-import { ADMIN_NAME, ADMIN_MAIL, ADMIN_PASSWORD, ADMIN_PHONENUMBER } from "../config";
+import {
+  ADMIN_NAME,
+  ADMIN_MAIL,
+  ADMIN_PASSWORD,
+  ADMIN_PHONENUMBER,
+} from "../config";
 import { createUser } from "./user.service";
 
 export async function createAdmin() {
   const adminExists = await User.findOne({
     where: { email: ADMIN_MAIL },
   });
-
-  console.log(ADMIN_PASSWORD);
 
   if (!adminExists) {
     const newUser = await createUser({

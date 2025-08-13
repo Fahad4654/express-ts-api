@@ -79,6 +79,8 @@ export async function findTransactionsByUserId(
 
 export async function createNewTransaction(data: any) {
   console.log(`[Service] Creating new transaction`, data);
+  const { status, ...rest } = data; // remove status if present
+  const payload = { ...rest, status: "pending" };
 
   const { balanceId, accountId, userId } = data;
 
@@ -98,7 +100,7 @@ export async function createNewTransaction(data: any) {
   if (balance.accountId !== accountId)
     throw new Error("Balance does not belong to the specified account");
 
-  const newTransaction = await BalanceTransaction.create(data);
+  const newTransaction = await BalanceTransaction.create(payload);
   console.log(
     `[Service] Transaction created successfully with ID: ${newTransaction.id}`
   );
