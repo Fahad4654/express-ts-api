@@ -35,6 +35,20 @@ export async function getAccountByUserId(userId: string) {
   });
 }
 
+export async function getAccountById(id: string) {
+  return await Account.findOne({
+    where: { id },
+    include: [
+      {
+        model: User,
+        attributes: ["id", "name", "email", "phoneNumber"],
+      },
+    ],
+    nest: true,
+    raw: true,
+  });
+}
+
 export async function createAccount(userId: string, currency: string) {
   return await Account.create({
     userId,
@@ -57,7 +71,10 @@ export async function deleteAccountByUserId(userId: string) {
   return { deletedCount, foundUser };
 }
 
-export async function updateAccountByUserId(userId: string, updates: Partial<Account>) {
+export async function updateAccountByUserId(
+  userId: string,
+  updates: Partial<Account>
+) {
   const account = await Account.findOne({ where: { userId } });
   if (!account) {
     return null;

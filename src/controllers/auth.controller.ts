@@ -19,7 +19,7 @@ export const register: RequestHandler = async (req, res) => {
       password,
       phoneNumber,
     });
-    const tokens = await AuthService.generateTokens(newUser);
+    // const tokens = await AuthService.generateTokens(newUser);
 
     const userResponse = newUser.toJSON();
     delete userResponse.password;
@@ -28,7 +28,7 @@ export const register: RequestHandler = async (req, res) => {
     res.status(201).json({
       message: "User registered successfully",
       user: userResponse,
-      ...tokens,
+      // ...tokens,
     });
     return;
   } catch (error: any) {
@@ -52,7 +52,7 @@ export const login: RequestHandler = async (req, res) => {
     const userResponse = user.toJSON();
     delete userResponse.password;
 
-    console.log(`${user.email}, Logged in successful`);
+    console.log(`${user.email} Logged in successfully`);
     res.json({
       message: "Login successful",
       user: userResponse,

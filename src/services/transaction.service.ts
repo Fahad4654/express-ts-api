@@ -3,7 +3,7 @@ import { User } from "../models/User";
 import { Balance } from "../models/Balance";
 import { BalanceTransaction } from "../models/BalanceTransaction";
 import { findUserById } from "./user.service";
-import { getAccountByUserId } from "./account.service";
+import { getAccountById } from "./account.service";
 
 export async function findAllTransactions(order: string, asc: string) {
   console.log(`Fetching all transactions, order: ${order}, asc: ${asc}`);
@@ -43,7 +43,9 @@ export async function findTransactionById(id: string) {
     nest: true,
     raw: true,
   });
-  console.log(`[Service] Transaction ${id} ${transaction ? "found" : "not found"}`);
+  console.log(
+    `[Service] Transaction ${id} ${transaction ? "found" : "not found"}`
+  );
   return transaction;
 }
 
@@ -69,7 +71,9 @@ export async function findTransactionsByUserId(
     raw: true,
     order: [[order, asc]],
   });
-  console.log(`[Service] Found ${transactions.length} transactions for userId: ${userId}`);
+  console.log(
+    `[Service] Found ${transactions.length} transactions for userId: ${userId}`
+  );
   return transactions;
 }
 
@@ -81,7 +85,8 @@ export async function createNewTransaction(data: any) {
   const user = await findUserById(userId);
   if (!user) throw new Error("User not found");
 
-  const account = await getAccountByUserId(accountId);
+  const account = await getAccountById(accountId);
+  console.log(account);
   if (!account) throw new Error("Account not found");
 
   if (account.userId !== userId)
@@ -94,16 +99,25 @@ export async function createNewTransaction(data: any) {
     throw new Error("Balance does not belong to the specified account");
 
   const newTransaction = await BalanceTransaction.create(data);
-  console.log(`[Service] Transaction created successfully with ID: ${newTransaction.id}`);
+  console.log(
+    `[Service] Transaction created successfully with ID: ${newTransaction.id}`
+  );
   return newTransaction;
 }
 
-export async function deleteTransactionByIdOrUserId(id?: string, userId?: string) {
+export async function deleteTransactionByIdOrUserId(
+  id?: string,
+  userId?: string
+) {
   console.log(
-    `[Service] Deleting transaction(s) by ${id ? `id: ${id}` : `userId: ${userId}`}`
+    `[Service] Deleting transaction(s) by ${
+      id ? `id: ${id}` : `userId: ${userId}`
+    }`
   );
   const whereClause = id ? { id } : { userId };
-  const foundTransaction = await BalanceTransaction.findOne({ where: whereClause });
+  const foundTransaction = await BalanceTransaction.findOne({
+    where: whereClause,
+  });
 
   if (!foundTransaction)
     throw new Error(
@@ -115,7 +129,9 @@ export async function deleteTransactionByIdOrUserId(id?: string, userId?: string
   await BalanceTransaction.destroy({ where: whereClause });
 
   console.log(
-    `[Service] ${id ? `Transaction ${id}` : `All transactions for user ${userId}`} deleted`
+    `[Service] ${
+      id ? `Transaction ${id}` : `All transactions for user ${userId}`
+    } deleted`
   );
 
   return { id, userId };

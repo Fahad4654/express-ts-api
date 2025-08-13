@@ -106,7 +106,7 @@ export class AuthService {
   static async loginUser(email: string, password: string) {
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      throw new Error("Invalid credentials");
+      throw new Error("User doesn't exist");
     }
 
     const isMatch = await this.comparePassword(password, user.password);
