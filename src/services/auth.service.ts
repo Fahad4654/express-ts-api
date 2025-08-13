@@ -10,6 +10,7 @@ import {
 } from "../config";
 import { createBalance } from "./balance.service";
 import { createProfile } from "./profile.service";
+import { Op } from "sequelize";
 
 export class AuthService {
   static async hashPassword(password: string): Promise<string> {
@@ -52,9 +53,25 @@ export class AuthService {
   }) {
     const { name, email, password, phoneNumber } = data;
 
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [{ email }, { phoneNumber }],
+      },
+    });
     if (existingUser) {
-      throw new Error("User already exists");
+      if (
+        existingUser.email === email &&
+        existingUser.phoneNumber === phoneNumber
+      ) {
+        console.log("User already exists");
+        throw new Error("User already exists");
+      } else if (existingUser.email === email) {
+        console.log("Email matched");
+        throw new Error("Email already exists");
+      } else if (existingUser.phoneNumber === phoneNumber) {
+        console.log("Phone number matched");
+        throw new Error("Phone number already exists");
+      }
     }
 
     const hashedPassword = await this.hashPassword(password);
@@ -66,8 +83,6 @@ export class AuthService {
       phoneNumber,
       isAdmin: false,
     });
-
-    // const referralCode = `FK-${generateToken(newUser.id)}`;
 
     await createProfile({
       userId: newUser.id,
