@@ -110,18 +110,18 @@ export const refreshToken: RequestHandler = async (req, res) => {
       message: "Token refreshed successfully",
       accessToken: newAccessToken,
     });
+    return;
   } catch (error: any) {
     if (error.name === "TokenExpiredError") {
       console.log("Refresh token expired");
       res.status(403).json({ message: "Refresh token expired" });
-      return;
     }
     if (error.name === "JsonWebTokenError") {
       console.log("Invalid refresh token");
       res.status(403).json({ message: "Invalid refresh token" });
-      return;
     }
-    console.log("Internal server error");
+    console.log("Internal server error", error);
     res.status(500).json({ message: "Internal server error" });
+    return;
   }
 };

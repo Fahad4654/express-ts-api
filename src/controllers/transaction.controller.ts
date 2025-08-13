@@ -13,17 +13,17 @@ export const getTransaction = async (req: Request, res: Response) => {
   try {
     const { order, asc } = req.body;
     if (!req.body) {
-      console.log("Request body is required")
+      console.log("Request body is required");
       res.status(400).json({ error: "Request body is required" });
       return;
     }
     if (!order) {
-      console.log("Field to sort is required")
+      console.log("Field to sort is required");
       res.status(400).json({ error: "Field to sort is required" });
       return;
     }
     if (!asc) {
-      console.log("Order direction is required")
+      console.log("Order direction is required");
       res.status(400).json({ error: "Order direction is required" });
       return;
     }
@@ -32,7 +32,7 @@ export const getTransaction = async (req: Request, res: Response) => {
     console.log("Transaction list fetched successfully", transactions);
     res.status(200).json({
       message: "Transaction list fetched successfully",
-      transactions,
+      transactionlist: transactions,
       status: "success",
     });
     return;
@@ -85,11 +85,11 @@ export const createTransaction = async (req: Request, res: Response) => {
       transaction,
       status: "success",
     });
+    return;
   } catch (error) {
     console.error("Error creating transaction:", error);
     res.status(500).json({ status: 500, message: String(error) });
   }
-  return;
 };
 
 // DELETE

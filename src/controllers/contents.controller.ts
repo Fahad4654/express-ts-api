@@ -30,7 +30,7 @@ export async function getContents(req: Request, res: Response) {
     console.log("Contents fetched successfully", contentsList);
     res.status(201).json({
       message: "Contents fetched successfully",
-      contents: contentsList,
+      contentsList,
       status: "success",
     });
     return;
@@ -73,6 +73,11 @@ export async function getContentsById(req: Request, res: Response) {
 
 export async function createContentController(req: Request, res: Response) {
   try {
+    if (!req.body) {
+      console.log("Request body is required");
+      res.status(400).json({ error: "Request body is required" });
+      return;
+    }
     const newContent = await createContent(req.body);
     console.log("Content created successfully", newContent);
     res.status(201).json({

@@ -32,7 +32,7 @@ export async function getBalance(req: Request, res: Response) {
 
     res.status(201).json({
       message: "Balance list fetched successfully",
-      usersBalances: balanceList,
+      balanceList,
       status: "success",
     });
     return;
@@ -63,6 +63,7 @@ export async function getBalanceByAccountId(req: Request, res: Response) {
 
     console.log("Balance found", foundBalance);
     res.status(200).json({ status: 200, balance: foundBalance });
+    return;
   } catch (error) {
     console.error("Error finding balance:", error);
     res.status(500).json({
@@ -86,6 +87,7 @@ export async function createBalanceController(req: Request, res: Response) {
       balance: newBalance,
       status: "success",
     });
+    return;
   } catch (error) {
     console.error("Error creating balance:", error);
     res.status(500).json({

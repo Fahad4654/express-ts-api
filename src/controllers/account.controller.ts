@@ -24,13 +24,13 @@ export async function getAccounts(req: Request, res: Response) {
     console.log("User's Accounts fetched successfully", userAccounts);
     res.status(201).json({
       message: "User's Accounts fetched successfully",
-      userAccounts,
+      accout: userAccounts,
       status: "success",
     });
     return;
   } catch (error) {
     console.error("Error fetching user's accounts:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Error fetching user's accounts", error });
   }
 }
 
@@ -67,7 +67,7 @@ export async function getAccountById(req: Request, res: Response) {
     return;
   } catch (error) {
     console.error("Error finding user's account:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Error finding user's account", error });
   }
 }
 
@@ -84,13 +84,13 @@ export async function createAccount(req: Request, res: Response) {
     console.log("User's Account created successfully", newUserAccount);
     res.status(201).json({
       message: "User's Account created successfully",
-      user: newUserAccount,
+      account: newUserAccount,
       status: "success",
     });
     return;
   } catch (error) {
     console.error("Error creating user's account:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Error creating user's account", error });
   }
 }
 
@@ -128,7 +128,7 @@ export async function deleteAccount(req: Request, res: Response) {
     return;
   } catch (error) {
     console.error("Error deleting user's account:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Error deleting user's account", error });
   }
 }
 
@@ -180,6 +180,6 @@ export async function updateAccount(req: Request, res: Response) {
     return;
   } catch (error) {
     console.error("Error updating account:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Error updating account", error});
   }
 }

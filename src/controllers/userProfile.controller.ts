@@ -11,8 +11,8 @@ import {
 export async function getUsersProfile(req: Request, res: Response) {
   try {
     if (!req.body) {
-      console.log("request body is required");
-      res.status(400).json({ error: "request body is required" });
+      console.log("Request body is required");
+      res.status(400).json({ error: "Request body is required" });
       return;
     }
     const { order, asc } = req.body;
@@ -32,12 +32,13 @@ export async function getUsersProfile(req: Request, res: Response) {
 
     res.status(200).json({
       message: "User Profile fetched successfully",
-      userProfiles: profiles,
+      profilelist: profiles,
       status: "success",
     });
+    return;
   } catch (error) {
     console.error("Error fetching user:", error);
-    res.status(500).json(error);
+    res.status(500).json({ message: "Error fetching user:", error });
   }
 }
 
@@ -67,14 +68,14 @@ export async function getUserProfileById(req: Request, res: Response) {
     console.log("User found", profile);
     res.status(200).json({
       status: "success",
-      data: profile,
+      profile: profile,
     });
     return;
   } catch (error) {
     console.error("Error finding user:", error);
     res.status(500).json({
       status: "error",
-      message: "Internal server error",
+      message: "Error finding user",
       error: error instanceof Error ? error.message : String(error),
     });
   }
@@ -84,8 +85,8 @@ export async function getUserProfileById(req: Request, res: Response) {
 export async function createUserProfile(req: Request, res: Response) {
   try {
     if (!req.body) {
-      console.log("request body is required");
-      res.status(400).json({ error: "request body is required" });
+      console.log("Request body is required");
+      res.status(400).json({ error: "Request body is required" });
       return;
     }
     const newProfile = await createProfile(req.body);
@@ -93,12 +94,13 @@ export async function createUserProfile(req: Request, res: Response) {
     console.log("User created successfully", newProfile);
     res.status(201).json({
       message: "User created successfully",
-      user: newProfile,
+      profile: newProfile,
       status: "success",
     });
+    return;
   } catch (error) {
     console.error("Error creating user:", error);
-    res.status(500).json({ status: 500, message: error });
+    res.status(500).json({ message: "Error creating user", error });
   }
 }
 
@@ -130,7 +132,7 @@ export async function deleteUserProfile(req: Request, res: Response) {
     return;
   } catch (error) {
     console.error("Error deleting user:", error);
-    res.status(500).json({ status: 500, message: error });
+    res.status(500).json({ message: "Error deleting user:", error });
   }
 }
 
