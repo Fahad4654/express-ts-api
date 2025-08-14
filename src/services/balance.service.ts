@@ -43,6 +43,26 @@ export async function findBalanceByAccountId(accountId: string) {
   });
 }
 
+export async function findBalanceById(id: string) {
+  return Balance.findOne({
+    where: { id },
+    include: [
+      {
+        model: Account,
+        attributes: ["id", "userId", "accountNumber"],
+        include: [
+          {
+            model: User,
+            attributes: ["id", "name", "email"],
+          },
+        ],
+      },
+    ],
+    nest: true,
+    raw: true,
+  });
+}
+
 export async function createBalance(data: Partial<Balance>) {
   return Balance.create(data);
 }
@@ -105,6 +125,62 @@ export async function updateBalanceByAccountId(
 
     await balance.update(filteredUpdates, { transaction: t });
 
+    return balance;
+  });
+}
+
+export async function updateBalancePendingService(
+  balanceId: string,
+  amount: number,
+  direction: "credit" | "debit"
+) {
+  return sequelize.transaction(async (t) => {
+    const balance = await Balance.findByPk(balanceId, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+    if (!balance) throw new Error("Balance not found");
+
+    balance.pendingBalance = Number(balance.pendingBalance) + Number(amount);
+
+    await balance.save({ transaction: t });
+    return balance;
+  });
+}
+
+export async function finalizeTransaction(
+  balanceId: string,
+  direction: "credit" | "debit"
+) {
+  return sequelize.transaction(async (t) => {
+    const balance = await Balance.findByPk(balanceId, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+    if (!balance) {
+      throw new Error("Balance not found");
+    }
+
+    console.log(balance.pendingBalance);
+
+    if (balance.pendingBalance == 0) {
+      console.log("Balance pending balance is 0");
+      return;
+    }
+
+    // Move from pending to available or subtract for debit
+    // balance.pendingBalance = Number(balance.pendingBalance) - Number(amount);
+    if (direction === "credit") {
+      balance.availableBalance =
+        Number(balance.availableBalance) + Number(balance.pendingBalance);
+    } else if (direction === "debit") {
+      balance.availableBalance =
+        Number(balance.availableBalance) - Number(balance.pendingBalance);
+    }
+
+    balance.pendingBalance = 0;
+    balance.lastTransactionAt = new Date();
+    await balance.save({ transaction: t });
     return balance;
   });
 }
