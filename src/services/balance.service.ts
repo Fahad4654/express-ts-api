@@ -2,6 +2,7 @@ import { Balance } from "../models/Balance";
 import { Account } from "../models/Account";
 import { User } from "../models/User";
 import { sequelize } from "../config/database";
+import { BalanceTransaction } from "../models/BalanceTransaction";
 
 export async function findAllBalances(order = "createdAt", asc = "ASC") {
   return Balance.findAll({
@@ -141,7 +142,11 @@ export async function updateBalancePendingService(
     });
     if (!balance) throw new Error("Balance not found");
 
-    balance.pendingBalance = Number(balance.pendingBalance) + Number(amount);
+    if (direction === "credit") {
+      balance.pendingBalance = Number(balance.pendingBalance) + Number(amount);
+    } else if (direction === "debit") {
+      balance.pendingBalance = Number(balance.pendingBalance) - Number(amount);
+    }
 
     await balance.save({ transaction: t });
     return balance;
@@ -150,7 +155,7 @@ export async function updateBalancePendingService(
 
 export async function finalizeTransaction(
   balanceId: string,
-  direction: "credit" | "debit"
+  transactionId: string
 ) {
   return sequelize.transaction(async (t) => {
     const balance = await Balance.findByPk(balanceId, {
@@ -168,19 +173,36 @@ export async function finalizeTransaction(
       return;
     }
 
-    // Move from pending to available or subtract for debit
-    // balance.pendingBalance = Number(balance.pendingBalance) - Number(amount);
-    if (direction === "credit") {
-      balance.availableBalance =
-        Number(balance.availableBalance) + Number(balance.pendingBalance);
-    } else if (direction === "debit") {
-      balance.availableBalance =
-        Number(balance.availableBalance) - Number(balance.pendingBalance);
+    const transaction = await BalanceTransaction.findByPk(transactionId, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+
+    if (!transaction) {
+      throw new Error("Transaction not found");
     }
 
-    balance.pendingBalance = 0;
+    if (transaction.status === "completed") {
+      console.log("Transaction is already completed");
+      throw new Error("Transaction is already completed");
+    }
+    // Move from pending to available or subtract for debit
+    // balance.pendingBalance = Number(balance.pendingBalance) - Number(amount);
+    if (transaction.direction === "credit") {
+      balance.availableBalance =
+        Number(balance.availableBalance) + Number(transaction.amount);
+      balance.pendingBalance =
+        Number(balance.pendingBalance) - Number(transaction.amount);
+    } else if (transaction.direction === "debit") {
+      balance.availableBalance =
+        Number(balance.availableBalance) - Number(transaction.amount);
+    }
+
+    transaction.status = "completed"; // or "failed" if debit failed
+    await transaction.save({ transaction: t });
+
     balance.lastTransactionAt = new Date();
     await balance.save({ transaction: t });
-    return balance;
+    return { balance, transaction };
   });
 }

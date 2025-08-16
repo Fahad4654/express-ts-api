@@ -273,7 +273,7 @@ export async function finalizeTransactionController(
   res: Response
 ) {
   try {
-    const { balanceId, direction } = req.body;
+    const { balanceId, transactionId } = req.body;
     if (!req.body) {
       console.log("Request body is required");
       res.status(400).json({ error: "Request body is required" });
@@ -285,13 +285,13 @@ export async function finalizeTransactionController(
       return;
     }
 
-    if (!direction) {
-      console.log("Direction is required");
-      res.status(400).json({ error: "Direction is required" });
+    if (!transactionId) {
+      console.log("Transaction Id required");
+      res.status(400).json({ error: "Transaction Id is required" });
       return;
     }
 
-    await finalizeTransaction(balanceId, direction);
+    await finalizeTransaction(balanceId, transactionId);
     const updatedBalance = await findBalanceById(balanceId);
     console.log(updatedBalance);
     res.status(200).json({
