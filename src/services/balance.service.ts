@@ -91,7 +91,6 @@ export async function updateBalanceByAccountId(
 
     const allowedFields: Array<keyof Balance> = [
       "availableBalance",
-      "pendingBalance",
       "holdBalance",
       "currency",
       "lastTransactionAt",
@@ -100,9 +99,7 @@ export async function updateBalanceByAccountId(
     const filteredUpdates: Partial<Balance> = {};
     for (const key of allowedFields) {
       if (updates[key] !== undefined) {
-        if (
-          ["availableBalance", "pendingBalance", "holdBalance"].includes(key)
-        ) {
+        if (["availableBalance", "holdBalance"].includes(key)) {
           const numVal = Number(updates[key]);
           if (isNaN(numVal)) {
             throw new Error(`${key} must be a number`);
@@ -130,29 +127,6 @@ export async function updateBalanceByAccountId(
   });
 }
 
-export async function updateBalancePendingService(
-  balanceId: string,
-  amount: number,
-  direction: "credit" | "debit"
-) {
-  return sequelize.transaction(async (t) => {
-    const balance = await Balance.findByPk(balanceId, {
-      transaction: t,
-      lock: t.LOCK.UPDATE,
-    });
-    if (!balance) throw new Error("Balance not found");
-
-    if (direction === "credit") {
-      balance.pendingBalance = Number(balance.pendingBalance) + Number(amount);
-    } else if (direction === "debit") {
-      balance.pendingBalance = Number(balance.pendingBalance) - Number(amount);
-    }
-
-    await balance.save({ transaction: t });
-    return balance;
-  });
-}
-
 export async function finalizeTransaction(
   balanceId: string,
   transactionId: string
@@ -166,18 +140,10 @@ export async function finalizeTransaction(
       throw new Error("Balance not found");
     }
 
-    console.log(balance.pendingBalance);
-
-    if (balance.pendingBalance == 0) {
-      console.log("Balance pending balance is 0");
-      return;
-    }
-
     const transaction = await BalanceTransaction.findByPk(transactionId, {
       transaction: t,
       lock: t.LOCK.UPDATE,
     });
-
     if (!transaction) {
       throw new Error("Transaction not found");
     }
@@ -186,23 +152,27 @@ export async function finalizeTransaction(
       console.log("Transaction is already completed");
       throw new Error("Transaction is already completed");
     }
-    // Move from pending to available or subtract for debit
-    // balance.pendingBalance = Number(balance.pendingBalance) - Number(amount);
+
     if (transaction.direction === "credit") {
-      balance.availableBalance =
-        Number(balance.availableBalance) + Number(transaction.amount);
-      balance.pendingBalance =
-        Number(balance.pendingBalance) - Number(transaction.amount);
+      balance.availableBalance += Number(transaction.amount);
+      transaction.status = "completed";
     } else if (transaction.direction === "debit") {
-      balance.availableBalance =
-        Number(balance.availableBalance) - Number(transaction.amount);
+      if (Number(balance.availableBalance) < Number(transaction.amount)) {
+        // Insufficient funds → mark as failed and save first
+        transaction.status = "failed";
+        await transaction.save({ transaction: t });
+        // Stop further execution without throwing inside the same transaction
+        return { balance, transaction, error: "Insufficient funds" };
+      }
+      balance.availableBalance -= Number(transaction.amount);
+      transaction.status = "completed";
     }
 
-    transaction.status = "completed"; // or "failed" if debit failed
     await transaction.save({ transaction: t });
 
     balance.lastTransactionAt = new Date();
     await balance.save({ transaction: t });
+
     return { balance, transaction };
   });
 }

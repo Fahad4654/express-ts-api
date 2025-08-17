@@ -69,7 +69,6 @@ export async function createUser(data: {
   await createBalance({
     accountId: newAccount.id,
     availableBalance: 0,
-    pendingBalance: 0,
     holdBalance: 0,
     currency: newAccount.currency,
   });

@@ -95,7 +95,6 @@ export class AuthService {
     await createBalance({
       accountId: newAccount.id,
       availableBalance: 0,
-      pendingBalance: 0,
       holdBalance: 0,
       currency: newAccount.currency,
     });

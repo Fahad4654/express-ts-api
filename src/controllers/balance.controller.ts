@@ -5,7 +5,7 @@ import {
   createBalance,
   deleteBalanceByAccountId,
   updateBalanceByAccountId,
-  updateBalancePendingService,
+  // updateBalancePendingService,
   finalizeTransaction,
   findBalanceById,
 } from "../services/balance.service";
@@ -200,85 +200,19 @@ export async function updateBalanceController(req: Request, res: Response) {
   }
 }
 
-export async function updateBalancePending(req: Request, res: Response) {
-  try {
-    const { balanceId, amount, direction } = req.body;
-    if (!req.body) {
-      console.log("Request body is required");
-      res.status(400).json({ error: "Request body is required" });
-      return;
-    }
-    if (!balanceId) {
-      console.log("BalanceId is required");
-      res.status(400).json({ error: "BalanceId is required" });
-      return;
-    }
-    if (!amount) {
-      console.log("Amount is required");
-      res.status(400).json({ error: "Amount is required" });
-      return;
-    }
-
-    if (!direction) {
-      console.log("Direction is required");
-      res.status(400).json({ error: "Direction is required" });
-      return;
-    }
-    const numericAmount = parseInt(amount, 10);
-
-    if (isNaN(numericAmount)) {
-      console.log("Amount should be a valid number");
-      res.status(400).json({
-        error: "Amount should be a valid number",
-      });
-      return;
-    }
-
-    if (numericAmount < 100) {
-      console.log("Amount should be a number equal or more than 100");
-      res.status(400).json({
-        error: "Amount should be a number equal or more than 100",
-      });
-      return;
-    }
-
-    if (numericAmount > 50000) {
-      console.log("Amount should be a number equal or less than 50000");
-      res.status(400).json({
-        error: "Amount should be a number equal or less than 50000",
-      });
-      return;
-    }
-    await updateBalancePendingService(balanceId, amount, direction);
-    const updatedBalance = await findBalanceById(balanceId);
-    console.log(updatedBalance);
-    res.status(200).json({
-      message: "Balance updated successfully",
-      balance: updatedBalance,
-      status: "success",
-    });
-    return;
-  } catch (error) {
-    console.error("Error updating Balance:", error);
-    res.status(500).json({
-      status: "error",
-      message:
-        error instanceof Error ? error.message : "Failed to update Balance",
-    });
-  }
-}
-
 export async function finalizeTransactionController(
   req: Request,
   res: Response
 ) {
   try {
     const { balanceId, transactionId } = req.body;
+
     if (!req.body) {
       console.log("Request body is required");
       res.status(400).json({ error: "Request body is required" });
       return;
     }
+
     if (!balanceId) {
       console.log("BalanceId is required");
       res.status(400).json({ error: "BalanceId is required" });
@@ -291,21 +225,38 @@ export async function finalizeTransactionController(
       return;
     }
 
-    await finalizeTransaction(balanceId, transactionId);
+    const result = await finalizeTransaction(balanceId, transactionId);
+
+    // Handle failed transaction case
+    if (result.error) {
+      console.log("Transaction failed:", result.error);
+      res.status(400).json({
+        message: "Transaction failed",
+        reason: result.error,
+        balance: result.balance,
+        transaction: result.transaction,
+        status: "failed",
+      });
+      return;
+    }
+
     const updatedBalance = await findBalanceById(balanceId);
-    console.log(updatedBalance);
+    console.log("Transaction completed:", updatedBalance);
+
     res.status(200).json({
-      message: "Balance updated successfully",
+      message: "Transaction completed successfully",
       balance: updatedBalance,
+      transaction: result.transaction,
       status: "success",
     });
     return;
   } catch (error) {
-    console.error("Error updating Balance:", error);
+    console.error("Error finalizing transaction:", error);
     res.status(500).json({
       status: "error",
       message:
         error instanceof Error ? error.message : "Failed to update Balance",
     });
+    return;
   }
 }

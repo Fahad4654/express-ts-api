@@ -38,11 +38,6 @@ export class Balance extends Model {
   @Column(DataType.DECIMAL(15, 2))
   availableBalance!: number;
 
-  /** Pending incoming funds */
-  @Default(0.0)
-  @Column(DataType.DECIMAL(15, 2))
-  pendingBalance!: number;
-
   /** Held funds */
   @Default(0.0)
   @Column(DataType.DECIMAL(15, 2))

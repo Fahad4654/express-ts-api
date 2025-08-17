@@ -4,7 +4,6 @@ import { Balance } from "../models/Balance";
 import { BalanceTransaction } from "../models/BalanceTransaction";
 import { findUserById } from "./user.service";
 import { getAccountById } from "./account.service";
-import { updateBalancePendingService } from "./balance.service";
 
 export async function findAllTransactions(order: string, asc: string) {
   console.log(`Fetching all transactions, order: ${order}, asc: ${asc}`);
@@ -104,12 +103,6 @@ export async function createNewTransaction(data: any) {
   const newTransaction = await BalanceTransaction.create(payload);
   console.log(
     `[Service] Transaction created successfully with ID: ${newTransaction.id}`
-  );
-
-  await updateBalancePendingService(
-    balanceId,
-    newTransaction.amount,
-    newTransaction.direction
   );
   return newTransaction;
 }
