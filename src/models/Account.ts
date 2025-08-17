@@ -53,10 +53,6 @@ export class Account extends Model {
   @Column(DataType.ENUM("wallet", "bank", "crypto"))
   accountType!: "wallet" | "bank" | "crypto";
 
-  /** Provider name if applicable (e.g., bank or gateway) */
-  // @Column(DataType.STRING)
-  // provider!: string;
-
   /** Account status */
   @Default("active")
   @Column(DataType.ENUM("active", "frozen", "closed"))

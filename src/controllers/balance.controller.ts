@@ -5,7 +5,6 @@ import {
   createBalance,
   deleteBalanceByAccountId,
   updateBalanceByAccountId,
-  // updateBalancePendingService,
   finalizeTransaction,
   findBalanceById,
 } from "../services/balance.service";

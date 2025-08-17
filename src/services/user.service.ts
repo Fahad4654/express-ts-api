@@ -56,23 +56,23 @@ export async function createUser(data: {
     phoneNumber: data.phoneNumber,
     isAdmin: data.isAdmin,
   });
-  console.log("user created", newUser)
+  console.log("user created", newUser);
 
   await createProfile({
     userId: newUser.id,
     bio: "Please Edit",
     address: "Please Edit",
   });
-  console.log("Profile created for", newUser.email)
+  console.log("Profile created for", newUser.email);
   const newAccount = await accountService.createAccount(newUser.id, "BDT");
-  console.log("Account created for", newUser.email)
+  console.log("Account created for", newUser.email);
   await createBalance({
     accountId: newAccount.id,
     availableBalance: 0,
     holdBalance: 0,
     currency: newAccount.currency,
   });
-  console.log("Balance created for", newUser.email)
+  console.log("Balance created for", newUser.email);
   return newUser;
 }
 

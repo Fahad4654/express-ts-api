@@ -15,7 +15,10 @@ export async function createContent(data: Partial<Contents>) {
   return Contents.create(data);
 }
 
-export async function updateContentById(id: string, updates: Partial<Contents>) {
+export async function updateContentById(
+  id: string,
+  updates: Partial<Contents>
+) {
   const content = await Contents.findOne({ where: { id } });
   if (!content) throw new Error("Content not found");
 
@@ -36,11 +39,14 @@ export async function updateContentById(id: string, updates: Partial<Contents>) 
     if (updates[key] !== undefined) filteredUpdates[key] = updates[key];
   }
 
-  if (Object.keys(filteredUpdates).length === 0) throw new Error("No valid fields provided for update");
+  if (Object.keys(filteredUpdates).length === 0)
+    throw new Error("No valid fields provided for update");
 
   await content.update(filteredUpdates);
 
-  return Contents.findByPk(id, { attributes: { exclude: ["createdAt", "updatedAt"] } });
+  return Contents.findByPk(id, {
+    attributes: { exclude: ["createdAt", "updatedAt"] },
+  });
 }
 
 export async function deleteContentById(id: string) {

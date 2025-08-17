@@ -180,6 +180,6 @@ export async function updateAccount(req: Request, res: Response) {
     return;
   } catch (error) {
     console.error("Error updating account:", error);
-    res.status(500).json({ message: "Error updating account", error});
+    res.status(500).json({ message: "Error updating account", error });
   }
 }
