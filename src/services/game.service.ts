@@ -2,10 +2,9 @@ import { Account } from "../models/Account";
 import { User } from "../models/User";
 import { Balance } from "../models/Balance";
 import { BalanceTransaction } from "../models/BalanceTransaction";
-import { findUserById } from "./user.service";
-import { getAccountById } from "./account.service";
 import { Game } from "../models/Game";
 import { GameHistory } from "../models/GameHistory";
+import { findByDynamicId } from "./find.service";
 
 export async function findAllGame(order: string, asc: string) {
   console.log(`Fetching all games, order: ${order}, asc: ${asc}`);
@@ -25,65 +24,6 @@ export async function findAllGameHistory(order: string, asc: string) {
   });
   console.log(`Found ${gamesHistory.length} game history`);
   return gamesHistory;
-}
-
-export async function findGameById(id: string) {
-  console.log(`[Service] Fetching transaction with ID: ${id}`);
-  const game = await Game.findOne({
-    where: { id },
-    raw: true,
-  });
-  console.log(`[Service] Transaction ${id} ${game ? "found" : "not found"}`);
-  return game;
-}
-
-export async function findGameHistoryByAnyId(
-  id?: string,
-  userId?: string,
-  accountId?: string,
-  balanceId?: string,
-  gameId?: string,
-  order?: string,
-  asc?: string
-) {
-  console.log(
-    `[Service] Find GameHistory with id=${id}, userId=${userId}, accountId=${accountId}, balanceId=${balanceId}, gameId=${gameId}`
-  );
-
-  // Collect all provided arguments
-  const provided = [
-    { key: "id", value: id },
-    { key: "userId", value: userId },
-    { key: "accountId", value: accountId },
-    { key: "balanceId", value: balanceId },
-    { key: "gameId", value: gameId },
-  ].filter((x) => x.value !== undefined);
-
-  // Validate: must be exactly one
-  if (provided.length !== 1) {
-    throw new Error(
-      "Provide exactly one of id, userId, accountId, balanceId, or gameId"
-    );
-  }
-
-  const { key, value } = provided[0];
-  const whereClause: any = { [key]: value };
-
-  const found = await GameHistory.findAll({
-    where: whereClause,
-    raw: true,
-    order: [[order || "id", asc || "ASC"]],
-  });
-
-  if (!found || found.length === 0) {
-    throw new Error(`No GameHistory found for ${key}=${value}`);
-  }
-
-  console.log(
-    `[Service] Found ${found.length} GameHistory record(s) for ${key}=${value}`
-  );
-
-  return found;
 }
 
 export async function createGame(data: any) {
@@ -111,21 +51,25 @@ export async function createGameHistory(data: any) {
     description,
   } = data;
 
-  const user = await findUserById(userId);
+  const typedUser = await findByDynamicId(User, { id: userId }, false);
+  const user = typedUser as User | null;
+  console.log(user);
+
   if (!user) throw new Error("User not found");
 
-  const game = await findUserById(gameId);
-  if (!game) throw new Error("Game not found");
-
-  const account = await getAccountById(accountId);
+  const typedAccount = await findByDynamicId(Account, { id: accountId }, false);
+  const account = typedAccount as Account | null;
   console.log(account);
   if (!account) throw new Error("Account not found");
 
   if (account.userId !== userId)
     throw new Error("Account does not belong to the specified user");
 
-  const balance = await Balance.findByPk(balanceId);
+  const typedBalance = await findByDynamicId(Balance, { id: balanceId }, false);
+  const balance = typedBalance as Balance | null;
   if (!balance) throw new Error("Balance not found");
+  if (account.userId !== userId)
+    throw new Error("Account does not belong to the specified user");
 
   if (balance.accountId !== accountId)
     throw new Error("Balance does not belong to the specified account");
@@ -137,11 +81,6 @@ export async function createGameHistory(data: any) {
   if (!amount) throw new Error("Amount not found");
 
   if (!currency) throw new Error("Currency not found");
-
-  // if (Number(amount) < 100)
-  //   throw new Error("Amount should be more than or equal to 100");
-  // if (Number(amount) > 10000 && direction === "debit")
-  //   throw new Error("Amount should be less than or equal to 10000");
 
   const newGameHistory = await GameHistory.create({
     balanceId,
@@ -160,7 +99,23 @@ export async function createGameHistory(data: any) {
   return newGameHistory;
 }
 
-export async function deleteTransactionByIdOrUserId(
+export async function deleteGameById(id?: string) {
+  if (!id) {
+    throw new Error("ID not found");
+  }
+
+  const foundGame = await findByDynamicId(Game, { id: id }, false);
+
+  if (!foundGame) throw new Error(`Game with id ${id} not found`);
+
+  await Game.destroy({ where: { id } });
+
+  console.log(`[Service] ${`Game ${id}`} deleted`);
+
+  return { id };
+}
+
+export async function deleteGameHistoryByIdOrUserId(
   id?: string,
   userId?: string
 ) {
@@ -170,7 +125,7 @@ export async function deleteTransactionByIdOrUserId(
     }`
   );
   const whereClause = id ? { id } : { userId };
-  const foundTransaction = await BalanceTransaction.findOne({
+  const foundTransaction = await GameHistory.findOne({
     where: whereClause,
   });
 
@@ -181,7 +136,7 @@ export async function deleteTransactionByIdOrUserId(
         : `No transactions found for user ${userId}`
     );
 
-  await BalanceTransaction.destroy({ where: whereClause });
+  await GameHistory.destroy({ where: whereClause });
 
   console.log(
     `[Service] ${

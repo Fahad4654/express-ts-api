@@ -6,9 +6,12 @@ export async function findByDynamicId<T extends Model>(
   multiple = false
 ): Promise<T | T[] | null> {
   // Count how many IDs provided
-  const providedKeys = Object.entries(identifiers).filter(([_, v]) => v !== undefined);
+  const providedKeys = Object.entries(identifiers).filter(
+    ([_, v]) => v !== undefined
+  );
 
   if (providedKeys.length !== 1) {
+    console.log("Exactly one identifier must be provided");
     throw new Error("Exactly one identifier must be provided");
   }
 

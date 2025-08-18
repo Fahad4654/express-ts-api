@@ -15,6 +15,7 @@ export function findController<T extends Model>(
       const identifiers = req.body;
 
       if (!identifiers || Object.keys(identifiers).length === 0) {
+        console.log("At least one identifier is required");
         res.status(400).json({ error: "At least one identifier is required" });
         return;
       }
@@ -22,13 +23,17 @@ export function findController<T extends Model>(
       const result = await findByDynamicId(model, identifiers, true);
 
       if (!result || (Array.isArray(result) && result.length === 0)) {
+        console.log("No records found");
         res.status(404).json({ message: "No records found" });
         return;
       }
 
-      res.status(200).json({ data: result });
+      console.log(`${[model.name.toLowerCase()]}:`, result);
+      res.status(200).json({
+        [model.name.toLowerCase()]: result,
+      });
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error(`Error fetching ${[model.name]}:`, error);
       res.status(500).json({
         error: error instanceof Error ? error.message : "Internal server error",
       });
