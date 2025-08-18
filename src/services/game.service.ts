@@ -4,97 +4,118 @@ import { Balance } from "../models/Balance";
 import { BalanceTransaction } from "../models/BalanceTransaction";
 import { findUserById } from "./user.service";
 import { getAccountById } from "./account.service";
+import { Game } from "../models/Game";
+import { GameHistory } from "../models/GameHistory";
 
-export async function findAllTransactions(order: string, asc: string) {
-  console.log(`Fetching all transactions, order: ${order}, asc: ${asc}`);
-  const transactions = await BalanceTransaction.findAll({
-    include: [
-      {
-        model: User,
-        attributes: ["id", "name", "email", "phoneNumber"],
-      },
-      {
-        model: Account,
-        attributes: ["id", "accountNumber", "status"],
-      },
-    ],
-    nest: true,
+export async function findAllGame(order: string, asc: string) {
+  console.log(`Fetching all games, order: ${order}, asc: ${asc}`);
+  const games = await Game.findAll({
     raw: true,
     order: [[order || "id", asc || "ASC"]],
   });
-  console.log(`Found ${transactions.length} transactions`);
-  return transactions;
+  console.log(`Found ${games.length} games`);
+  return games;
 }
 
-export async function findTransactionById(id: string) {
+export async function findAllGameHistory(order: string, asc: string) {
+  console.log(`Fetching all game history, order: ${order}, asc: ${asc}`);
+  const gamesHistory = await GameHistory.findAll({
+    raw: true,
+    order: [[order || "createdAt", asc || "DESC"]],
+  });
+  console.log(`Found ${gamesHistory.length} game history`);
+  return gamesHistory;
+}
+
+export async function findGameById(id: string) {
   console.log(`[Service] Fetching transaction with ID: ${id}`);
-  const transaction = await BalanceTransaction.findOne({
+  const game = await Game.findOne({
     where: { id },
-    include: [
-      {
-        model: User,
-        attributes: ["id", "name", "email", "phoneNumber"],
-      },
-      {
-        model: Account,
-        attributes: ["id", "accountNumber", "status"],
-      },
-    ],
-    nest: true,
     raw: true,
   });
-  console.log(
-    `[Service] Transaction ${id} ${transaction ? "found" : "not found"}`
-  );
-  return transaction;
+  console.log(`[Service] Transaction ${id} ${game ? "found" : "not found"}`);
+  return game;
 }
 
-export async function findTransactionsByUserId(
-  userId: string,
-  order = "id",
-  asc = "ASC"
+export async function findGameHistoryByAnyId(
+  id?: string,
+  userId?: string,
+  accountId?: string,
+  balanceId?: string,
+  gameId?: string,
+  order?: string,
+  asc?: string
 ) {
-  console.log(`[Service] Fetching transactions for userId: ${userId}`);
-  const transactions = await BalanceTransaction.findAll({
-    where: { userId },
-    include: [
-      {
-        model: User,
-        attributes: ["id", "name", "email", "phoneNumber"],
-      },
-      {
-        model: Account,
-        attributes: ["id", "accountNumber", "status"],
-      },
-    ],
-    nest: true,
-    raw: true,
-    order: [[order, asc]],
-  });
   console.log(
-    `[Service] Found ${transactions.length} transactions for userId: ${userId}`
+    `[Service] Find GameHistory with id=${id}, userId=${userId}, accountId=${accountId}, balanceId=${balanceId}, gameId=${gameId}`
   );
-  return transactions;
+
+  // Collect all provided arguments
+  const provided = [
+    { key: "id", value: id },
+    { key: "userId", value: userId },
+    { key: "accountId", value: accountId },
+    { key: "balanceId", value: balanceId },
+    { key: "gameId", value: gameId },
+  ].filter((x) => x.value !== undefined);
+
+  // Validate: must be exactly one
+  if (provided.length !== 1) {
+    throw new Error(
+      "Provide exactly one of id, userId, accountId, balanceId, or gameId"
+    );
+  }
+
+  const { key, value } = provided[0];
+  const whereClause: any = { [key]: value };
+
+  const found = await GameHistory.findAll({
+    where: whereClause,
+    raw: true,
+    order: [[order || "id", asc || "ASC"]],
+  });
+
+  if (!found || found.length === 0) {
+    throw new Error(`No GameHistory found for ${key}=${value}`);
+  }
+
+  console.log(
+    `[Service] Found ${found.length} GameHistory record(s) for ${key}=${value}`
+  );
+
+  return found;
 }
 
-export async function createNewTransaction(data: any) {
+export async function createGame(data: any) {
+  console.log(`[Service] Creating new game`, data);
+
+  const { name, description, minimumBet, status } = data;
+
+  const newGame = await Game.create({ name, description, minimumBet, status });
+  console.log(`[Service] Transaction created successfully: ${newGame}`);
+  return newGame;
+}
+
+export async function createGameHistory(data: any) {
   console.log(`[Service] Creating new transaction`, data);
-  const { status, ...rest } = data; // remove status if present
-  const payload = { ...rest, status: "pending" };
 
   const {
     balanceId,
     accountId,
     userId,
+    gameId,
     type,
     direction,
     amount,
     currency,
-    referenceId,
+    description,
   } = data;
 
   const user = await findUserById(userId);
   if (!user) throw new Error("User not found");
+
+  const game = await findUserById(gameId);
+  if (!game) throw new Error("Game not found");
 
   const account = await getAccountById(accountId);
   console.log(account);
@@ -117,18 +138,26 @@ export async function createNewTransaction(data: any) {
 
   if (!currency) throw new Error("Currency not found");
 
-  if (!referenceId) throw new Error("ReferenceId not found");
+  // if (Number(amount) < 100)
+  //   throw new Error("Amount should be more than or equal to 100");
+  // if (Number(amount) > 10000 && direction === "debit")
+  //   throw new Error("Amount should be less than or equal to 10000");
 
-  if (Number(amount) < 100)
-    throw new Error("Amount should be more than or equal to 100");
-  if (Number(amount) > 10000 && direction === "debit")
-    throw new Error("Amount should be less than or equal to 10000");
-
-  const newTransaction = await BalanceTransaction.create(payload);
+  const newGameHistory = await GameHistory.create({
+    balanceId,
+    accountId,
+    userId,
+    gameId,
+    type,
+    direction,
+    amount,
+    currency,
+    description,
+  });
   console.log(
-    `[Service] Transaction created successfully with ID: ${newTransaction.id}`
+    `[Service] Transaction created successfully with ID: ${newGameHistory.id}`
   );
-  return newTransaction;
+  return newGameHistory;
 }
 
 export async function deleteTransactionByIdOrUserId(

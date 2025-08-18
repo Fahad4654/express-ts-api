@@ -154,17 +154,24 @@ export async function finalizeTransaction(
     }
 
     if (transaction.direction === "credit") {
-      balance.availableBalance += Number(transaction.amount);
+      balance.availableBalance =
+        Number(balance.availableBalance) + Number(transaction.amount);
       transaction.status = "completed";
     } else if (transaction.direction === "debit") {
-      if (Number(balance.availableBalance) < Number(transaction.amount)) {
+      if (
+        Number(balance.availableBalance) < Number(transaction.amount) ||
+        Number(balance.withdrawableBalance) < Number(transaction.amount)
+      ) {
         // Insufficient funds → mark as failed and save first
         transaction.status = "failed";
         await transaction.save({ transaction: t });
         // Stop further execution without throwing inside the same transaction
         return { balance, transaction, error: "Insufficient funds" };
       }
-      balance.availableBalance -= Number(transaction.amount);
+      balance.availableBalance =
+        Number(balance.availableBalance) - Number(transaction.amount);
+      balance.withdrawableBalance =
+        Number(balance.withdrawableBalance) - Number(transaction.amount);
       transaction.status = "completed";
     }
 

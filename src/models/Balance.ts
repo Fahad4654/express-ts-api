@@ -43,6 +43,10 @@ export class Balance extends Model {
   @Column(DataType.DECIMAL(15, 2))
   holdBalance!: number;
 
+  @Default(0.0)
+  @Column(DataType.DECIMAL(15, 2))
+  withdrawableBalance!: number;
+
   /** Currency */
   @Default("BDT")
   @Column(DataType.STRING(3))

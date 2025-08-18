@@ -7,24 +7,26 @@ import {
   BelongsTo,
   AllowNull,
   PrimaryKey,
-  Default
+  Default,
+  Index,
 } from "sequelize-typescript";
 import { Balance } from "./Balance";
 import { Account } from "./Account";
 import { User } from "./User";
+import { Game } from "./Game";
 
 @Table({
-  tableName: "balance_transaction",
+  tableName: "gameHistory",
   timestamps: true,
   indexes: [
     { fields: ["userId"] },
     { fields: ["accountId"] },
     { fields: ["balanceId"] },
     { fields: ["type"] },
-    { fields: ["status"] },
+    { fields: ["gameId"] },
   ],
 })
-export class BalanceTransaction extends Model {
+export class GameHistory extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
@@ -54,12 +56,18 @@ export class BalanceTransaction extends Model {
   @BelongsTo(() => User, { onDelete: "CASCADE" })
   user!: User;
 
+  @ForeignKey(() => Game)
+  @AllowNull(false)
+  @Column(DataType.UUID)
+  gameId!: string;
+
+  @BelongsTo(() => Game, { onDelete: "CASCADE" })
+  game!: Game;
+
   /** Transaction type */
   @AllowNull(false)
-  @Column(
-    DataType.ENUM("deposit", "withdrawal", "payment", "refund", "adjustment")
-  )
-  type!: "deposit" | "withdrawal" | "payment" | "refund" | "adjustment";
+  @Column(DataType.ENUM("win", "loss"))
+  type!: "win" | "loss";
 
   /** Direction of funds */
   @AllowNull(false)
@@ -79,15 +87,6 @@ export class BalanceTransaction extends Model {
   /** Description */
   @Column(DataType.STRING)
   description!: string;
-
-  /** Reference to external payment/order */
-  @Column(DataType.STRING)
-  referenceId!: string;
-
-  /** Status */
-  @Default("pending")
-  @Column(DataType.ENUM("pending", "completed", "failed"))
-  status!: "pending" | "completed" | "failed";
 
   @Column(DataType.DATE)
   createdAt!: Date;
