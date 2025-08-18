@@ -120,50 +120,85 @@ export async function deleteGameHistoryByIdOrUserId(
   userId?: string
 ) {
   console.log(
-    `[Service] Deleting transaction(s) by ${
+    `[Service] Deleting Game History(s) by ${
       id ? `id: ${id}` : `userId: ${userId}`
     }`
   );
   const whereClause = id ? { id } : { userId };
-  const foundTransaction = await GameHistory.findOne({
+  const foundGameHistory = await GameHistory.findOne({
     where: whereClause,
   });
 
-  if (!foundTransaction)
+  if (!foundGameHistory)
     throw new Error(
       id
-        ? `Transaction with id ${id} not found`
-        : `No transactions found for user ${userId}`
+        ? `Game History with id ${id} not found`
+        : `No Game History found for user ${userId}`
     );
 
   await GameHistory.destroy({ where: whereClause });
 
   console.log(
     `[Service] ${
-      id ? `Transaction ${id}` : `All transactions for user ${userId}`
+      id ? `Game History ${id}` : `All Game History for user ${userId}`
     } deleted`
   );
 
   return { id, userId };
 }
 
-export async function updateTransactionById(id: string, updates: any) {
-  console.log(`[Service] Updating transaction with ID: ${id}`, updates);
+export async function updateGameById(id: string, updates: any) {
+  console.log(`[Service] Updating Game with ID: ${id}`, updates);
 
-  const transaction = await BalanceTransaction.findOne({ where: { id } });
+  const game = await Game.findOne({ where: { id } });
+  if (!game) throw new Error("Game not found");
+
+  const allowedFields: Array<keyof Game> = [
+    "name",
+    "description",
+    "minimumBet",
+    "status",
+  ];
+
+  const filteredUpdates: Partial<Game> = {};
+  for (const key of allowedFields) {
+    if (updates[key] !== undefined) {
+      filteredUpdates[key] = updates[key];
+    }
+  }
+
+  if (!Object.keys(filteredUpdates).length) {
+    throw new Error("No valid fields provided for update");
+  }
+
+  await game.update(filteredUpdates);
+
+  console.log(`[Service] Game: ${id} updated successfully`);
+
+  return Game.findByPk(id, {
+    attributes: { exclude: ["createdAt", "updatedAt"] },
+  });
+}
+
+export async function updatGameHistoryById(id: string, updates: any) {
+  console.log(`[Service] Updating Game History with ID: ${id}`, updates);
+
+  const transaction = await GameHistory.findOne({ where: { id } });
   if (!transaction) throw new Error("Transaction not found");
 
-  const allowedFields: Array<keyof BalanceTransaction> = [
+  const allowedFields: Array<keyof GameHistory> = [
+    "balanceId",
+    "accountId",
+    "userId",
+    "gameId",
     "type",
     "direction",
     "amount",
     "currency",
     "description",
-    "referenceId",
-    "status",
   ];
 
-  const filteredUpdates: Partial<BalanceTransaction> = {};
+  const filteredUpdates: Partial<GameHistory> = {};
   for (const key of allowedFields) {
     if (updates[key] !== undefined) {
       filteredUpdates[key] = updates[key];
@@ -176,9 +211,9 @@ export async function updateTransactionById(id: string, updates: any) {
 
   await transaction.update(filteredUpdates);
 
-  console.log(`[Service] Transaction ${id} updated successfully`);
+  console.log(`[Service] Game History: ${id} updated successfully`);
 
-  return BalanceTransaction.findByPk(id, {
+  return GameHistory.findByPk(id, {
     attributes: { exclude: ["createdAt", "updatedAt"] },
   });
 }
