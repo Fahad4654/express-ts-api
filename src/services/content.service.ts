@@ -7,10 +7,6 @@ export async function findAllContents(order = "id", asc = "ASC") {
   });
 }
 
-export async function findContentById(id: string) {
-  return Contents.findOne({ where: { id } });
-}
-
 export async function createContent(data: Partial<Contents>) {
   return Contents.create(data);
 }

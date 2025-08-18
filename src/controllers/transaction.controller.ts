@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
 import {
   findAllTransactions,
-  findTransactionById,
-  findTransactionsByUserId,
   createNewTransaction,
   deleteTransactionByIdOrUserId,
   updateTransactionById,
@@ -42,39 +40,6 @@ export const getTransaction = async (req: Request, res: Response) => {
   }
 };
 
-// GET BY ID / USER ID
-export const getTransactionsByID = async (req: Request, res: Response) => {
-  try {
-    const { id, userId } = req.params;
-    if (!id && !userId) {
-      console.log("Either transaction ID or userId is required");
-      res
-        .status(400)
-        .json({ error: "Either transaction ID or userId is required" });
-      return;
-    }
-    const result = id
-      ? await findTransactionById(id)
-      : await findTransactionsByUserId(
-          userId!,
-          String(req.query.order || "id"),
-          String(req.query.asc || "ASC")
-        );
-
-    if (!result || (Array.isArray(result) && !result.length)) {
-      console.log("Transaction(s) not found");
-      res.status(404).json({ error: "Transaction(s) not found" });
-      return;
-    }
-
-    console.log("Transction fetched successfully", result);
-    res.status(200).json({ status: 200, transactions: result });
-    return;
-  } catch (error) {
-    console.error("Error fetching transactions:", error);
-    res.status(500).json({ status: 500, message: String(error) });
-  }
-};
 
 // CREATE
 export const createTransaction = async (req: Request, res: Response) => {

@@ -24,46 +24,6 @@ export async function findAllBalances(order = "createdAt", asc = "ASC") {
   });
 }
 
-export async function findBalanceByAccountId(accountId: string) {
-  return Balance.findOne({
-    where: { accountId },
-    include: [
-      {
-        model: Account,
-        attributes: ["id", "userId", "accountNumber"],
-        include: [
-          {
-            model: User,
-            attributes: ["id", "name", "email"],
-          },
-        ],
-      },
-    ],
-    nest: true,
-    raw: true,
-  });
-}
-
-export async function findBalanceById(id: string) {
-  return Balance.findOne({
-    where: { id },
-    include: [
-      {
-        model: Account,
-        attributes: ["id", "userId", "accountNumber"],
-        include: [
-          {
-            model: User,
-            attributes: ["id", "name", "email"],
-          },
-        ],
-      },
-    ],
-    nest: true,
-    raw: true,
-  });
-}
-
 export async function createBalance(data: Partial<Balance>) {
   return Balance.create(data);
 }

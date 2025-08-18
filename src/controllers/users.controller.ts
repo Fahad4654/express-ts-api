@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
 import {
   findAllUsers,
-  findUserById,
   createUser,
   updateUser,
   deleteUserByEmail,
 } from "../services/user.service";
+import { User } from "../models/User";
+import { findByDynamicId } from "../services/find.service";
 
 export async function getUsers(req: Request, res: Response) {
   try {
@@ -52,7 +53,7 @@ export async function getUsersById(req: Request, res: Response) {
       return;
     }
 
-    const user = await findUserById(userId);
+    const user = await findByDynamicId(User, { id: userId }, false);
     if (!user) {
       console.log("User not found");
       res.status(404).json({ error: "User not found" });

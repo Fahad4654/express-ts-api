@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
 import {
   findAllBalances,
-  findBalanceByAccountId,
   createBalance,
   deleteBalanceByAccountId,
   updateBalanceByAccountId,
   finalizeTransaction,
-  findBalanceById,
 } from "../services/balance.service";
-import { findUserById } from "../services/user.service";
+import { findByDynamicId } from "../services/find.service";
+import { Balance } from "../models/Balance";
+import { User } from "../models/User";
 
 export async function getBalance(req: Request, res: Response) {
   try {
@@ -40,62 +40,6 @@ export async function getBalance(req: Request, res: Response) {
     return;
   } catch (error) {
     console.error("Error fetching balance list:", error);
-    res.status(500).json({
-      status: 500,
-      message: error instanceof Error ? error.message : error,
-    });
-  }
-}
-
-export async function getBalanceByAccountId(req: Request, res: Response) {
-  try {
-    const accountId = req.params.accountId;
-    if (!accountId) {
-      console.log("Account ID is required");
-      res.status(400).json({ error: "Account ID is required" });
-      return;
-    }
-
-    const foundBalance = await findBalanceByAccountId(accountId);
-    if (!foundBalance) {
-      console.log("Balance not found");
-      res.status(404).json({ error: "Balance not found" });
-      return;
-    }
-
-    console.log("Balance found", foundBalance);
-    res.status(200).json({ status: 200, balance: foundBalance });
-    return;
-  } catch (error) {
-    console.error("Error finding balance:", error);
-    res.status(500).json({
-      status: 500,
-      message: error instanceof Error ? error.message : error,
-    });
-  }
-}
-
-export async function getBalanceById(req: Request, res: Response) {
-  try {
-    const id = req.params.id;
-    if (!id) {
-      console.log("Balance ID is required");
-      res.status(400).json({ error: "Balance ID is required" });
-      return;
-    }
-
-    const foundBalance = await findBalanceById(id);
-    if (!foundBalance) {
-      console.log("Balance not found");
-      res.status(404).json({ error: "Balance not found" });
-      return;
-    }
-
-    console.log("Balance found", foundBalance);
-    res.status(200).json({ status: 200, balance: foundBalance });
-    return;
-  } catch (error) {
-    console.error("Error finding balance:", error);
     res.status(500).json({
       status: 500,
       message: error instanceof Error ? error.message : error,
@@ -145,8 +89,8 @@ export const deleteBalanceController = async (req: Request, res: Response) => {
       return;
     }
 
-    const foundUser = await findUserById(req.body.userId);
-
+    const foundtypedUser = await findByDynamicId(User, { id: req.body.userId }, false);
+    const foundUser = foundtypedUser as User | null;
     await deleteBalanceByAccountId(req.body.accountId);
 
     console.log(`User: ${foundUser?.name}'s Balance is deleted`);
@@ -239,7 +183,7 @@ export async function finalizeTransactionController(
       return;
     }
 
-    const updatedBalance = await findBalanceById(balanceId);
+    const updatedBalance = await findByDynamicId(Balance, { id: balanceId }, false);
     console.log("Transaction completed:", updatedBalance);
 
     res.status(200).json({

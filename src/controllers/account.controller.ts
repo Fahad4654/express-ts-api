@@ -34,43 +34,6 @@ export async function getAccounts(req: Request, res: Response) {
   }
 }
 
-export async function getAccountById(req: Request, res: Response) {
-  try {
-    const userId = req.params.userId;
-    if (!userId) {
-      console.log(
-        "User ID is required as a route parameter (e.g., /account/:userId)"
-      );
-      res.status(400).json({
-        status: 400,
-        error:
-          "User ID is required as a route parameter (e.g., /account/:userId)",
-      });
-      return;
-    }
-
-    const foundUserAccount = await accountService.getAccountByUserId(userId);
-    if (!foundUserAccount) {
-      console.log("User's Account not found");
-      res.status(404).json({
-        status: 404,
-        message: "User's Account not found",
-      });
-      return;
-    }
-    console.log("User's Account found", foundUserAccount);
-    res.status(200).json({
-      status: 200,
-      message: "User's Account found",
-      account: foundUserAccount,
-    });
-    return;
-  } catch (error) {
-    console.error("Error finding user's account:", error);
-    res.status(500).json({ message: "Error finding user's account", error });
-  }
-}
-
 export async function createAccount(req: Request, res: Response) {
   try {
     if (!req.body) {

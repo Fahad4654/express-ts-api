@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import {
   findAllProfiles,
-  findProfileByUserId,
   createProfile,
   deleteProfileByUserId,
   updateProfileByUserId,
@@ -39,45 +38,6 @@ export async function getUsersProfile(req: Request, res: Response) {
   } catch (error) {
     console.error("Error fetching user:", error);
     res.status(500).json({ message: "Error fetching user:", error });
-  }
-}
-
-// Get User Profile by ID
-export async function getUserProfileById(req: Request, res: Response) {
-  try {
-    const userId = req.params.id;
-
-    if (!userId) {
-      console.log(
-        "User ID is required as a route parameter (e.g., /users/:id)"
-      );
-      res.status(400).json({
-        error: "User ID is required as a route parameter (e.g., /users/:id)",
-      });
-      return;
-    }
-
-    const profile = await findProfileByUserId(userId);
-
-    if (!profile) {
-      console.log("User Profile not found");
-      res.status(404).json({ message: "User Profile not found" });
-      return;
-    }
-
-    console.log("User found", profile);
-    res.status(200).json({
-      status: "success",
-      profile: profile,
-    });
-    return;
-  } catch (error) {
-    console.error("Error finding user:", error);
-    res.status(500).json({
-      status: "error",
-      message: "Error finding user",
-      error: error instanceof Error ? error.message : String(error),
-    });
   }
 }
 

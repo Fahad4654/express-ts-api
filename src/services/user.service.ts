@@ -33,14 +33,6 @@ export async function findAllUsers(order = "id", asc = "ASC") {
   });
 }
 
-export async function findUserById(userId: string) {
-  const user = User.findOne({
-    where: { id: userId },
-    attributes: ["id", "name", "email", "isAdmin", "phoneNumber"],
-  });
-  return user;
-}
-
 export async function createUser(data: {
   name: string;
   email: string;

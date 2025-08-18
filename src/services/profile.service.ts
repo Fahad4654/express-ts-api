@@ -18,19 +18,6 @@ export async function findAllProfiles(order = "id", asc = "ASC") {
 export function referralCode(userId: string) {
   return `FK-${generateToken(userId)}`;
 }
-export async function findProfileByUserId(userId: string) {
-  return Profile.findOne({
-    where: { userId },
-    include: [
-      {
-        model: User,
-        attributes: ["id", "name", "email", "phoneNumber"],
-      },
-    ],
-    nest: true,
-    raw: true,
-  });
-}
 
 export async function createProfile(data: {
   userId: string;

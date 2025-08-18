@@ -4,13 +4,11 @@ import {
   createUserProfile,
   updateUserProfile,
   deleteUserProfile,
-  getUserProfileById,
 } from "../controllers/userProfile.controller";
 
 const router = Router();
 
 router.get("/", getUsersProfile);
-router.get("/:id", getUserProfileById);
 router.post("/", createUserProfile);
 router.put("/", updateUserProfile);
 router.delete("/", deleteUserProfile);

@@ -1,7 +1,6 @@
 import { Router } from "express";
 import {
   getTransaction,
-  getTransactionsByID,
   createTransaction,
   deleteTransaction,
   updateTransaction,
@@ -9,12 +8,9 @@ import {
 
 const router = Router();
 
-// More specific route first
-router.get("/user/:userId", getTransactionsByID);
 
 // Generic routes after
 router.get("/", getTransaction);
-router.get("/:id", getTransactionsByID);
 
 router.post("/", createTransaction);
 router.put("/", updateTransaction);

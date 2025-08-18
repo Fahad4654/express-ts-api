@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import {
   findAllContents,
-  findContentById,
   createContent,
   updateContentById,
   deleteContentById,
@@ -36,34 +35,6 @@ export async function getContents(req: Request, res: Response) {
     return;
   } catch (error) {
     console.error("Error fetching contents:", error);
-    res.status(500).json({
-      status: 500,
-      message: error instanceof Error ? error.message : error,
-    });
-  }
-}
-
-export async function getContentsById(req: Request, res: Response) {
-  try {
-    const contentsId = req.params.id;
-    if (!contentsId) {
-      console.log("Content ID is required");
-      res.status(400).json({ error: "Content ID is required" });
-      return;
-    }
-
-    const foundContent = await findContentById(contentsId);
-    if (!foundContent) {
-      console.log("Content not found");
-      res.status(404).json({ error: "Content not found" });
-      return;
-    }
-
-    console.log("Content found", foundContent);
-    res.status(200).json({ status: 200, content: foundContent });
-    return;
-  } catch (error) {
-    console.error("Error finding content:", error);
     res.status(500).json({
       status: 500,
       message: error instanceof Error ? error.message : error,

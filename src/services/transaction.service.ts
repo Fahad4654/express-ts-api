@@ -2,8 +2,7 @@ import { Account } from "../models/Account";
 import { User } from "../models/User";
 import { Balance } from "../models/Balance";
 import { BalanceTransaction } from "../models/BalanceTransaction";
-import { findUserById } from "./user.service";
-import { getAccountById } from "./account.service";
+import { findByDynamicId } from "./find.service";
 
 export async function findAllTransactions(order: string, asc: string) {
   console.log(`Fetching all transactions, order: ${order}, asc: ${asc}`);
@@ -26,57 +25,6 @@ export async function findAllTransactions(order: string, asc: string) {
   return transactions;
 }
 
-export async function findTransactionById(id: string) {
-  console.log(`[Service] Fetching transaction with ID: ${id}`);
-  const transaction = await BalanceTransaction.findOne({
-    where: { id },
-    include: [
-      {
-        model: User,
-        attributes: ["id", "name", "email", "phoneNumber"],
-      },
-      {
-        model: Account,
-        attributes: ["id", "accountNumber", "status"],
-      },
-    ],
-    nest: true,
-    raw: true,
-  });
-  console.log(
-    `[Service] Transaction ${id} ${transaction ? "found" : "not found"}`
-  );
-  return transaction;
-}
-
-export async function findTransactionsByUserId(
-  userId: string,
-  order = "id",
-  asc = "ASC"
-) {
-  console.log(`[Service] Fetching transactions for userId: ${userId}`);
-  const transactions = await BalanceTransaction.findAll({
-    where: { userId },
-    include: [
-      {
-        model: User,
-        attributes: ["id", "name", "email", "phoneNumber"],
-      },
-      {
-        model: Account,
-        attributes: ["id", "accountNumber", "status"],
-      },
-    ],
-    nest: true,
-    raw: true,
-    order: [[order, asc]],
-  });
-  console.log(
-    `[Service] Found ${transactions.length} transactions for userId: ${userId}`
-  );
-  return transactions;
-}
-
 export async function createNewTransaction(data: any) {
   console.log(`[Service] Creating new transaction`, data);
   const { status, ...rest } = data; // remove status if present
@@ -93,17 +41,22 @@ export async function createNewTransaction(data: any) {
     referenceId,
   } = data;
 
-  const user = await findUserById(userId);
+  const typedUser = await findByDynamicId(User, { id: userId }, false);
+  const user = typedUser as User | null;
+  console.log(user);
+
   if (!user) throw new Error("User not found");
 
-  const account = await getAccountById(accountId);
+  const typedAccount = await findByDynamicId(Account, { id: accountId }, false);
+  const account = typedAccount as Account | null;
   console.log(account);
   if (!account) throw new Error("Account not found");
 
   if (account.userId !== userId)
     throw new Error("Account does not belong to the specified user");
 
-  const balance = await Balance.findByPk(balanceId);
+  const typedBalance = await findByDynamicId(Balance, { id: balanceId }, false);
+  const balance = typedBalance as Balance | null;
   if (!balance) throw new Error("Balance not found");
 
   if (balance.accountId !== accountId)
