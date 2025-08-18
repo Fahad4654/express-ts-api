@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { GameHistory } from "../models/GameHistory";
-import { createFindController } from "../controllers/find.controller";
+import { findController } from "../controllers/find.controller";
 import { BalanceTransaction } from "../models/BalanceTransaction";
 import { User } from "../models/User";
 import { Account } from "../models/Account";
@@ -12,14 +12,14 @@ import { Profile } from "../models/Profile";
 const router = Router();
 
 // Single record (default)
-router.post("/account", createFindController(Account));
-router.post("/balance", createFindController(Balance));
-router.post("/transaction", createFindController(BalanceTransaction));
-router.post("/content", createFindController(Contents));
-router.post("/game", createFindController(Game));
-router.post("/game-history", createFindController(GameHistory));
-router.post("/profile", createFindController(Profile));
-router.post("/user", createFindController(User));
+router.post("/account", findController(Account));
+router.post("/balance", findController(Balance));
+router.post("/transaction", findController(BalanceTransaction));
+router.post("/content", findController(Contents));
+router.post("/game", findController(Game));
+router.post("/game-history", findController(GameHistory));
+router.post("/profile", findController(Profile));
+router.post("/user", findController(User));
 
 export { router as findRouter };
 export { router };

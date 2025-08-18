@@ -6,7 +6,7 @@ import { findByDynamicId } from "../services/find.service";
  * Generic find controller.
  * Only allows exactly one identifier key at a time.
  */
-export function createFindController<T extends Model>(
+export function findController<T extends Model>(
   model: { new (): T } & typeof Model
 ) {
   return async (req: Request, res: Response): Promise<void> => {
