@@ -1,17 +1,17 @@
 import { Router } from "express";
 import {
-  getUsersProfile,
-  createUserProfile,
-  updateUserProfile,
-  deleteUserProfile,
+  getUsersProfileController,
+  createUserProfileController,
+  updateUserProfileController,
+  deleteUserProfileController,
 } from "../controllers/userProfile.controller";
 
 const router = Router();
 
-router.get("/", getUsersProfile);
-router.post("/", createUserProfile);
-router.put("/", updateUserProfile);
-router.delete("/", deleteUserProfile);
+router.get("/", getUsersProfileController);
+router.post("/", createUserProfileController);
+router.put("/", updateUserProfileController);
+router.delete("/", deleteUserProfileController);
 
 export { router as userCreateRouter };
 export { router };

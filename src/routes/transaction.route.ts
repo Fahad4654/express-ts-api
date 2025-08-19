@@ -1,20 +1,18 @@
 import { Router } from "express";
 import {
-  getTransaction,
-  createTransaction,
-  deleteTransaction,
-  updateTransaction,
+  getTransactionController,
+  createTransactionController,
+  deleteTransactionController,
+  updateTransactionController,
 } from "../controllers/transaction.controller";
 
 const router = Router();
 
-
 // Generic routes after
-router.get("/", getTransaction);
-
-router.post("/", createTransaction);
-router.put("/", updateTransaction);
-router.delete("/", deleteTransaction);
+router.get("/", getTransactionController);
+router.post("/", createTransactionController);
+router.put("/", updateTransactionController);
+router.delete("/", deleteTransactionController);
 
 export { router as transactionRouter };
 export { router };

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  getBalance,
+  getBalanceController,
   createBalanceController,
   updateBalanceController,
   deleteBalanceController,
@@ -9,7 +9,7 @@ import {
 
 const router = Router();
 
-router.get("/", getBalance);
+router.get("/", getBalanceController);
 router.post("/", createBalanceController);
 router.put("/", updateBalanceController);
 router.put("/final", finalizeTransactionController);

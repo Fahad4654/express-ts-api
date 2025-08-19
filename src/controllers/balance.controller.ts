@@ -10,7 +10,7 @@ import { findByDynamicId } from "../services/find.service";
 import { Balance } from "../models/Balance";
 import { User } from "../models/User";
 
-export async function getBalance(req: Request, res: Response) {
+export async function getBalanceController(req: Request, res: Response) {
   try {
     if (!req.body) {
       console.log("Request body is required");
@@ -89,7 +89,11 @@ export const deleteBalanceController = async (req: Request, res: Response) => {
       return;
     }
 
-    const foundtypedUser = await findByDynamicId(User, { id: req.body.userId }, false);
+    const foundtypedUser = await findByDynamicId(
+      User,
+      { id: req.body.userId },
+      false
+    );
     const foundUser = foundtypedUser as User | null;
     await deleteBalanceByAccountId(req.body.accountId);
 
@@ -183,7 +187,11 @@ export async function finalizeTransactionController(
       return;
     }
 
-    const updatedBalance = await findByDynamicId(Balance, { id: balanceId }, false);
+    const updatedBalance = await findByDynamicId(
+      Balance,
+      { id: balanceId },
+      false
+    );
     console.log("Transaction completed:", updatedBalance);
 
     res.status(200).json({

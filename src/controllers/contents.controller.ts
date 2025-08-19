@@ -6,7 +6,7 @@ import {
   deleteContentById,
 } from "../services/content.service";
 
-export async function getContents(req: Request, res: Response) {
+export async function getContentsController(req: Request, res: Response) {
   try {
     if (!req.body) {
       console.log("Request body is required");

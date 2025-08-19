@@ -2,13 +2,13 @@ import { Router } from "express";
 import {
   createContentController,
   deleteContentsController,
-  getContents,
+  getContentsController,
   updateContentsController,
 } from "../controllers/contents.controller";
 
 const router = Router();
 
-router.get("/", getContents);
+router.get("/", getContentsController);
 router.post("/", createContentController);
 router.put("/", updateContentsController);
 router.delete("/", deleteContentsController);

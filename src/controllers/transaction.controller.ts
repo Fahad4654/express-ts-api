@@ -7,7 +7,7 @@ import {
 } from "../services/transaction.service";
 
 // GET ALL
-export const getTransaction = async (req: Request, res: Response) => {
+export const getTransactionController = async (req: Request, res: Response) => {
   try {
     const { order, asc } = req.body;
     if (!req.body) {
@@ -40,9 +40,11 @@ export const getTransaction = async (req: Request, res: Response) => {
   }
 };
 
-
 // CREATE
-export const createTransaction = async (req: Request, res: Response) => {
+export const createTransactionController = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const transaction = await createNewTransaction(req.body);
     res.status(201).json({
@@ -58,7 +60,10 @@ export const createTransaction = async (req: Request, res: Response) => {
 };
 
 // DELETE
-export const deleteTransaction = async (req: Request, res: Response) => {
+export const deleteTransactionController = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { id, userId } = req.body;
     if (!id && !userId) {
@@ -90,7 +95,10 @@ export const deleteTransaction = async (req: Request, res: Response) => {
 };
 
 // UPDATE
-export const updateTransaction = async (req: Request, res: Response) => {
+export const updateTransactionController = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { id } = req.body;
     if (!id) {

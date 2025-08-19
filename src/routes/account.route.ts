@@ -1,17 +1,17 @@
 import { Router } from "express";
 import {
-  getAccounts,
-  createAccount,
-  updateAccount,
-  deleteAccount,
+  getAccountsController,
+  createAccountController,
+  updateAccountController,
+  deleteAccountController,
 } from "../controllers/account.controller";
 
 const router = Router();
 
-router.get("/", getAccounts);
-router.post("/", createAccount);
-router.put("/", updateAccount);
-router.delete("/", deleteAccount);
+router.get("/", getAccountsController);
+router.post("/", createAccountController);
+router.put("/", updateAccountController);
+router.delete("/", deleteAccountController);
 
 export { router as accountRouter };
 export { router };

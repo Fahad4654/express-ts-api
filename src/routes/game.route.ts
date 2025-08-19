@@ -1,27 +1,26 @@
 import { Router } from "express";
 import {
-  getGame,
-  getGameHistory,
+  getGameController,
+  getGameHistoryController,
   createGameController,
   createGameHistoryController,
   deleteGameController,
   deleteGameHistoryController,
-  updateGame,
-  updateGameHistory,
+  updateGameController,
+  updateGameHistoryController,
 } from "../controllers/game.controller";
 
 const router = Router();
 
 // Generic routes after
-router.get("/", getGame);
+router.get("/", getGameController);
 router.post("/", createGameController);
-router.put("/", updateGame);
+router.put("/", updateGameController);
 router.delete("/", deleteGameController);
 
-
-router.get("/history", getGameHistory);
+router.get("/history", getGameHistoryController);
 router.post("/history", createGameHistoryController);
-router.put("/history", updateGameHistory);
+router.put("/history", updateGameHistoryController);
 router.delete("/history", deleteGameHistoryController);
 
 export { router as gameRouter };

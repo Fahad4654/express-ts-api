@@ -11,7 +11,7 @@ import {
 } from "../services/game.service";
 
 // GET ALL
-export const getGame = async (req: Request, res: Response) => {
+export const getGameController = async (req: Request, res: Response) => {
   try {
     const { order, asc } = req.body;
     if (!req.body) {
@@ -31,9 +31,9 @@ export const getGame = async (req: Request, res: Response) => {
     }
 
     const games = await findAllGame(order, asc);
-    console.log("Transaction list fetched successfully", games);
+    console.log("Game list fetched successfully", games);
     res.status(200).json({
-      message: "Transaction list fetched successfully",
+      message: "Game list fetched successfully",
       games,
       status: "success",
     });
@@ -44,7 +44,7 @@ export const getGame = async (req: Request, res: Response) => {
   }
 };
 
-export const getGameHistory = async (req: Request, res: Response) => {
+export const getGameHistoryController = async (req: Request, res: Response) => {
   try {
     const { order, asc } = req.body;
     if (!req.body) {
@@ -64,9 +64,9 @@ export const getGameHistory = async (req: Request, res: Response) => {
     }
 
     const gamesHistorys = await findAllGameHistory(order, asc);
-    console.log("Transaction list fetched successfully", gamesHistorys);
+    console.log("Game history list fetched successfully", gamesHistorys);
     res.status(200).json({
-      message: "Transaction list fetched successfully",
+      message: "Game history list fetched successfully",
       gamesHistorys,
       status: "success",
     });
@@ -110,6 +110,7 @@ export const createGameHistoryController = async (
     res.status(500).json({ status: 500, message: String(error) });
   }
 };
+
 // DELETE
 export const deleteGameController = async (req: Request, res: Response) => {
   try {
@@ -132,7 +133,10 @@ export const deleteGameController = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteGameHistoryController = async (req: Request, res: Response) => {
+export const deleteGameHistoryController = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { id, userId } = req.body;
     if (!id && !userId) {
@@ -164,7 +168,7 @@ export const deleteGameHistoryController = async (req: Request, res: Response) =
 };
 
 // UPDATE
-export const updateGame = async (req: Request, res: Response) => {
+export const updateGameController = async (req: Request, res: Response) => {
   try {
     const { id } = req.body;
     if (!id) {
@@ -187,8 +191,10 @@ export const updateGame = async (req: Request, res: Response) => {
   }
 };
 
-
-export const updateGameHistory = async (req: Request, res: Response) => {
+export const updateGameHistoryController = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { id } = req.body;
     if (!id) {

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import * as accountService from "../services/account.service";
 
-export async function getAccounts(req: Request, res: Response) {
+export async function getAccountsController(req: Request, res: Response) {
   try {
     if (!req.body) {
       console.log("Request body is required");
@@ -34,7 +34,7 @@ export async function getAccounts(req: Request, res: Response) {
   }
 }
 
-export async function createAccount(req: Request, res: Response) {
+export async function createAccountController(req: Request, res: Response) {
   try {
     if (!req.body) {
       console.log("Request body is required");
@@ -57,7 +57,7 @@ export async function createAccount(req: Request, res: Response) {
   }
 }
 
-export async function deleteAccount(req: Request, res: Response) {
+export async function deleteAccountController(req: Request, res: Response) {
   try {
     if (!req.body) {
       console.log("Request body is required");
@@ -95,7 +95,7 @@ export async function deleteAccount(req: Request, res: Response) {
   }
 }
 
-export async function updateAccount(req: Request, res: Response) {
+export async function updateAccountController(req: Request, res: Response) {
   try {
     if (!req.body) {
       console.log("Request body is required");

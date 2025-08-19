@@ -8,7 +8,7 @@ import {
 import { User } from "../models/User";
 import { findByDynamicId } from "../services/find.service";
 
-export async function getUsers(req: Request, res: Response) {
+export async function getUsersController(req: Request, res: Response) {
   try {
     if (!req.body) {
       console.log("Request body is required");
@@ -42,7 +42,7 @@ export async function getUsers(req: Request, res: Response) {
   }
 }
 
-export async function getUsersById(req: Request, res: Response) {
+export async function getUsersByIdController(req: Request, res: Response) {
   try {
     const userId = req.params.id;
     if (!userId) {

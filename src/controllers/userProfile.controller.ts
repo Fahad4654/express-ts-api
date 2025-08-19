@@ -7,7 +7,7 @@ import {
 } from "../services/profile.service";
 
 // User Profile List
-export async function getUsersProfile(req: Request, res: Response) {
+export async function getUsersProfileController(req: Request, res: Response) {
   try {
     if (!req.body) {
       console.log("Request body is required");
@@ -36,13 +36,13 @@ export async function getUsersProfile(req: Request, res: Response) {
     });
     return;
   } catch (error) {
-    console.error("Error fetching user:", error);
-    res.status(500).json({ message: "Error fetching user:", error });
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({ message: "Error fetching user profile", error });
   }
 }
 
 // Create User Profile
-export async function createUserProfile(req: Request, res: Response) {
+export async function createUserProfileController(req: Request, res: Response) {
   try {
     if (!req.body) {
       console.log("Request body is required");
@@ -51,21 +51,21 @@ export async function createUserProfile(req: Request, res: Response) {
     }
     const newProfile = await createProfile(req.body);
 
-    console.log("User created successfully", newProfile);
+    console.log("User profile created successfully", newProfile);
     res.status(201).json({
-      message: "User created successfully",
+      message: "User profile created successfully",
       profile: newProfile,
       status: "success",
     });
     return;
   } catch (error) {
-    console.error("Error creating user:", error);
-    res.status(500).json({ message: "Error creating user", error });
+    console.error("Error creating user profile:", error);
+    res.status(500).json({ message: "Error creating user profile", error });
   }
 }
 
 // Delete User Profile
-export async function deleteUserProfile(req: Request, res: Response) {
+export async function deleteUserProfileController(req: Request, res: Response) {
   try {
     if (!req.body || !req.body.userId) {
       console.log("UserId is required");
@@ -97,7 +97,7 @@ export async function deleteUserProfile(req: Request, res: Response) {
 }
 
 // Update User Profile
-export async function updateUserProfile(req: Request, res: Response) {
+export async function updateUserProfileController(req: Request, res: Response) {
   try {
     if (!req.body || !req.body.userId) {
       console.log("UserId is required");
