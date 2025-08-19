@@ -11,7 +11,7 @@ import {
 @Table({
   tableName: "game",
   timestamps: true,
-  indexes: [{ fields: ["status"] }],
+  indexes: [{ fields: ["gameStatus"] }],
 })
 export class Game extends Model {
   @PrimaryKey
@@ -32,9 +32,9 @@ export class Game extends Model {
   minimumBet!: number;
 
   /** Status */
-  @Default("pending")
+  @Default("active")
   @Column(DataType.ENUM("active", "closed", "exclusive"))
-  status!: "active" | "closed" | "exclusive";
+  gameStatus!: "active" | "closed" | "exclusive";
 
   @Column(DataType.DATE)
   createdAt!: Date;

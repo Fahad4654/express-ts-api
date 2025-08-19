@@ -1,7 +1,6 @@
 import { Account } from "../models/Account";
 import { User } from "../models/User";
 import { Balance } from "../models/Balance";
-import { BalanceTransaction } from "../models/BalanceTransaction";
 import { Game } from "../models/Game";
 import { GameHistory } from "../models/GameHistory";
 import { findByDynamicId } from "./find.service";
@@ -157,7 +156,7 @@ export async function updateGameById(id: string, updates: any) {
     "name",
     "description",
     "minimumBet",
-    "status",
+    "gameStatus",
   ];
 
   const filteredUpdates: Partial<Game> = {};
