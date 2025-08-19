@@ -7,39 +7,44 @@ import {
 } from "../services/user.service";
 import { User } from "../models/User";
 import { findByDynamicId } from "../services/find.service";
+import { isAdmin } from "../middlewares/isAdmin.middleware";
 
 export async function getUsersController(req: Request, res: Response) {
-  try {
-    if (!req.body) {
-      console.log("Request body is required");
-      res.status(400).json({ error: "Request body is required" });
-      return;
-    }
-    const { order, asc } = req.body;
-    if (!order) {
-      console.log("Field to sort is required");
-      res.status(400).json({ error: "Field to sort is required" });
-      return;
-    }
-    if (!asc) {
-      console.log("Order direction is required");
-      res.status(400).json({ error: "Order direction is required" });
-      return;
-    }
+  const adminMiddleware = isAdmin();
 
-    const usersList = await findAllUsers(order, asc);
-    console.log("User fetched successfully");
-    console.log("usersList", usersList);
-    res.status(200).json({
-      message: "User fetched successfully",
-      usersList,
-      status: "success",
-    });
-    return;
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ message: "Error fetching users", error });
-  }
+  adminMiddleware(req, res, async () => {
+    try {
+      if (!req.body) {
+        console.log("Request body is required");
+        res.status(400).json({ error: "Request body is required" });
+        return;
+      }
+      const { order, asc } = req.body;
+      if (!order) {
+        console.log("Field to sort is required");
+        res.status(400).json({ error: "Field to sort is required" });
+        return;
+      }
+      if (!asc) {
+        console.log("Order direction is required");
+        res.status(400).json({ error: "Order direction is required" });
+        return;
+      }
+
+      const usersList = await findAllUsers(order, asc);
+      console.log("User fetched successfully");
+      console.log("usersList", usersList);
+      res.status(200).json({
+        message: "User fetched successfully",
+        usersList,
+        status: "success",
+      });
+      return;
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Error fetching users", error });
+    }
+  });
 }
 
 export async function getUsersByIdController(req: Request, res: Response) {
@@ -70,25 +75,29 @@ export async function getUsersByIdController(req: Request, res: Response) {
 }
 
 export async function createUserController(req: Request, res: Response) {
-  try {
-    if (!req.body.password) {
-      res.status(400).json({ error: "Password is required" });
+  const adminMiddleware = isAdmin();
+
+  adminMiddleware(req, res, async () => {
+    try {
+      if (!req.body.password) {
+        res.status(400).json({ error: "Password is required" });
+        return;
+      }
+
+      const newUser = await createUser(req.body);
+      const { password, ...userWithoutPassword } = newUser.toJSON();
+
+      res.status(201).json({
+        message: "User created successfully",
+        user: userWithoutPassword,
+        status: "success",
+      });
       return;
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Error creating users:", error });
     }
-
-    const newUser = await createUser(req.body);
-    const { password, ...userWithoutPassword } = newUser.toJSON();
-
-    res.status(201).json({
-      message: "User created successfully",
-      user: userWithoutPassword,
-      status: "success",
-    });
-    return;
-  } catch (error) {
-    console.error("Error creating user:", error);
-    res.status(500).json({ message: "Error creating users:", error });
-  }
+  });
 }
 
 export async function updateUserController(req: Request, res: Response) {
