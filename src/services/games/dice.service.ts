@@ -15,14 +15,12 @@ export function rollDice(betAmount: number, betType: BetType, numDice: number) {
   const minTotal = numDice * 1;
   const maxTotal = numDice * 6;
   const midTotal = (minTotal + maxTotal) / 2;
+
+  // Internal "exact" value logic: only the **middle total** counts as exact
+  // For odd number of dice, round to nearest integer
   const exactVal = Math.round(midTotal);
-  console.log(exactVal);
-  
 
   if (betType === "exact") {
-    // Internal "exact" value logic: only the **middle total** counts as exact
-    // For odd number of dice, round to nearest integer
-    
     isWin = total === exactVal;
     multiplier = 5;
   } else if (betType === "low") {
