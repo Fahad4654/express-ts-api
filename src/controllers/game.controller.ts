@@ -8,6 +8,7 @@ import {
   deleteGameHistoryByIdOrUserId,
   updatGameHistoryById,
   updateGameById,
+  gameBalance,
 } from "../services/game.service";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 
@@ -113,6 +114,7 @@ export const createGameHistoryController = async (
       gameHistory,
       status: "success",
     });
+    await gameBalance(gameHistory.id);
     return;
   } catch (error) {
     console.error("Error creating Game History:", error);

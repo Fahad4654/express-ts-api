@@ -4,6 +4,7 @@ import { Balance } from "../models/Balance";
 import { Game } from "../models/Game";
 import { GameHistory } from "../models/GameHistory";
 import { findByDynamicId } from "./find.service";
+import { sequelize } from "../config/database";
 
 export async function findAllGame(order: string, asc: string) {
   console.log(`Fetching all games, order: ${order}, asc: ${asc}`);
@@ -214,5 +215,50 @@ export async function updatGameHistoryById(id: string, updates: any) {
 
   return GameHistory.findByPk(id, {
     attributes: { exclude: ["createdAt", "updatedAt"] },
+  });
+}
+
+export async function gameBalance(gameHistoryId: string) {
+  return sequelize.transaction(async (t) => {
+    const gameHistory = await GameHistory.findByPk(gameHistoryId, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+
+    if (!gameHistory) {
+      console.log("Game history not found");
+      throw new Error("Game history not found");
+    }
+
+    const balance = await Balance.findByPk(gameHistory.balanceId, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+
+    if (!balance) {
+      console.log("Balance not found");
+      throw new Error("Balance not found");
+    }
+
+    if (gameHistory.direction === "credit") {
+      balance.availableBalance =
+        Number(balance.availableBalance) + Number(gameHistory.amount);
+      balance.withdrawableBalance =
+        Number(balance.withdrawableBalance) + Number(gameHistory.amount);
+    } else if (gameHistory.direction === "debit") {
+      balance.availableBalance =
+        Number(balance.availableBalance) - Number(gameHistory.amount);
+      if (Number(balance.withdrawableBalance) < gameHistory.amount) {
+        balance.withdrawableBalance = 0;
+      } else {
+        balance.withdrawableBalance =
+          Number(balance.withdrawableBalance) - Number(gameHistory.amount);
+      }
+    }
+
+    balance.lastTransactionAt = new Date();
+    await balance.save({ transaction: t });
+
+    return { balance, gameHistory };
   });
 }
