@@ -1,16 +1,20 @@
 import { Request, Response } from "express";
-import { spinSlot } from "../../services/games/slot.service";
+import { rollDice } from "../../services/games/dice.service";
 import {
   createGameHistory,
   gameBalance,
 } from "../../services/games/betAmmount.service";
-import { findByDynamicId } from "../../services/find.service";
 import { Game } from "../../models/Game";
+import { findByDynamicId } from "../../services/find.service";
 
-export async function spinSlotController(req: Request, res: Response) {
+export async function rollDiceController(req: Request, res: Response) {
   try {
     const user = req.user;
-    const typedGame = await findByDynamicId(Game, { name: "Slot" }, false);
+    const typedGame = await findByDynamicId(
+      Game,
+      { name: "Dice roller" },
+      false
+    );
     const game = typedGame as Game | null;
     const gameId = game?.id;
     if (!user) {
@@ -24,15 +28,19 @@ export async function spinSlotController(req: Request, res: Response) {
       res.status(404).json({ error: "Game not found" });
       return;
     }
+    const { betAmount, betType, numDice } = req.body;
 
-    const { betAmount } = req.body;
-    if (!betAmount || Number(betAmount) < game?.minimumBet) {
-      console.log("Invalid bet amount");
-      res.status(400).json({ error: "Invalid bet amount" });
+    if (!betAmount || Number(betAmount) <= 0) {
+      res.status(400).json({ error: "betAmount must be > 0" });
+      return;
+    }
+    if (!["low", "high", "exact"].includes(betType)) {
+      res.status(400).json({ error: "betType must be low|high|exact" });
       return;
     }
 
-    const result = spinSlot(betAmount);
+    const result = rollDice(Number(betAmount), betType, Number(numDice) || 3);
+
     const type = result.isWin ? "win" : "loss";
     if (Number(betAmount) > 10000) {
       res
@@ -45,9 +53,13 @@ export async function spinSlotController(req: Request, res: Response) {
     const gameHistory = await createGameHistory(user.id, amount, gameId, type);
     await gameBalance(gameHistory.id);
     console.log(result);
+
+    // TODO: persist and update balances, game history
+
     res.status(200).json(result);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return;
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message ?? "dice roll failed" });
+    return;
   }
 }
