@@ -1,32 +1,66 @@
-// minimal poker engine just to scaffold endpoints
+// --- Poker Engine with Sessions (Blackjack-style) ---
+
 export type Suit = "Hearts" | "Diamonds" | "Clubs" | "Spades";
-export type Rank = "2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"J"|"Q"|"K"|"A";
-export type Card = { suit: Suit; rank: Rank };
+export type Rank =
+  | "A"
+  | "2"
+  | "3"
+  | "4"
+  | "5"
+  | "6"
+  | "7"
+  | "8"
+  | "9"
+  | "10"
+  | "J"
+  | "Q"
+  | "K";
+
+export type Card = { suit: Suit; rank: Rank; hidden?: boolean };
 export type PokerState = "draw" | "showdown";
 
-const sessions = new Map<string, {
+export interface PokerSession {
   deck: Card[];
   player: Card[];
   dealer: Card[];
-  state: PokerState;
   betAmount: number;
-}>();
-
-// build and shuffle a deck
-function deck(): Card[] {
-  const suits: Suit[] = ["Hearts","Diamonds","Clubs","Spades"];
-  const ranks: Rank[] = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
-  const d: Card[] = [];
-  for (const s of suits) for (const r of ranks) d.push({ suit: s, rank: r });
-  for (let i = d.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [d[i], d[j]] = [d[j], d[i]];
-  }
-  return d;
+  state: PokerState;
+  timeout?: NodeJS.Timeout;
 }
-function draw(d: Card[]) { return d.pop()!; }
 
-// --- Poker evaluation helpers ---
+const sessions = new Map<string, PokerSession>();
+
+// --- Deck helpers ---
+function freshDeck(): Card[] {
+  const suits: Suit[] = ["Hearts", "Diamonds", "Clubs", "Spades"];
+  const ranks: Rank[] = [
+    "A",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "J",
+    "Q",
+    "K",
+  ];
+  const deck: Card[] = [];
+  for (const s of suits) for (const r of ranks) deck.push({ suit: s, rank: r });
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  return deck;
+}
+function draw(deck: Card[]): Card {
+  return deck.pop()!;
+}
+
+// --- Hand evaluation ---
 function evaluateHand(hand: Card[]): { rank: number; name: string; values: number[] } {
   const rankOrder: Rank[] = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
   const valueOf = (r: Rank) => rankOrder.indexOf(r);
@@ -70,17 +104,38 @@ function compareHands(h1: Card[], h2: Card[]) {
   return "Push";
 }
 
-// --- Deal new game ---
-export function pokerDeal(userId: string, betAmount: number) {
-  const d = deck();
-  const player = [draw(d), draw(d), draw(d), draw(d), draw(d)];
-  const dealer = [draw(d), draw(d), draw(d), draw(d), draw(d)];
-
-  sessions.set(userId, { deck: d, player, dealer, state: "draw", betAmount });
-  return { gameId: userId, gameState: "draw", playerHand: player, dealerHand: dealer.map(_ => ({..._, hidden: true})) };
+// --- Session timeout ---
+function refreshSessionTimer(userId: string, s: PokerSession) {
+  if (s.timeout) clearTimeout(s.timeout);
+  s.timeout = setTimeout(() => {
+    if (sessions.has(userId)) {
+      sessions.delete(userId);
+      console.log(`Poker session for ${userId} expired after 5 minutes`);
+    }
+  }, 5 * 60 * 1000);
 }
 
-// --- Draw step ---
+// --- Game flow ---
+export function pokerDeal(userId: string, betAmount: number) {
+  if (sessions.has(userId)) throw new Error("You already have an active poker session");
+
+  const deck = freshDeck();
+  const player = [draw(deck), draw(deck), draw(deck), draw(deck), draw(deck)];
+  const dealer = [draw(deck), draw(deck), draw(deck), draw(deck), draw(deck)];
+
+  const s: PokerSession = { deck, player, dealer, betAmount, state: "draw" };
+  sessions.set(userId, s);
+
+  refreshSessionTimer(userId, s);
+
+  return {
+    gameId: userId,
+    gameState: s.state,
+    playerHand: s.player,
+    dealerHand: dealer.map((c, i) => ({ ...c, hidden: true })),
+  };
+}
+
 export function pokerDraw(userId: string, holdIndices: number[]) {
   const s = sessions.get(userId);
   if (!s) throw new Error("No poker session");
@@ -94,7 +149,12 @@ export function pokerDraw(userId: string, holdIndices: number[]) {
   const dealerEval = evaluateHand(s.dealer);
   const winner = compareHands(s.player, s.dealer);
 
-  const winAmount = winner === "Player" ? s.betAmount * 2 : (winner === "Push" ? s.betAmount : 0);
+  let winAmount = 0;
+  if (winner === "Player") winAmount = s.betAmount * 2;
+  else if (winner === "Push") winAmount = s.betAmount;
+
+  if (s.timeout) clearTimeout(s.timeout);
+  sessions.delete(userId);
 
   return {
     gameId: userId,
@@ -102,6 +162,6 @@ export function pokerDraw(userId: string, holdIndices: number[]) {
     playerHand: { cards: s.player, rank: playerEval.name },
     dealerHand: { cards: s.dealer, rank: dealerEval.name },
     winner,
-    winAmount
+    winAmount,
   };
 }
