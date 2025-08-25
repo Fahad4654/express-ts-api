@@ -4,16 +4,36 @@ import {
   faPick,
   faCashout,
 } from "../../services/games/fortuneApple.service";
+import { findByDynamicId } from "../../services/find.service";
+import { Game } from "../../models/Game";
 
 export async function faStartController(req: Request, res: Response) {
   try {
-    const userId = req.user?.id!;
+    const user = req.user;
+    const typedGame = await findByDynamicId(
+      Game,
+      { name: "Fortune apple" },
+      false
+    );
+    const game = typedGame as Game | null;
+    const gameId = game?.id;
+    if (!user) {
+      console.log("User not found");
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    if (!gameId) {
+      console.log("Game not found");
+      res.status(404).json({ error: "Game not found" });
+      return;
+    }
     const { betAmount } = req.body;
     if (!betAmount || Number(betAmount) <= 0) {
       res.status(400).json({ error: "betAmount must be > 0" });
       return;
     }
-    const result = faStart(userId, Number(betAmount));
+    const result = faStart(user.id, Number(betAmount));
     res.status(200).json(result);
     return;
   } catch (e: any) {
@@ -24,13 +44,39 @@ export async function faStartController(req: Request, res: Response) {
 
 export async function faPickController(req: Request, res: Response) {
   try {
-    const userId = req.user?.id!;
-    const { gameId, level, appleIndex } = req.body;
-    if (!gameId || gameId !== userId) {
-      res.status(400).json({ error: "invalid gameId" });
+    const user = req.user;
+    const typedGame = await findByDynamicId(
+      Game,
+      { name: "Fortune apple" },
+      false
+    );
+    const game = typedGame as Game | null;
+    const gameId = game?.id;
+    if (!user) {
+      console.log("User not found");
+      res.status(404).json({ error: "User not found" });
       return;
     }
-    const result = faPick(userId, Number(level), Number(appleIndex));
+
+    if (!gameId) {
+      console.log("Game not found");
+      res.status(404).json({ error: "Game not found" });
+      return;
+    }
+    const { level, appleIndex } = req.body;
+
+    if (!level) {
+      console.log("Level not found");
+      res.status(404).json({ error: "Level not found" });
+      return;
+    }
+
+    if (!appleIndex) {
+      console.log("Apple Index not found");
+      res.status(404).json({ error: "Apple Index not found" });
+      return;
+    }
+    const result = faPick(user.id, Number(level), Number(appleIndex));
     res.status(200).json(result);
     return;
   } catch (e: any) {
@@ -41,13 +87,26 @@ export async function faPickController(req: Request, res: Response) {
 
 export async function faCashoutController(req: Request, res: Response) {
   try {
-    const userId = req.user?.id!;
-    const { gameId } = req.body;
-    if (!gameId || gameId !== userId) {
-      res.status(400).json({ error: "invalid gameId" });
+    const user = req.user;
+    const typedGame = await findByDynamicId(
+      Game,
+      { name: "Fortune apple" },
+      false
+    );
+    const game = typedGame as Game | null;
+    const gameId = game?.id;
+    if (!user) {
+      console.log("User not found");
+      res.status(404).json({ error: "User not found" });
       return;
     }
-    const result = faCashout(userId);
+
+    if (!gameId) {
+      console.log("Game not found");
+      res.status(404).json({ error: "Game not found" });
+      return;
+    }
+    const result = faCashout(user.id);
     res.status(200).json(result);
     return;
   } catch (e: any) {
