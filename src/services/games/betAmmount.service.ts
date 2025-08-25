@@ -9,7 +9,8 @@ export async function createGameHistory(
   userId: string,
   amount: number,
   gameId: string,
-  type: string
+  type: string,
+  description?: string
 ) {
   console.log(`[Service] Creating new transaction for`, userId);
 
@@ -47,7 +48,7 @@ export async function createGameHistory(
     direction: type === "win" ? "credit" : "debit",
     amount,
     currency: "BDT",
-    description: "nothing",
+    description: description ? description : "nothing",
   });
   console.log(
     `[Service] Transaction created successfully with ID: ${newGameHistory.id}`
