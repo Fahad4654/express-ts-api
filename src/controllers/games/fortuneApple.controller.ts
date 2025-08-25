@@ -6,6 +6,10 @@ import {
 } from "../../services/games/fortuneApple.service";
 import { findByDynamicId } from "../../services/find.service";
 import { Game } from "../../models/Game";
+import {
+  createGameHistory,
+  gameBalance,
+} from "../../services/games/betAmmount.service";
 
 export async function faStartController(req: Request, res: Response) {
   try {
@@ -34,6 +38,16 @@ export async function faStartController(req: Request, res: Response) {
       return;
     }
     const result = faStart(user.id, Number(betAmount));
+    const amount = betAmount;
+    const gameHistory = await createGameHistory(
+      user.id,
+      amount,
+      gameId,
+      "loss",
+      "First Deal"
+    );
+    await gameBalance(gameHistory.id);
+    console.log(`${user.id} is ${result.gameState}`);
     res.status(200).json(result);
     return;
   } catch (e: any) {
@@ -77,6 +91,11 @@ export async function faPickController(req: Request, res: Response) {
       return;
     }
     const result = faPick(user.id, Number(level), Number(appleIndex));
+    console.log(
+      result.gameState === "gameOver"
+        ? `${user.id} choose Good apple & won`
+        : `${user.id} is ${result.gameState}`
+    );
     res.status(200).json(result);
     return;
   } catch (e: any) {
@@ -107,6 +126,16 @@ export async function faCashoutController(req: Request, res: Response) {
       return;
     }
     const result = faCashout(user.id);
+    const amount = result.finalWinAmount;
+    if (amount === 0) {
+      console.log(`${user.id} choose bad apple`);
+      res.status(200).json(result);
+      return;
+    }
+    const type = "win";
+    const gameHistory = await createGameHistory(user.id, amount, gameId, type);
+    await gameBalance(gameHistory.id);
+    console.log(`${user.id} cashed out`);
     res.status(200).json(result);
     return;
   } catch (e: any) {
