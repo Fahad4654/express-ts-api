@@ -7,8 +7,8 @@ import {
 import { findByDynamicId } from "../../services/find.service";
 import { Game } from "../../models/Game";
 import {
-  createGameHistory,
-  gameBalance,
+  createGameHistoryforGames,
+  gameBalanceforGames,
 } from "../../services/games/betAmmount.service";
 
 export async function faStartController(req: Request, res: Response) {
@@ -33,20 +33,27 @@ export async function faStartController(req: Request, res: Response) {
       return;
     }
     const { betAmount } = req.body;
-    if (!betAmount || Number(betAmount) <= 0) {
-      res.status(400).json({ error: "betAmount must be > 0" });
+    if (!betAmount || Number(betAmount) < Number(game?.minimumBet)) {
+      console.log("Invalid bet amount");
+      res.status(400).json({ error: "Invalid bet amount" });
+      return;
+    }
+    if (Number(betAmount) > 10000) {
+      res
+        .status(400)
+        .json({ error: "Amount should be less than or equal to 10000" });
       return;
     }
     const result = faStart(user.id, Number(betAmount));
     const amount = betAmount;
-    const gameHistory = await createGameHistory(
+    const gameHistory = await createGameHistoryforGames(
       user.id,
       amount,
       gameId,
       "loss",
       "First Deal"
     );
-    await gameBalance(gameHistory.id);
+    await gameBalanceforGames(gameHistory.id);
     console.log(`${user.id} is ${result.gameState}`);
     res.status(200).json(result);
     return;
@@ -133,8 +140,13 @@ export async function faCashoutController(req: Request, res: Response) {
       return;
     }
     const type = "win";
-    const gameHistory = await createGameHistory(user.id, amount, gameId, type);
-    await gameBalance(gameHistory.id);
+    const gameHistory = await createGameHistoryforGames(
+      user.id,
+      amount,
+      gameId,
+      type
+    );
+    await gameBalanceforGames(gameHistory.id);
     console.log(`${user.id} cashed out`);
     res.status(200).json(result);
     return;

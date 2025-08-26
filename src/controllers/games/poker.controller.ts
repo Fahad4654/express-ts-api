@@ -3,8 +3,8 @@ import { pokerDeal, pokerDraw } from "../../services/games/poker.service";
 import { findByDynamicId } from "../../services/find.service";
 import { Game } from "../../models/Game";
 import {
-  createGameHistory,
-  gameBalance,
+  createGameHistoryforGames,
+  gameBalanceforGames,
 } from "../../services/games/betAmmount.service";
 
 export async function pokerDealController(req: Request, res: Response) {
@@ -26,20 +26,27 @@ export async function pokerDealController(req: Request, res: Response) {
       return;
     }
     const { betAmount } = req.body;
-    if (!betAmount || Number(betAmount) <= 0) {
-      res.status(400).json({ error: "betAmount must be > 0" });
+    if (!betAmount || Number(betAmount) < Number(game?.minimumBet)) {
+      console.log("Invalid bet amount");
+      res.status(400).json({ error: "Invalid bet amount" });
+      return;
+    }
+    if (Number(betAmount) > 10000) {
+      res
+        .status(400)
+        .json({ error: "Amount should be less than or equal to 10000" });
       return;
     }
     const result = pokerDeal(userId, Number(betAmount));
     const amount = betAmount;
-    const gameHistory = await createGameHistory(
+    const gameHistory = await createGameHistoryforGames(
       user.id,
       amount,
       gameId,
       "loss",
       "First Deal"
     );
-    await gameBalance(gameHistory.id);
+    await gameBalanceforGames(gameHistory.id);
     console.log(result.gameState);
     res.status(200).json(result);
     return;
@@ -88,14 +95,14 @@ export async function pokerDrawController(req: Request, res: Response) {
     const type = result.winner === "Dealer" ? "loss" : "win";
     const description =
       result.winner === "Push" ? "it's a draw" : `Winner is ${result.winner}`;
-    const gameHistory = await createGameHistory(
+    const gameHistory = await createGameHistoryforGames(
       user.id,
       amount,
       gameId,
       type,
       description
     );
-    await gameBalance(gameHistory.id);
+    await gameBalanceforGames(gameHistory.id);
     console.log(
       result.gameState === "gameOver"
         ? `It's a ${result.gameState} & winner is ${result.winner}`

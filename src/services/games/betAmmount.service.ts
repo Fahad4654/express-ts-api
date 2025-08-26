@@ -5,7 +5,7 @@ import { GameHistory } from "../../models/GameHistory";
 import { User } from "../../models/User";
 import { findByDynamicId } from "../find.service";
 
-export async function createGameHistory(
+export async function createGameHistoryforGames(
   userId: string,
   amount: number,
   gameId: string,
@@ -56,7 +56,7 @@ export async function createGameHistory(
   return newGameHistory;
 }
 
-export async function gameBalance(gameHistoryId: string) {
+export async function gameBalanceforGames(gameHistoryId: string) {
   return sequelize.transaction(async (t) => {
     const gameHistory = await GameHistory.findByPk(gameHistoryId, {
       transaction: t,
