@@ -7,7 +7,8 @@ import {
   BelongsTo,
   AllowNull,
   PrimaryKey,
-  Default
+  Default,
+  Unique
 } from "sequelize-typescript";
 import { Balance } from "./Balance";
 import { Account } from "./Account";
@@ -81,6 +82,7 @@ export class BalanceTransaction extends Model {
   description!: string;
 
   /** Reference to external payment/order */
+  @Unique
   @Column(DataType.STRING)
   referenceId!: string;
 
