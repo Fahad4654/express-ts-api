@@ -4,46 +4,19 @@ import {
   createGameHistoryforGames,
   gameBalanceforGames,
 } from "../../services/games/betAmmount.service";
-import { findByDynamicId } from "../../services/find.service";
-import { Game } from "../../models/Game";
+import { validateGameWithBet } from "../../services/games/gameValidation.service";
+import { validateGameAndUser } from "../../services/games/validateGameAndUser.service";
 
 export async function bjDealController(req: Request, res: Response) {
   try {
-    const user = req.user;
-    const typedGame = await findByDynamicId(
-      Game,
-      { name: "Black jack" },
-      false
-    );
-    const game = typedGame as Game | null;
-    const gameId = game?.id;
-    if (!user) {
-      console.log("User not found");
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
+    const validation = await validateGameWithBet(req, res, "Black jack");
+    if (!validation) return; // validation already sent response
 
-    if (!gameId) {
-      console.log("Game not found");
-      res.status(404).json({ error: "Game not found" });
-      return;
-    }
-    const { betAmount } = req.body;
-    if (!betAmount || Number(betAmount) < Number(game?.minimumBet)) {
-      console.log("Invalid bet amount");
-      res.status(400).json({ error: "Invalid bet amount" });
-      return;
-    }
-    if (Number(betAmount) > 10000) {
-      res
-        .status(400)
-        .json({ error: "Amount should be less than or equal to 10000" });
-      return;
-    }
-    const result = bjDeal(user.id, Number(betAmount));
+    const { userId, betAmount, gameId } = validation;
+    const result = bjDeal(userId, Number(betAmount));
     const amount = betAmount;
     const gameHistory = await createGameHistoryforGames(
-      user.id,
+      userId,
       amount,
       gameId,
       "loss",
@@ -65,26 +38,11 @@ export async function bjDealController(req: Request, res: Response) {
 
 export async function bjHitController(req: Request, res: Response) {
   try {
-    const user = req.user;
-    const typedGame = await findByDynamicId(
-      Game,
-      { name: "Black jack" },
-      false
-    );
-    const game = typedGame as Game | null;
-    const gameId = game?.id;
-    if (!user) {
-      console.log("User not found");
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
+    const validation = await validateGameAndUser(req, res, "Black jack");
+    if (!validation) return; // already handled response
 
-    if (!gameId) {
-      console.log("Game not found");
-      res.status(404).json({ error: "Game not found" });
-      return;
-    }
-    const result = bjHit(user.id);
+    const { userId, gameId } = validation;
+    const result = bjHit(userId);
     const amount = result.winAmount;
     if (amount === 0) {
       console.log(
@@ -99,7 +57,7 @@ export async function bjHitController(req: Request, res: Response) {
     const description =
       result.winner === "Push" ? "it's a draw" : `Winner is ${result.winner}`;
     const gameHistory = await createGameHistoryforGames(
-      user.id,
+      userId,
       amount,
       gameId,
       type,
@@ -121,26 +79,11 @@ export async function bjHitController(req: Request, res: Response) {
 
 export async function bjStandController(req: Request, res: Response) {
   try {
-    const user = req.user;
-    const typedGame = await findByDynamicId(
-      Game,
-      { name: "Black jack" },
-      false
-    );
-    const game = typedGame as Game | null;
-    const gameId = game?.id;
-    if (!user) {
-      console.log("User not found");
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
+    const validation = await validateGameAndUser(req, res, "Black jack");
+    if (!validation) return; // already handled response
 
-    if (!gameId) {
-      console.log("Game not found");
-      res.status(404).json({ error: "Game not found" });
-      return;
-    }
-    const result = bjStand(user.id);
+    const { userId, gameId } = validation;
+    const result = bjStand(userId);
     const amount = result.winAmount;
     if (amount === 0) {
       console.log(
@@ -155,7 +98,7 @@ export async function bjStandController(req: Request, res: Response) {
     const description =
       result.winner === "Push" ? "it's a draw" : `Winner is ${result.winner}`;
     const gameHistory = await createGameHistoryforGames(
-      user.id,
+      userId,
       amount,
       gameId,
       type,

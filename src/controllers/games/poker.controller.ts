@@ -1,46 +1,22 @@
 import { Request, Response } from "express";
 import { pokerDeal, pokerDraw } from "../../services/games/poker.service";
-import { findByDynamicId } from "../../services/find.service";
-import { Game } from "../../models/Game";
 import {
   createGameHistoryforGames,
   gameBalanceforGames,
 } from "../../services/games/betAmmount.service";
+import { validateGameWithBet } from "../../services/games/gameValidation.service";
+import { validateGameAndUser } from "../../services/games/validateGameAndUser.service";
 
 export async function pokerDealController(req: Request, res: Response) {
   try {
-    const user = req.user;
-    const typedGame = await findByDynamicId(Game, { name: "Poker" }, false);
-    const game = typedGame as Game | null;
-    const gameId = game?.id;
-    const userId = user?.id!;
-    if (!user) {
-      console.log("User not found");
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
+    const validation = await validateGameWithBet(req, res, "Poker");
+    if (!validation) return; // validation already sent response
 
-    if (!gameId) {
-      console.log("Game not found");
-      res.status(404).json({ error: "Game not found" });
-      return;
-    }
-    const { betAmount } = req.body;
-    if (!betAmount || Number(betAmount) < Number(game?.minimumBet)) {
-      console.log("Invalid bet amount");
-      res.status(400).json({ error: "Invalid bet amount" });
-      return;
-    }
-    if (Number(betAmount) > 10000) {
-      res
-        .status(400)
-        .json({ error: "Amount should be less than or equal to 10000" });
-      return;
-    }
+    const { userId, betAmount, gameId } = validation;
     const result = pokerDeal(userId, Number(betAmount));
     const amount = betAmount;
     const gameHistory = await createGameHistoryforGames(
-      user.id,
+      userId,
       amount,
       gameId,
       "loss",
@@ -58,22 +34,10 @@ export async function pokerDealController(req: Request, res: Response) {
 
 export async function pokerDrawController(req: Request, res: Response) {
   try {
-    const user = req.user;
-    const typedGame = await findByDynamicId(Game, { name: "Poker" }, false);
-    const game = typedGame as Game | null;
-    const gameId = game?.id;
-    if (!user) {
-      console.log("User not found");
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
+    const validation = await validateGameAndUser(req, res, "Poker");
+    if (!validation) return; // already handled response
 
-    if (!gameId) {
-      console.log("Game not found");
-      res.status(404).json({ error: "Game not found" });
-      return;
-    }
-    const userId = user.id;
+    const { userId, gameId } = validation;
     const { holdIndices } = req.body as { holdIndices: number[] };
     if (!holdIndices) {
       console.log("holdIndices not found");
@@ -96,7 +60,7 @@ export async function pokerDrawController(req: Request, res: Response) {
     const description =
       result.winner === "Push" ? "it's a draw" : `Winner is ${result.winner}`;
     const gameHistory = await createGameHistoryforGames(
-      user.id,
+      userId,
       amount,
       gameId,
       type,

@@ -31,6 +31,10 @@ export class Game extends Model {
   @Column(DataType.DECIMAL(15, 2))
   minimumBet!: number;
 
+  @Default(10000.0)
+  @Column(DataType.DECIMAL(15, 2))
+  maximumBet!: number;
+
   /** Status */
   @Default("active")
   @Column(DataType.ENUM("active", "closed", "exclusive"))

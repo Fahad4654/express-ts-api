@@ -4,45 +4,21 @@ import {
   createGameHistoryforGames,
   gameBalanceforGames,
 } from "../../services/games/betAmmount.service";
-import { findByDynamicId } from "../../services/find.service";
-import { Game } from "../../models/Game";
+import { validateGameWithBet } from "../../services/games/gameValidation.service";
 
 export async function spinSlotController(req: Request, res: Response) {
   try {
-    const user = req.user;
-    const typedGame = await findByDynamicId(Game, { name: "Slot" }, false);
-    const game = typedGame as Game | null;
-    const gameId = game?.id;
-    if (!user) {
-      console.log("User not found");
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
+    const validation = await validateGameWithBet(req, res, "Slot");
+    if (!validation) return; // validation already sent response
 
-    if (!gameId) {
-      console.log("Game not found");
-      res.status(404).json({ error: "Game not found" });
-      return;
-    }
+    const { userId, betAmount, gameId } = validation;
 
-    const { betAmount } = req.body;
-    if (!betAmount || Number(betAmount) < Number(game?.minimumBet)) {
-      console.log("Invalid bet amount");
-      res.status(400).json({ error: "Invalid bet amount" });
-      return;
-    }
-    if (Number(betAmount) > 10000) {
-      res
-        .status(400)
-        .json({ error: "Amount should be less than or equal to 10000" });
-      return;
-    }
     const result = spinSlot(betAmount);
     const type = result.isWin ? "win" : "loss";
 
     const amount = result.isWin ? result.winAmount : betAmount;
     const gameHistory = await createGameHistoryforGames(
-      user.id,
+      userId,
       amount,
       gameId,
       type

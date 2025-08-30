@@ -16,7 +16,6 @@ export async function createGameHistoryforGames(
 
   const typedUser = await findByDynamicId(User, { id: userId }, false);
   const user = typedUser as User | null;
-  console.log(user);
 
   if (!user) throw new Error("User not found");
 
@@ -26,7 +25,6 @@ export async function createGameHistoryforGames(
     false
   );
   const account = typedAccount as Account | null;
-  console.log(account);
   if (!account) throw new Error("Account not found");
 
   const typedBalance = await findByDynamicId(
