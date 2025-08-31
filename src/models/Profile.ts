@@ -54,7 +54,7 @@ export class Profile extends Model {
   @Column(DataType.STRING)
   referredCode?: string;
 
-  @BelongsTo(() => User)
+  @BelongsTo(() => User, { onDelete: "CASCADE" })
   user!: User;
 
   @Column(DataType.STRING)
