@@ -102,8 +102,14 @@ export class AuthService {
     return newUser;
   }
 
-  static async loginUser(email: string, password: string) {
-    const user = await User.findOne({ where: { email } });
+  static async loginUser(identifier: string, password: string) {
+    // identifier can be email OR phone number
+    const user = await User.findOne({
+      where: {
+        [Op.or]: [{ email: identifier }, { phoneNumber: identifier }],
+      },
+    });
+
     if (!user) {
       throw new Error("User doesn't exist");
     }

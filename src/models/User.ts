@@ -8,6 +8,7 @@ import {
   AllowNull,
   Default,
   HasOne,
+  Validate,
 } from "sequelize-typescript";
 import { Profile } from "./Profile";
 
@@ -41,7 +42,11 @@ export class User extends Model {
 
   @AllowNull(false)
   @Unique
-  @Column(DataType.STRING(100))
+  @Validate({
+    isNumeric: { msg: "Phone number must contain only digits" },
+    len: { args: [11, 11], msg: "Phone number must be exactly 11 digits" },
+  })
+  @Column(DataType.STRING(11))
   phoneNumber!: string;
 
   @Column(DataType.STRING)

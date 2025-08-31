@@ -38,15 +38,20 @@ export const register: RequestHandler = async (req, res) => {
 
 export const login: RequestHandler = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
+    // ✅ Now "identifier" can be email OR phoneNumber
 
-    if (!email || !password) {
-      console.log("Email and password are required");
-      res.status(400).json({ message: "Email and password are required" });
+    if (!identifier || !password) {
+      console.log("Identifier (email/phone) and password are required");
+      res
+        .status(400)
+        .json({
+          message: "Identifier (email/phone) and password are required",
+        });
       return;
     }
 
-    const user = await AuthService.loginUser(email, password);
+    const user = await AuthService.loginUser(identifier, password);
     const tokens = await AuthService.generateTokens(user);
 
     const userResponse = user.toJSON();
