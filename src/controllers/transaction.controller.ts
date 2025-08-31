@@ -6,6 +6,7 @@ import {
   updateTransactionById,
 } from "../services/transaction.service";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
+import { validateRequiredBody } from "../services/reqBodyValidation.service";
 
 // GET ALL
 export const getTransactionController = async (req: Request, res: Response) => {
@@ -13,22 +14,18 @@ export const getTransactionController = async (req: Request, res: Response) => {
 
   adminMiddleware(req, res, async () => {
     try {
-      const { order, asc } = req.body;
       if (!req.body) {
         console.log("Request body is required");
         res.status(400).json({ error: "Request body is required" });
         return;
       }
-      if (!order) {
-        console.log("Field to sort is required");
-        res.status(400).json({ error: "Field to sort is required" });
-        return;
-      }
-      if (!asc) {
-        console.log("Order direction is required");
-        res.status(400).json({ error: "Order direction is required" });
-        return;
-      }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "order",
+        "asc",
+      ]);
+      if (!reqBodyValidation) return;
+
+      const { order, asc } = req.body;
 
       const transactions = await findAllTransactions(order, asc);
       console.log("Transaction list fetched successfully", transactions);
@@ -51,6 +48,20 @@ export const createTransactionController = async (
   res: Response
 ) => {
   try {
+    const reqBodyValidation = validateRequiredBody(req, res, [
+      "userId",
+      "accountId",
+      "balanceId",
+      "type",
+      "direction",
+      "amount",
+      "currency",
+      "description",
+      "referenceId",
+      "status",
+    ]);
+    if (!reqBodyValidation) return;
+
     const transaction = await createNewTransaction(req.body);
     res.status(201).json({
       message: "Transaction created successfully",
@@ -73,17 +84,13 @@ export const deleteTransactionController = async (
 
   adminMiddleware(req, res, async () => {
     try {
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "id",
+        "userId",
+      ]);
+      if (!reqBodyValidation) return;
+
       const { id, userId } = req.body;
-      if (!id && !userId) {
-        console.log("Id or userId is required");
-        res.status(400).json({ error: "Id or userId is required" });
-        return;
-      }
-      if (id && userId) {
-        console.log("Provide only id OR userId");
-        res.status(400).json({ error: "Provide only id OR userId" });
-        return;
-      }
       await deleteTransactionByIdOrUserId(id, userId);
       console.log(
         id

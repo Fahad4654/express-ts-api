@@ -6,6 +6,7 @@ import {
   updateProfileByUserId,
 } from "../services/profile.service";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
+import { validateRequiredBody } from "../services/reqBodyValidation.service";
 
 // User Profile List
 export async function getUsersProfileController(req: Request, res: Response) {
@@ -18,17 +19,13 @@ export async function getUsersProfileController(req: Request, res: Response) {
         res.status(400).json({ error: "Request body is required" });
         return;
       }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "order",
+        "asc",
+      ]);
+      if (!reqBodyValidation) return;
+
       const { order, asc } = req.body;
-      if (!order) {
-        console.log("Field to sort is required");
-        res.status(400).json({ error: "Field to sort is required" });
-        return;
-      }
-      if (!asc) {
-        console.log("Order direction is required");
-        res.status(400).json({ error: "Order direction is required" });
-        return;
-      }
 
       const profiles = await findAllProfiles(order, asc);
       console.log("User Profile fetched successfully", profiles);
@@ -57,6 +54,14 @@ export async function createUserProfileController(req: Request, res: Response) {
         res.status(400).json({ error: "Request body is required" });
         return;
       }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "userId",
+        "bio",
+        "avatarUrl",
+        "address",
+      ]);
+      if (!reqBodyValidation) return;
+
       const newProfile = await createProfile(req.body);
 
       console.log("User profile created successfully", newProfile);

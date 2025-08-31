@@ -3,11 +3,12 @@ import {
   findAllUsers,
   createUser,
   updateUser,
-  deleteUserByEmail,
+  deleteUser,
 } from "../services/user.service";
 import { User } from "../models/User";
 import { findByDynamicId } from "../services/find.service";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
+import { validateRequiredBody } from "../services/reqBodyValidation.service";
 
 export async function getUsersController(req: Request, res: Response) {
   const adminMiddleware = isAdmin();
@@ -19,17 +20,13 @@ export async function getUsersController(req: Request, res: Response) {
         res.status(400).json({ error: "Request body is required" });
         return;
       }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "order",
+        "asc",
+      ]);
+      if (!reqBodyValidation) return;
+
       const { order, asc } = req.body;
-      if (!order) {
-        console.log("Field to sort is required");
-        res.status(400).json({ error: "Field to sort is required" });
-        return;
-      }
-      if (!asc) {
-        console.log("Order direction is required");
-        res.status(400).json({ error: "Order direction is required" });
-        return;
-      }
 
       const usersList = await findAllUsers(order, asc);
       console.log("User fetched successfully");
@@ -79,10 +76,13 @@ export async function createUserController(req: Request, res: Response) {
 
   adminMiddleware(req, res, async () => {
     try {
-      if (!req.body.password) {
-        res.status(400).json({ error: "Password is required" });
-        return;
-      }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "name",
+        "email",
+        "password",
+        "phoneNumber",
+      ]);
+      if (!reqBodyValidation) return;
 
       const newUser = await createUser(req.body);
       const { password, ...userWithoutPassword } = newUser.toJSON();
@@ -132,27 +132,30 @@ export async function updateUserController(req: Request, res: Response) {
 
 export async function deleteUserController(req: Request, res: Response) {
   try {
-    if (!req.body.email) {
-      console.log("Email is required");
-      res.status(400).json({ error: "Email is required" });
+    const { email, id, phoneNumber } = req.body;
+
+    if (!email && !id && !phoneNumber) {
+      console.log("No identifier provided");
+      res.status(400).json({ error: "Provide email, id, or phoneNumber" });
       return;
     }
 
-    const deletedCount = await deleteUserByEmail(req.body.email);
+    const deletedCount = await deleteUser({ email, id, phoneNumber });
 
     if (deletedCount === 0) {
       console.log("User not found");
       res.status(404).json({ error: "User not found" });
       return;
     }
-    console.log("User deleted having mail:", req.body.email);
+
+    console.log("User deleted:", { email, id, phoneNumber });
     res.status(200).json({
-      message: "User deleted",
-      email: req.body.email,
+      message: "User deleted successfully",
+      deleted: { email, id, phoneNumber },
     });
     return;
   } catch (error) {
     console.error("Error deleting user:", error);
-    res.status(500).json({ message: "Error deleting users:", error });
+    res.status(500).json({ message: "Error deleting user", error });
   }
 }

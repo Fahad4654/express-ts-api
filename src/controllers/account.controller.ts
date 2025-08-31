@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as accountService from "../services/account.service";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
+import { validateRequiredBody } from "../services/reqBodyValidation.service";
 
 export async function getAccountsController(req: Request, res: Response) {
   const adminMiddleware = isAdmin();
@@ -12,17 +13,13 @@ export async function getAccountsController(req: Request, res: Response) {
         res.status(400).json({ error: "Request body is required" });
         return;
       }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "order",
+        "asc",
+      ]);
+      if (!reqBodyValidation) return;
+
       const { order, asc } = req.body;
-      if (!order) {
-        console.log("Field to sort is required");
-        res.status(400).json({ error: "Field to sort is required" });
-        return;
-      }
-      if (!asc) {
-        console.log("Order direction is required");
-        res.status(400).json({ error: "Order direction is required" });
-        return;
-      }
 
       const userAccounts = await accountService.getAccounts(order, asc);
       console.log("User's Accounts fetched successfully", userAccounts);
@@ -51,6 +48,12 @@ export async function createAccountController(req: Request, res: Response) {
         res.status(400).json({ error: "Request body is required" });
         return;
       }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "userId",
+        "currency",
+      ]);
+      if (!reqBodyValidation) return;
+
       const { userId, currency } = req.body;
 
       const newUserAccount = await accountService.createAccount(

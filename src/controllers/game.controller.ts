@@ -11,26 +11,20 @@ import {
   gameBalance,
 } from "../services/game.service";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
+import { validateRequiredBody } from "../services/reqBodyValidation.service";
 
 // GET ALL
 export const getGameController = async (req: Request, res: Response) => {
   try {
-    const { order, asc } = req.body;
     if (!req.body) {
       console.log("Request body is required");
       res.status(400).json({ error: "Request body is required" });
       return;
     }
-    if (!order) {
-      console.log("Field to sort is required");
-      res.status(400).json({ error: "Field to sort is required" });
-      return;
-    }
-    if (!asc) {
-      console.log("Order direction is required");
-      res.status(400).json({ error: "Order direction is required" });
-      return;
-    }
+    const reqBodyValidation = validateRequiredBody(req, res, ["order", "asc"]);
+    if (!reqBodyValidation) return;
+
+    const { order, asc } = req.body;
 
     const games = await findAllGame(order, asc);
     console.log("Game list fetched successfully", games);
@@ -51,22 +45,18 @@ export const getGameHistoryController = async (req: Request, res: Response) => {
 
   adminMiddleware(req, res, async () => {
     try {
-      const { order, asc } = req.body;
       if (!req.body) {
         console.log("Request body is required");
         res.status(400).json({ error: "Request body is required" });
         return;
       }
-      if (!order) {
-        console.log("Field to sort is required");
-        res.status(400).json({ error: "Field to sort is required" });
-        return;
-      }
-      if (!asc) {
-        console.log("Order direction is required");
-        res.status(400).json({ error: "Order direction is required" });
-        return;
-      }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "order",
+        "asc",
+      ]);
+      if (!reqBodyValidation) return;
+
+      const { order, asc } = req.body;
 
       const gamesHistorys = await findAllGameHistory(order, asc);
       console.log("Game history list fetched successfully", gamesHistorys);
@@ -89,6 +79,15 @@ export const createGameController = async (req: Request, res: Response) => {
 
   adminMiddleware(req, res, async () => {
     try {
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "name",
+        "description",
+        "minimumBet",
+        "maximumBet",
+        "status",
+      ]);
+      if (!reqBodyValidation) return;
+
       const game = await createGame(req.body);
       res.status(201).json({
         message: "Game created successfully",
@@ -108,6 +107,18 @@ export const createGameHistoryController = async (
   res: Response
 ) => {
   try {
+    const reqBodyValidation = validateRequiredBody(req, res, [
+      "userId",
+      "accountId",
+      "balanceId",
+      "gameId",
+      "type",
+      "direction",
+      "amount",
+      "currency",
+      "description",
+    ]);
+    if (!reqBodyValidation) return;
     const gameHistory = await createGameHistory(req.body);
     res.status(201).json({
       message: "Game History created successfully",

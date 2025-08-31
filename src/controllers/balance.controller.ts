@@ -10,6 +10,7 @@ import { findByDynamicId } from "../services/find.service";
 import { Balance } from "../models/Balance";
 import { User } from "../models/User";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
+import { validateRequiredBody } from "../services/reqBodyValidation.service";
 
 export async function getBalanceController(req: Request, res: Response) {
   const adminMiddleware = isAdmin();
@@ -21,17 +22,12 @@ export async function getBalanceController(req: Request, res: Response) {
         res.status(400).json({ error: "Request body is required" });
         return;
       }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "order",
+        "asc",
+      ]);
+      if (!reqBodyValidation) return;
       const { order, asc } = req.body;
-      if (!order) {
-        console.log("Field to sort is required");
-        res.status(400).json({ error: "Field to sort is required" });
-        return;
-      }
-      if (!asc) {
-        console.log("Order direction is required");
-        res.status(400).json({ error: "Order direction is required" });
-        return;
-      }
 
       const balanceList = await findAllBalances(order, asc);
       console.log("Balance list fetched successfully", balanceList);
@@ -62,6 +58,13 @@ export async function createBalanceController(req: Request, res: Response) {
         res.status(400).json({ error: "Request body is required" });
         return;
       }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "accountId",
+        "availableBalance",
+        "holdBalance",
+        "currency",
+      ]);
+      if (!reqBodyValidation) return;
       const newBalance = await createBalance(req.body);
       console.log("Balance created successfully", newBalance);
       res.status(201).json({
@@ -90,16 +93,11 @@ export const deleteBalanceController = async (req: Request, res: Response) => {
         res.status(400).json({ error: "Request body is required" });
         return;
       }
-      if (!req.body.accountId) {
-        console.log("Account Id is required");
-        res.status(400).json({ error: "AccountId is required" });
-        return;
-      }
-      if (!req.body.userId) {
-        console.log("User Id is required");
-        res.status(400).json({ error: "User Id is required" });
-        return;
-      }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "accountId",
+        "userId",
+      ]);
+      if (!reqBodyValidation) return;
 
       const foundtypedUser = await findByDynamicId(
         User,

@@ -6,6 +6,7 @@ import {
   deleteContentById,
 } from "../services/content.service";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
+import { validateRequiredBody } from "../services/reqBodyValidation.service";
 
 export async function getContentsController(req: Request, res: Response) {
   const adminMiddleware = isAdmin();
@@ -17,17 +18,13 @@ export async function getContentsController(req: Request, res: Response) {
         res.status(400).json({ error: "Request body is required" });
         return;
       }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "order",
+        "asc",
+      ]);
+      if (!reqBodyValidation) return;
+
       const { order, asc } = req.body;
-      if (!order) {
-        console.log("Field to sort is required");
-        res.status(400).json({ error: "Field to sort is required" });
-        return;
-      }
-      if (!asc) {
-        console.log("Order direction is required");
-        res.status(400).json({ error: "Order direction is required" });
-        return;
-      }
 
       const contentsList = await findAllContents(order, asc);
       console.log("Contents fetched successfully", contentsList);
@@ -57,6 +54,18 @@ export async function createContentController(req: Request, res: Response) {
         res.status(400).json({ error: "Request body is required" });
         return;
       }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "userId",
+        "name",
+        "text",
+        "mediaUrl",
+        "status",
+        "exclusive",
+        "createdBy",
+        "updatedBy",
+      ]);
+      if (!reqBodyValidation) return;
+
       const newContent = await createContent(req.body);
       console.log("Content created successfully", newContent);
       res.status(201).json({

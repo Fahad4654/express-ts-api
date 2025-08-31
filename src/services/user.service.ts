@@ -4,6 +4,7 @@ import { Profile } from "../models/Profile";
 import { createProfile } from "./profile.service";
 import { createBalance } from "./balance.service";
 import * as accountService from "./account.service";
+import { Op } from "sequelize";
 
 export const generateToken = (id: string): string => {
   return id.slice(-9).toUpperCase(); // Take last 9 chars and uppercase
@@ -93,6 +94,26 @@ export async function updateUser(data: Partial<User> & { id: string }) {
   });
 }
 
-export async function deleteUserByEmail(email: string) {
-  return User.destroy({ where: { email } });
+export async function deleteUser(identifier: {
+  email?: string;
+  id?: string;
+  phoneNumber?: string;
+}) {
+  if (!identifier.email && !identifier.id && !identifier.phoneNumber) {
+    throw new Error(
+      "At least one identifier (email, id, or phoneNumber) is required"
+    );
+  }
+
+  return User.destroy({
+    where: {
+      [Op.or]: [
+        identifier.email ? { email: identifier.email } : undefined,
+        identifier.id ? { id: identifier.id } : undefined,
+        identifier.phoneNumber
+          ? { phoneNumber: identifier.phoneNumber }
+          : undefined,
+      ].filter(Boolean) as any,
+    },
+  });
 }
