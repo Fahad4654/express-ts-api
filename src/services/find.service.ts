@@ -11,8 +11,8 @@ export async function findByDynamicId<T extends Model>(
   );
 
   if (providedKeys.length !== 1) {
-    console.log("Exactly one identifier must be provided");
-    throw new Error("Exactly one identifier must be provided");
+    console.log("Exactly one  or proper identifier must be provided");
+    throw new Error("Exactly one or proper identifier must be provided");
   }
 
   const [key, value] = providedKeys[0];
