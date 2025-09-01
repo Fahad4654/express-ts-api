@@ -38,7 +38,7 @@ export async function createNewTransaction(data: any) {
     direction,
     amount,
     currency,
-    referenceId,
+    trxId,
   } = data;
 
   const typedUser = await findByDynamicId(User, { id: userId }, false);
@@ -70,7 +70,7 @@ export async function createNewTransaction(data: any) {
 
   if (!currency) throw new Error("Currency not found");
 
-  if (!referenceId) throw new Error("ReferenceId not found");
+  if (!trxId) throw new Error("trxId not found");
 
   if (Number(amount) < 100)
     throw new Error("Amount should be more than or equal to 100");
@@ -128,7 +128,7 @@ export async function updateTransactionById(id: string, updates: any) {
     "amount",
     "currency",
     "description",
-    "referenceId",
+    "trxId",
     "status",
   ];
 

@@ -3,7 +3,22 @@ import { Model } from "sequelize-typescript";
 import { findByDynamicId } from "../services/find.service";
 import { User } from "../models/User";
 import { Account } from "../models/Account";
-import { error } from "console";
+import { Balance } from "../models/Balance";
+import { BalanceTransaction } from "../models/BalanceTransaction";
+import { GameHistory } from "../models/GameHistory";
+import { Profile } from "../models/Profile";
+
+// Allowed identifiers per model
+const allowedKeys: Record<string, string[]> = {
+  Account: ["id", "userId", "accountNumber"],
+  Balance: ["id", "accountId"],
+  BalanceTransaction: ["id", "userId", "balanceId", "accountId", "trxId"],
+  GameHistory: ["id", "userId", "balanceId", "accountId", "gameId"],
+  Profile: ["id", "userId", "referralCode", "referredCode"],
+  User: ["id", "name", "email", "phoneNumber"],
+  Game: ["id", "name"], // public-ish
+  Contents: ["id", "userId", "name"], // public-ish
+};
 
 export function findController<T extends Model>(
   model: { new (): T } & typeof Model
@@ -11,108 +26,66 @@ export function findController<T extends Model>(
   return async (req: Request, res: Response): Promise<void> => {
     try {
       const identifiers = { ...req.body };
-      const typedUser = await findByDynamicId(
-        User,
-        { id: req.user?.id },
-        false
-      );
-      const user = typedUser as User | null;
+      const keys = Object.keys(identifiers);
 
+      // 🔹 Must provide exactly one identifier
+      if (keys.length !== 1) {
+        res.status(400).json({ error: "Exactly one identifier must be provided" });
+        return;
+      }
+
+      const key = keys[0];
+
+      // 🔹 Validate allowed key
+      if (!allowedKeys[model.name]?.includes(key)) {
+        res.status(400).json({ error: `Invalid identifier '${key}' for ${model.name}` });
+        return;
+      }
+
+      // 🔹 Ensure current user exists
+      const typedUser = await findByDynamicId(User, { id: req.user?.id }, false);
+      const user = typedUser as User | null;
       if (!user) {
         res.status(401).json({ error: "Unauthorized" });
         return;
       }
 
-      // 🔒 Non-admins can only access their own records
-      if (!user.isAdmin) {
-        if (model.name === "Account") {
-          // Ignore provided identifiers completely, always force lookup by userId
-          if (identifiers.userId !== user.id) {
-            res
-              .status(403)
-              .json({ error: "Forbidden: can only access your own history" });
-            return;
-          }
-        }
-
-        if (model.name === "Balance") {
-          // Find the user’s account and restrict to that accountId
-          const account = await Account.findOne({ where: { userId: user.id } });
-          if (!account) {
-            res.status(404).json({ error: "No account found for user" });
-            return;
-          }
-          if (identifiers.accountId !== account.id) {
-            res
-              .status(403)
-              .json({ error: "Forbidden: can only access your own history" });
-            return;
-          }
-        }
-
-        if (model.name === "BalanceTransaction") {
-          // Ignore provided identifiers completely, always force lookup by userId
-          if (identifiers.userId !== user.id) {
-            res
-              .status(403)
-              .json({ error: "Forbidden: can only access your own history" });
-            return;
-          }
-        }
-
-        if (model.name === "GameHistory") {
-          // Ignore provided identifiers completely, always force lookup by userId
-          if (identifiers.userId !== user.id) {
-            res
-              .status(403)
-              .json({ error: "Forbidden: can only access your own history" });
-            return;
-          }
-        }
-
-        if (model.name === "Profile") {
-          // Ignore provided identifiers completely, always force lookup by userId
-          if (identifiers.userId !== user.id) {
-            res
-              .status(403)
-              .json({ error: "Forbidden: can only access your own history" });
-            return;
-          }
-        }
-
-        if (model.name === "User") {
-          // Ignore provided identifiers completely, always force lookup by userId
-          if (identifiers.id !== user.id) {
-            res
-              .status(403)
-              .json({ error: "Forbidden: can only access your own history" });
-            return;
-          }
-        }
-      }
-
-      if (!identifiers || Object.keys(identifiers).length === 0) {
-        res.status(400).json({
-          error: "At least one identifier and proper identifier is required",
-        });
-        return;
-      }
-
-      const result = await findByDynamicId(model, identifiers, true);
-
-      if (!result || (Array.isArray(result) && result.length === 0)) {
+      // 🔹 Fetch the record first
+      const record = await model.findOne({ where: { [key]: identifiers[key] } });
+      if (!record) {
         res.status(404).json({ message: "No records found" });
         return;
       }
 
-      res.status(200).json({
-        [model.name.toLowerCase()]: result,
-      });
+      // 🔹 Ownership checks (skip for admins)
+      if (!user.isAdmin) {
+        const ownershipCheck: Record<string, () => Promise<boolean>> = {
+          Account: async () => (record as Account).userId === user.id,
+          Balance: async () => {
+            const balance = record as Balance;
+            if (!balance.accountId) return false;
+            const account = await Account.findOne({ where: { id: balance.accountId } });
+            return !!account && account.userId === user.id;
+          },
+          BalanceTransaction: async () => (record as BalanceTransaction).userId === user.id,
+          GameHistory: async () => (record as GameHistory).userId === user.id,
+          Profile: async () => (record as Profile).userId === user.id,
+          User: async () => (record as User).id === user.id,
+          Game: async () => true,
+          Contents: async () => true,
+        };
+
+        const checkFn = ownershipCheck[model.name];
+        if (checkFn && !(await checkFn())) {
+          res.status(403).json({ error: "Forbidden: cannot access others' data" });
+          return;
+        }
+      }
+
+      res.status(200).json({ [model.name.toLowerCase()]: record });
     } catch (error) {
       console.error(`Error fetching ${model.name}:`, error);
-      res.status(500).json({
-        error: error instanceof Error ? error.message : "Internal server error",
-      });
+      res.status(500).json({ error: error instanceof Error ? error.message : "Internal server error" });
     }
   };
 }

@@ -57,7 +57,7 @@ export const createTransactionController = async (
       "amount",
       "currency",
       "description",
-      "referenceId",
+      "trxId",
       "status",
     ]);
     if (!reqBodyValidation) return;

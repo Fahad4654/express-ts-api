@@ -84,7 +84,7 @@ export class BalanceTransaction extends Model {
   /** Reference to external payment/order */
   @Unique
   @Column(DataType.STRING)
-  referenceId!: string;
+  trxId!: string;
 
   /** Status */
   @Default("pending")
