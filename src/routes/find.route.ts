@@ -12,14 +12,14 @@ import { Profile } from "../models/Profile";
 const router = Router();
 
 // Single record (default)
-router.get("/account", findController(Account));
-router.get("/balance", findController(Balance));
-router.get("/transaction", findController(BalanceTransaction));
-router.get("/content", findController(Contents));
-router.get("/game", findController(Game));
-router.get("/game-history", findController(GameHistory));
-router.get("/profile", findController(Profile));
-router.get("/user", findController(User));
+router.post("/account", findController(Account));
+router.post("/balance", findController(Balance));
+router.post("/transaction", findController(BalanceTransaction));
+router.post("/content", findController(Contents));
+router.post("/game", findController(Game));
+router.post("/game-history", findController(GameHistory));
+router.post("/profile", findController(Profile));
+router.post("/user", findController(User));
 
 export { router as findRouter };
 export { router };
