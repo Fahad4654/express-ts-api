@@ -1,213 +1,145 @@
-import { Request, RequestHandler, Response } from "express";
-import { Contents } from "../models/Contents";
+import { Request, Response } from "express";
+import {
+  findAllContents,
+  createContent,
+  updateContentById,
+  deleteContentById,
+} from "../services/content.service";
+import { isAdmin } from "../middlewares/isAdmin.middleware";
+import { validateRequiredBody } from "../services/reqBodyValidation.service";
 
-//Content List
-export async function getContents(req: Request, res: Response) {
-  try {
-    const contentsList = await Contents.findAll({
-      raw: true, // Returns plain objects
-      order: [
-        [
-          `${req.body.order ? req.body.order : "id"}`,
-          `${req.body.asc ? req.body.asc : "ASC"}`,
-        ],
-      ], //{'property':'ASC/DESC'}}
-    });
-    console.log("Contents list:", contentsList);
-    res.status(201).json({
-      message: "Contents fetching successfully",
-      contents: contentsList,
-      status: "success",
-    });
-  } catch (error) {
-    console.error("Error fetching Contents:", error);
-    res.status(500).json(error);
-  }
-}
+export async function getContentsController(req: Request, res: Response) {
+  const adminMiddleware = isAdmin();
 
-export async function getContentsById(req: Request, res: Response) {
-  try {
-    const contentsId = req.params.id;
-
-    if (!contentsId) {
-      res.status(400).json({
-        status: 400,
-        error:
-          "Content ID is required as a route parameter (e.g., /contents/:id)",
-      });
-      return;
-    }
-
-    const foundContent = await Contents.findOne({
-      where: { id: contentsId },
-    });
-
-    if (!foundContent) {
-      res.status(404).json({
-        status: 404,
-        message: "Content not found",
-      });
-      return;
-    }
-
-    console.log("Content found:", foundContent);
-    res.status(200).json({
-      status: 200,
-      data: foundContent,
-    });
-    return;
-  } catch (error) {
-    console.error("Error finding content:", error);
-    res.status(500).json({
-      status: 500,
-      message: "Internal server error",
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return;
-  }
-}
-
-//Create Contents
-export async function createContent(req: Request, res: Response) {
-  const {
-    userId,
-    name,
-    text,
-    type,
-    mediaUrl,
-    status,
-    exclusive,
-    createdBy,
-    updatedBy,
-  } = req.body;
-  try {
-    const newContent = await Contents.create({
-      userId,
-      name,
-      text,
-      type,
-      mediaUrl,
-      status,
-      exclusive,
-      createdBy,
-      updatedBy,
-    });
-
-    console.log("Created Content:", newContent);
-    res.status(201).json({
-      message: "Content created successfully",
-      content: newContent,
-      status: "success",
-    });
-  } catch (error: any) {
-    console.error("Error creating content:", error);
-    res.status(500).json({ status: 500, message: error });
-  }
-}
-
-//Update contents
-export async function updateContents(req: Request, res: Response) {
-  try {
-    if (!req.body) {
-      res.status(400).json({ error: "request body is required" });
-      console.log("request body is required");
-      return;
-    }
-
-    const { id } = req.body;
-    if (!id) {
-      res.status(400).json({ error: "Content id is required" });
-      console.log("Content id is required", id);
-      return;
-    }
-
-    // Find the profile associated with the content
-    const content = await Contents.findOne({ where: { id } });
-
-    if (!content) {
-      res.status(404).json({ error: "Profile not found" });
-      console.log("Profile not found");
-      return;
-    }
-
-    // Define allowed fields that can be updated with type safety
-    const allowedFields: Array<keyof Contents> = [
-      "userId",
-      "name",
-      "text",
-      "type",
-      "mediaUrl",
-      "status",
-      "exclusive",
-      "createdBy",
-      "updatedBy",
-    ];
-    const updates: Partial<Contents> = {};
-
-    // Filter and only take allowed fields from req.body with type checking
-    for (const key of allowedFields) {
-      if (req.body[key] !== undefined) {
-        updates[key] = req.body[key];
+  adminMiddleware(req, res, async () => {
+    try {
+      if (!req.body) {
+        console.log("Request body is required");
+        res.status(400).json({ error: "Request body is required" });
+        return;
       }
-    }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "order",
+        "asc",
+      ]);
+      if (!reqBodyValidation) return;
 
-    // If no valid updates were provided
-    if (Object.keys(updates).length === 0) {
-      res.status(400).json({ error: "No valid fields provided for update" });
-      console.log("No valid fields provided for update");
+      const { order, asc } = req.body;
+
+      const contentsList = await findAllContents(order, asc);
+      console.log("Contents fetched successfully", contentsList);
+      res.status(201).json({
+        message: "Contents fetched successfully",
+        contentsList,
+        status: "success",
+      });
       return;
+    } catch (error) {
+      console.error("Error fetching contents:", error);
+      res.status(500).json({
+        status: 500,
+        message: error instanceof Error ? error.message : error,
+      });
     }
-
-    // Perform the update
-    await content.update(updates);
-
-    // Get the updated profile (excluding sensitive fields if needed)
-    const updatedContent = await Contents.findByPk(content.id, {
-      attributes: { exclude: ["createdAt", "updatedAt"] },
-    });
-
-    console.log("Content updated successfully, Profile: ", updatedContent);
-    res.status(200).json({
-      message: "Content updated successfully",
-      profile: updatedContent,
-      status: "success",
-    });
-  } catch (error) {
-    console.error("Error updating profile:", error);
-    res.status(500).json({
-      status: "error",
-      message: "Failed to update profile",
-      error: error instanceof Error ? error.message : error,
-    });
-  }
+  });
 }
 
-//Delete contents
-export const deleteContents: RequestHandler = async (req, res) => {
-  try {
-    if (!req.body.id) {
-      res.status(400).json({ error: "id is required" });
-      console.log(req.body.id);
+export async function createContentController(req: Request, res: Response) {
+  const adminMiddleware = isAdmin();
+
+  adminMiddleware(req, res, async () => {
+    try {
+      if (!req.body) {
+        console.log("Request body is required");
+        res.status(400).json({ error: "Request body is required" });
+        return;
+      }
+      const reqBodyValidation = validateRequiredBody(req, res, [
+        "userId",
+        "name",
+        "text",
+        "mediaUrl",
+        "status",
+        "exclusive",
+        "createdBy",
+        "updatedBy",
+      ]);
+      if (!reqBodyValidation) return;
+
+      const newContent = await createContent(req.body);
+      console.log("Content created successfully", newContent);
+      res.status(201).json({
+        message: "Content created successfully",
+        content: newContent,
+        status: "success",
+      });
       return;
+    } catch (error) {
+      console.error("Error creating content:", error);
+      res.status(500).json({
+        status: 500,
+        message: error instanceof Error ? error.message : error,
+      });
     }
+  });
+}
 
-    const deletedCount = await Contents.destroy({
-      where: { id: req.body.id },
-    });
+export async function updateContentsController(req: Request, res: Response) {
+  const adminMiddleware = isAdmin();
 
-    if (deletedCount === 0) {
-      res.status(404).json({ error: "Content not found" });
-      console.log("Content not found: ", req.body.id);
+  adminMiddleware(req, res, async () => {
+    try {
+      if (!req.body.id) {
+        console.log("Content id is required");
+        res.status(400).json({ error: "Content id is required" });
+        return;
+      }
+
+      const updatedContent = await updateContentById(req.body.id, req.body);
+      console.log("Content updated successfully", updatedContent);
+
+      res.status(200).json({
+        message: "Content updated successfully",
+        content: updatedContent,
+        status: "success",
+      });
       return;
+    } catch (error) {
+      console.error("Error updating content:", error);
+      res.status(500).json({
+        status: "error",
+        message: error instanceof Error ? error.message : error,
+      });
     }
+  });
+}
 
-    console.log("Content deleted:", req.body.id);
-    res.status(200).json({
-      message: "Content deleted",
-      email: req.body.id,
-    });
-  } catch (error) {
-    console.error("Error deleting content:", error);
-    res.status(500).json({ status: 500, message: error });
-  }
+export const deleteContentsController = async (req: Request, res: Response) => {
+  const adminMiddleware = isAdmin();
+
+  adminMiddleware(req, res, async () => {
+    try {
+      if (!req.body.id) {
+        console.log("Id is required");
+        res.status(400).json({ error: "Id is required" });
+        return;
+      }
+
+      await deleteContentById(req.body.id);
+
+      console.log(`Content deleted with id: ${req.body.id}`);
+      res.status(200).json({
+        message: "Content deleted",
+        id: req.body.id,
+      });
+      return;
+    } catch (error) {
+      console.error("Error deleting content:", error);
+      res.status(500).json({
+        status: 500,
+        message: error instanceof Error ? error.message : error,
+      });
+    }
+  });
 };
+export { createContent };

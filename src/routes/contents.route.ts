@@ -1,13 +1,17 @@
 import { Router } from "express";
-import { createContent, deleteContents, getContents, getContentsById, updateContents } from "../controllers/contents.controller";
+import {
+  createContentController,
+  deleteContentsController,
+  getContentsController,
+  updateContentsController,
+} from "../controllers/contents.controller";
 
 const router = Router();
 
-router.get("/", getContents);
-router.get("/:id", getContentsById);
-router.post("/", createContent);
-router.put("/", updateContents);
-router.delete("/", deleteContents)
+router.get("/", getContentsController);
+router.post("/", createContentController);
+router.put("/", updateContentsController);
+router.delete("/", deleteContentsController);
 
 export { router as contentCreateRouter };
 export { router };

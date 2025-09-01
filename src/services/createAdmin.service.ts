@@ -1,6 +1,12 @@
 import { User } from "../models/User"; // Adjust path
 import bcrypt from "bcryptjs";
-import { ADMIN_NAME, ADMIN_MAIL, ADMIN_PASSWORD, ADMIN_PHONENUMBER } from "../config";
+import {
+  ADMIN_NAME,
+  ADMIN_MAIL,
+  ADMIN_PASSWORD,
+  ADMIN_PHONENUMBER,
+} from "../config";
+import { createUser } from "./user.service";
 
 export async function createAdmin() {
   const adminExists = await User.findOne({
@@ -8,16 +14,15 @@ export async function createAdmin() {
   });
 
   if (!adminExists) {
-    await User.create({
+    const newUser = await createUser({
       name: ADMIN_NAME,
       email: ADMIN_MAIL,
-      password: await bcrypt.hash(ADMIN_PASSWORD, 10), // Change this password!
+      password: ADMIN_PASSWORD,
       isAdmin: true,
       phoneNumber: ADMIN_PHONENUMBER,
     });
-    console.log("✅ Admin user created");
+    console.log("✅ Admin user created:", newUser);
   } else {
     console.log("ℹ️ Admin user already exists");
   }
 }
-

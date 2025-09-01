@@ -40,8 +40,9 @@ export class Contents extends Model {
   @Column(DataType.STRING(100))
   text?: string;
 
-  @Column(DataType.STRING(100))
-  type?: string;
+  @Default("normal")
+  @Column(DataType.ENUM("profilepicture", "normal", "others"))
+  type!: "profilepicture" | "normal" | "others";
 
   @Column(DataType.STRING(100))
   mediaUrl?: string;
