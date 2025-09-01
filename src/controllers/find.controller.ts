@@ -20,6 +20,9 @@ const allowedKeys: Record<string, string[]> = {
   Contents: ["id", "userId", "name"], // public-ish
 };
 
+// keys that should always return ONE record
+const singleResultKeys = ["id", "accountNumber", "email", "phoneNumber", "trxId"];
+
 export function findController<T extends Model>(
   model: { new (): T } & typeof Model
 ) {
@@ -50,39 +53,49 @@ export function findController<T extends Model>(
         return;
       }
 
-      // 🔹 Fetch the record first
-      const record = await model.findOne({ where: { [key]: identifiers[key] } });
-      if (!record) {
+      // 🔹 Fetch records
+      const records = singleResultKeys.includes(key)
+        ? await model.findOne({ where: { [key]: identifiers[key] } })
+        : await model.findAll({ where: { [key]: identifiers[key] } });
+
+      if (!records || (Array.isArray(records) && records.length === 0)) {
         res.status(404).json({ message: "No records found" });
         return;
       }
 
+      // Normalize to array
+      const resultArray = Array.isArray(records) ? records : [records];
+
       // 🔹 Ownership checks (skip for admins)
       if (!user.isAdmin) {
-        const ownershipCheck: Record<string, () => Promise<boolean>> = {
-          Account: async () => (record as Account).userId === user.id,
-          Balance: async () => {
-            const balance = record as Balance;
-            if (!balance.accountId) return false;
-            const account = await Account.findOne({ where: { id: balance.accountId } });
-            return !!account && account.userId === user.id;
-          },
-          BalanceTransaction: async () => (record as BalanceTransaction).userId === user.id,
-          GameHistory: async () => (record as GameHistory).userId === user.id,
-          Profile: async () => (record as Profile).userId === user.id,
-          User: async () => (record as User).id === user.id,
-          Game: async () => true,
-          Contents: async () => true,
-        };
+        for (const record of resultArray) {
+          const ownershipCheck: Record<string, () => Promise<boolean>> = {
+            Account: async () => (record as Account).userId === user.id,
+            Balance: async () => {
+              const balance = record as Balance;
+              if (!balance.accountId) return false;
+              const account = await Account.findOne({ where: { id: balance.accountId } });
+              return !!account && account.userId === user.id;
+            },
+            BalanceTransaction: async () => (record as BalanceTransaction).userId === user.id,
+            GameHistory: async () => (record as GameHistory).userId === user.id,
+            Profile: async () => (record as Profile).userId === user.id,
+            User: async () => (record as User).id === user.id,
+            Game: async () => true,
+            Contents: async () => true,
+          };
 
-        const checkFn = ownershipCheck[model.name];
-        if (checkFn && !(await checkFn())) {
-          res.status(403).json({ error: "Forbidden: cannot access others' data" });
-          return;
+          const checkFn = ownershipCheck[model.name];
+          if (checkFn && !(await checkFn())) {
+            res.status(403).json({ error: "Forbidden: cannot access others' data" });
+            return;
+          }
         }
       }
 
-      res.status(200).json({ [model.name.toLowerCase()]: record });
+      res.status(200).json({
+        [model.name.toLowerCase()]: Array.isArray(records) ? records : records,
+      });
     } catch (error) {
       console.error(`Error fetching ${model.name}:`, error);
       res.status(500).json({ error: error instanceof Error ? error.message : "Internal server error" });
