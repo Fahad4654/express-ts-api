@@ -8,7 +8,7 @@ import {
 
 const router = Router();
 
-router.get("/", getAccountsController);
+router.post("/all", getAccountsController);
 router.post("/", createAccountController);
 router.put("/", updateAccountController);
 router.delete("/", deleteAccountController);

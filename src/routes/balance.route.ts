@@ -9,7 +9,7 @@ import {
 
 const router = Router();
 
-router.get("/", getBalanceController);
+router.post("/all", getBalanceController);
 router.post("/", createBalanceController);
 router.put("/", updateBalanceController);
 router.put("/final", finalizeTransactionController);

@@ -9,7 +9,7 @@ import {
 
 const router = Router();
 
-router.get("/", getUsersController);
+router.post("/all", getUsersController);
 router.get("/:id", getUsersByIdController);
 router.post("/", createUserController);
 router.put("/", updateUserController);
