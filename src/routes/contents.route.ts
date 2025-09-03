@@ -8,7 +8,7 @@ import {
 
 const router = Router();
 
-router.get("/", getContentsController);
+router.post("/all", getContentsController);
 router.post("/", createContentController);
 router.put("/", updateContentsController);
 router.delete("/", deleteContentsController);

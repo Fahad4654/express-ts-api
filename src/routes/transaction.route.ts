@@ -9,7 +9,7 @@ import {
 const router = Router();
 
 // Generic routes after
-router.get("/", getTransactionController);
+router.post("/all", getTransactionController);
 router.post("/", createTransactionController);
 router.put("/", updateTransactionController);
 router.delete("/", deleteTransactionController);

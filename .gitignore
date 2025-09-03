@@ -1,6 +1,7 @@
 # Compiled class file
 *.class
 .env
+.env*
 node_modules
 build
 pgdata

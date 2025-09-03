@@ -8,7 +8,7 @@ import {
 
 const router = Router();
 
-router.get("/", getUsersProfileController);
+router.post("/all", getUsersProfileController);
 router.post("/", createUserProfileController);
 router.put("/", updateUserProfileController);
 router.delete("/", deleteUserProfileController);
