@@ -24,6 +24,7 @@ export async function createProfile(data: {
   bio?: string;
   avatarUrl?: string;
   address?: string;
+  referredCode?: string;
 }) {
   return Profile.create({
     userId: data.userId,
@@ -31,6 +32,7 @@ export async function createProfile(data: {
     avatarUrl: data.avatarUrl ?? "",
     address: data.address ?? "",
     referralCode: referralCode(data.userId),
+    referredCode: data.referredCode ? `${data.referredCode}` : "None",
   });
 }
 

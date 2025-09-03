@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { User } from "../models/User";
 import { Profile } from "../models/Profile";
-import { createProfile } from "./profile.service";
+import { createProfile, referralCode } from "./profile.service";
 import { createBalance } from "./balance.service";
 import * as accountService from "./account.service";
 import { Op } from "sequelize";
@@ -40,6 +40,7 @@ export async function createUser(data: {
   password: string;
   phoneNumber?: string;
   isAdmin?: boolean;
+  referredCode?: string;
 }) {
   const hashedPassword = await bcrypt.hash(data.password, 10);
   const newUser = await User.create({
@@ -55,6 +56,7 @@ export async function createUser(data: {
     userId: newUser.id,
     bio: "Please Edit",
     address: "Please Edit",
+    referredCode: data.referredCode ? `${data.referredCode}` : `none`,
   });
   console.log("Profile created for", newUser.email);
   const newAccount = await accountService.createAccount(newUser.id, "BDT");
