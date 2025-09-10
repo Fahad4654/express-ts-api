@@ -21,7 +21,6 @@ export async function refreshProfit() {
     });
 
     await row.update(defaults);
-    console.log("#####", row);
   } catch (error) {
     console.error("Error updating profit table:", error);
   }
