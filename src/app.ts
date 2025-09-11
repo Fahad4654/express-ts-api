@@ -21,10 +21,12 @@ const createApp = (): Application => {
 
   // Public routes
   app.use("/v1/api/auth", authRouter);
-  app.use("/media", express.static(path.join(__dirname, "../media")));
+  
   
   // Protected routes
   app.use(authenticate);
+
+  app.use("/media", express.static(path.join(process.cwd(), "media")));
 
   // Protected routes
   app.use(allRoutes);

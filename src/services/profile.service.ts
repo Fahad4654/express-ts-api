@@ -29,7 +29,7 @@ export async function createProfile(data: {
   return Profile.create({
     userId: data.userId,
     bio: data.bio ?? "",
-    avatarUrl: data.avatarUrl ?? "",
+    avatarUrl: data.avatarUrl ?? "/media/none.jpg",
     address: data.address ?? "",
     referralCode: referralCode(data.userId),
     referredCode: data.referredCode ? `${data.referredCode}` : "None",

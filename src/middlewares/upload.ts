@@ -3,10 +3,12 @@ import path from "path";
 import fs from "fs";
 import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
 
-// Ensure upload folder exists
-const uploadDir = path.join(__dirname, "../../media");
+const uploadDir = path.join(process.cwd(), "media");
+
+// Ensure folder exists BEFORE Multer config
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
+  console.log(`Created media folder at: ${uploadDir}`);
 }
 
 const storage = multer.diskStorage({
