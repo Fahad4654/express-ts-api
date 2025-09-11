@@ -4,6 +4,7 @@ import { authRouter } from "./routes/auth.route";
 import { authenticate } from "./middlewares/auth.middleware";
 import path from "path";
 import { allRoutes } from "./routes";
+import { multerErrorHandler } from "./middlewares/upload";
 
 const createApp = (): Application => {
   const app = express();
@@ -20,13 +21,14 @@ const createApp = (): Application => {
 
   // Public routes
   app.use("/v1/api/auth", authRouter);
-  app.use("/uploads", express.static(path.join(__dirname, "../src/uploads")));
+  app.use("/media", express.static(path.join(__dirname, "../media")));
   
   // Protected routes
   app.use(authenticate);
 
   // Protected routes
   app.use(allRoutes);
+  app.use(multerErrorHandler);
 
   return app;
 };

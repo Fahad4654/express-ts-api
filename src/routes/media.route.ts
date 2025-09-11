@@ -1,19 +1,11 @@
 import { Router } from "express";
-import { upload } from "../middlewares/upload";
 import { MediaController } from "../controllers/media.controller";
+import { uploadSingle, uploadMultiple } from "../middlewares/upload";
 
 const router = Router();
 
-// Single file upload
-router.post("/", upload.single("file"), MediaController.uploadFile);
+router.post("/upload", uploadSingle, MediaController.uploadFile);
+router.post("/uploads", uploadMultiple, MediaController.uploadFiles);
 
-// Multiple files upload (example: 5 max)
-router.post("/", upload.array("files", 5), (req, res) => {
-  res.json({
-    success: true,
-    files: req.files,
-  });
-});
-
-export { router as pokerRouter };
+export { router as mediaRouter };
 export { router };
