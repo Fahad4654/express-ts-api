@@ -6,11 +6,18 @@ import {
 } from "../../services/games/betAmmount.service";
 import { validateGameWithBet } from "../../services/games/gameValidation.service";
 import { validateRequiredBody } from "../../services/reqBodyValidation.service";
+import { Profit } from "../../models/Profit";
 
 export async function rollDiceController(req: Request, res: Response) {
   try {
     const betValidation = await validateGameWithBet(req, res, "Dice roller");
     if (!betValidation) return; // validation already sent response
+
+    const profit = await Profit.findOne();
+    const cheatMode =
+      Number(profit?.expecting_profit) > Number(profit?.total_profit)
+        ? true
+        : false;
 
     const { userId, betAmount, gameId } = betValidation;
 
@@ -28,15 +35,21 @@ export async function rollDiceController(req: Request, res: Response) {
       return;
     }
 
-    const result = rollDice(Number(betAmount), betType, Number(numDice) || 3);
-
-    const type = result.isWin ? "win" : "loss";
     if (Number(betAmount) > 10000) {
       res
         .status(400)
         .json({ error: "Amount should be less than or equal to 10000" });
       return;
     }
+
+    const result = rollDice(
+      Number(betAmount),
+      betType,
+      Number(numDice) || 3,
+      cheatMode
+    );
+
+    const type = result.isWin ? "win" : "loss";
 
     const amount = result.isWin ? result.winAmount : betAmount;
     const gameHistory = await createGameHistoryforGames(
