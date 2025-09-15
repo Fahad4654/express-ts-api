@@ -11,14 +11,21 @@ import {
 import { validateGameWithBet } from "../../services/games/gameValidation.service";
 import { validateGameAndUser } from "../../services/games/validateGameAndUser.service";
 import { validateRequiredBody } from "../../services/reqBodyValidation.service";
+import { Profit } from "../../models/Profit";
 
 export async function faStartController(req: Request, res: Response) {
   try {
     const validation = await validateGameWithBet(req, res, "Fortune apple");
     if (!validation) return; // validation already sent response
 
+    const profit = await Profit.findOne();
+    const cheatMode =
+      Number(profit?.expecting_profit) > Number(profit?.total_profit)
+        ? true
+        : false;
+
     const { userId, betAmount, gameId } = validation;
-    const result = faStart(userId, Number(betAmount));
+    const result = faStart(userId, Number(betAmount), cheatMode);
     const amount = betAmount;
     const gameHistory = await createGameHistoryforGames(
       userId,

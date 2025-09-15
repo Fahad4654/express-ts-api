@@ -24,13 +24,15 @@ export async function createProfile(data: {
   bio?: string;
   avatarUrl?: string;
   address?: string;
+  referredCode?: string;
 }) {
   return Profile.create({
     userId: data.userId,
     bio: data.bio ?? "",
-    avatarUrl: data.avatarUrl ?? "",
+    avatarUrl: data.avatarUrl ?? "/media/none.jpg",
     address: data.address ?? "",
     referralCode: referralCode(data.userId),
+    referredCode: data.referredCode ? `${data.referredCode}` : "None",
   });
 }
 

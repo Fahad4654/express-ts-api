@@ -7,10 +7,12 @@ import {
   SECRET,
   ACCESS_TOKEN_EXPIRATION,
   REFRESH_TOKEN_EXPIRATION,
+  ADMIN_NAME,
 } from "../config";
 import { createBalance } from "./balance.service";
 import { createProfile } from "./profile.service";
 import { Op } from "sequelize";
+import { Profile } from "../models/Profile";
 
 export class AuthService {
   static async hashPassword(password: string): Promise<string> {
@@ -50,6 +52,7 @@ export class AuthService {
     email: string;
     password: string;
     phoneNumber: string;
+    referredCode?: string;
   }) {
     const { name, email, password, phoneNumber } = data;
 
@@ -84,10 +87,17 @@ export class AuthService {
       isAdmin: false,
     });
 
+    const admin = await User.findOne({ where: { name: `${ADMIN_NAME}` } });
+    const adminProfile = await Profile.findOne({
+      where: { userId: admin?.id },
+    });
     await createProfile({
       userId: newUser.id,
       bio: "Please Edit",
       address: "Please Edit",
+      referredCode: data.referredCode
+        ? data.referredCode
+        : adminProfile?.referralCode,
     });
     console.log("Profile created for", newUser.email);
     const newAccount = await accountService.createAccount(newUser.id, "BDT");

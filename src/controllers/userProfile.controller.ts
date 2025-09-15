@@ -147,3 +147,48 @@ export async function updateUserProfileController(req: Request, res: Response) {
     });
   }
 }
+
+export async function uploadProfilePictureController(
+  req: Request,
+  res: Response
+) {
+  try {
+    if (!req.file) {
+      res.status(400).json({ success: false, message: "No file uploaded" });
+      return;
+    }
+
+    if (!req.body.userId) {
+      res.status(400).json({ success: false, message: "userId is required" });
+      return;
+    }
+
+    const avatarUrl = `/media/${req.file.filename}`;
+
+    const updatedProfile = await updateProfileByUserId(req.body.userId, {
+      avatarUrl,
+    });
+
+    if (!updatedProfile) {
+      res.status(404).json({
+        success: false,
+        message: "Profile not found or update failed",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile picture uploaded successfully",
+      profile: updatedProfile,
+    });
+    return;
+  } catch (error) {
+    console.error("Error uploading profile picture:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to upload profile picture",
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}

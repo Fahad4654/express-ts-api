@@ -5,7 +5,7 @@ import { User } from "../models/User";
 
 export const register: RequestHandler = async (req, res) => {
   try {
-    const { name, email, password, phoneNumber } = req.body;
+    const { name, email, password, phoneNumber, referredCode } = req.body;
 
     if (!name || !email || !password || !phoneNumber) {
       console.log("All fields are required");
@@ -18,8 +18,8 @@ export const register: RequestHandler = async (req, res) => {
       email,
       password,
       phoneNumber,
+      referredCode,
     });
-    // const tokens = await AuthService.generateTokens(newUser);
 
     const userResponse = newUser.toJSON();
     delete userResponse.password;
@@ -28,7 +28,6 @@ export const register: RequestHandler = async (req, res) => {
     res.status(201).json({
       message: "User registered successfully",
       user: userResponse,
-      // ...tokens,
     });
     return;
   } catch (error: any) {
@@ -43,11 +42,9 @@ export const login: RequestHandler = async (req, res) => {
 
     if (!identifier || !password) {
       console.log("Identifier (email/phone) and password are required");
-      res
-        .status(400)
-        .json({
-          message: "Identifier (email/phone) and password are required",
-        });
+      res.status(400).json({
+        message: "Identifier (email/phone) and password are required",
+      });
       return;
     }
 

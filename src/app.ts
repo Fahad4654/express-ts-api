@@ -2,7 +2,9 @@ import express, { Application } from "express";
 import cors from "cors";
 import { authRouter } from "./routes/auth.route";
 import { authenticate } from "./middlewares/auth.middleware";
+import path from "path";
 import { allRoutes } from "./routes";
+import { multerErrorHandler } from "./middlewares/upload";
 
 const createApp = (): Application => {
   const app = express();
@@ -19,12 +21,17 @@ const createApp = (): Application => {
 
   // Public routes
   app.use("/v1/api/auth", authRouter);
-
+  
+  
   // Protected routes
   app.use(authenticate);
 
+  app.use("/v1/api/media", express.static(path.join(process.cwd(), "media")));
+
   // Protected routes
   app.use(allRoutes);
+  app.use(multerErrorHandler);
+
   return app;
 };
 

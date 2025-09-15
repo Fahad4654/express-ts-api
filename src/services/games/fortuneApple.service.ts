@@ -8,6 +8,7 @@ export interface FASession {
   state: FAState;
   bank: number; // last cashed (or 0)
   timeout?: NodeJS.Timeout; // ⏰ auto-expire
+  cheatMode: boolean; // ⚡ cheat flag
 }
 
 const sessions = new Map<string, FASession>();
@@ -28,12 +29,14 @@ function refreshSessionTimer(userId: string, s: FASession) {
   s.timeout = setTimeout(() => {
     if (sessions.has(userId)) {
       sessions.delete(userId);
-      console.log(`🍎 Fortune Apple session for ${userId} expired after 5 minutes`);
+      console.log(
+        `🍎 Fortune Apple session for ${userId} expired after 5 minutes`
+      );
     }
   }, 5 * 60 * 1000);
 }
 
-export function faStart(userId: string, betAmount: number) {
+export function faStart(userId: string, betAmount: number, cheatMode = false) {
   if (sessions.has(userId)) {
     throw new Error("You already have an active FA session.");
   }
@@ -43,6 +46,7 @@ export function faStart(userId: string, betAmount: number) {
     currentLevel: 1,
     state: "playing",
     bank: 0,
+    cheatMode,
   };
 
   sessions.set(userId, s);
@@ -67,7 +71,19 @@ export function faPick(userId: string, level: number, appleIndex: number) {
   const apples = 5;
   const badCount = badAppleCount(level);
   const badSet = new Set<number>();
-  while (badSet.size < badCount) badSet.add(Math.floor(Math.random() * apples));
+
+  if (s.cheatMode) {
+    // 🎯 In cheat mode, bias against player:
+    // 50% chance the chosen apple is forced to be bad
+    const forceBad = Math.random() < 0.5;
+    while (badSet.size < badCount)
+      badSet.add(Math.floor(Math.random() * apples));
+    if (forceBad) badSet.add(appleIndex); // ensure the pick is bad
+  } else {
+    // 🎲 Normal fair play
+    while (badSet.size < badCount)
+      badSet.add(Math.floor(Math.random() * apples));
+  }
 
   const isBad = badSet.has(appleIndex);
   if (isBad) {
@@ -80,7 +96,11 @@ export function faPick(userId: string, level: number, appleIndex: number) {
       gameState: "gameOver" as FAState,
       pickResult: "bad",
       finalWinAmount: 0,
-      lastLevelOutcome: { level, pickedIndex: appleIndex, badAppleIndices: [...badSet] },
+      lastLevelOutcome: {
+        level,
+        pickedIndex: appleIndex,
+        badAppleIndices: [...badSet],
+      },
     };
   }
 
@@ -98,7 +118,11 @@ export function faPick(userId: string, level: number, appleIndex: number) {
       gameState: "gameOver" as FAState,
       pickResult: "good",
       finalWinAmount: Math.floor(s.betAmount * multipliers[9]),
-      lastLevelOutcome: { level, pickedIndex: appleIndex, badAppleIndices: [...badSet] },
+      lastLevelOutcome: {
+        level,
+        pickedIndex: appleIndex,
+        badAppleIndices: [...badSet],
+      },
     };
   }
 
@@ -108,7 +132,11 @@ export function faPick(userId: string, level: number, appleIndex: number) {
     pickResult: "good",
     currentLevel: s.currentLevel,
     nextWinAmount: Math.floor(s.betAmount * multipliers[s.currentLevel - 1]),
-    lastLevelOutcome: { level, pickedIndex: appleIndex, badAppleIndices: [...badSet] },
+    lastLevelOutcome: {
+      level,
+      pickedIndex: appleIndex,
+      badAppleIndices: [...badSet],
+    },
   };
 }
 
