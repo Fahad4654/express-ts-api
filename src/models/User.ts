@@ -11,6 +11,7 @@ import {
   Validate,
 } from "sequelize-typescript";
 import { Profile } from "./Profile";
+import { Account } from "./Account";
 
 @Table({
   tableName: "users",
@@ -44,7 +45,10 @@ export class User extends Model {
   @Unique
   @Validate({
     isNumeric: { msg: "Phone number must contain only digits 0-9" },
-    len: { args: [11, 11], msg: "Phone number must be exactly 11 digits, Ex: 017XXXXXXXX" },
+    len: {
+      args: [11, 11],
+      msg: "Phone number must be exactly 11 digits, Ex: 017XXXXXXXX",
+    },
   })
   @Column(DataType.STRING(11))
   phoneNumber!: string;
@@ -63,4 +67,7 @@ export class User extends Model {
 
   @HasOne(() => Profile)
   profile!: Profile;
+
+  @HasOne(() => Account, { onDelete: "CASCADE" }) // 👈 Add this
+  account!: Account;
 }

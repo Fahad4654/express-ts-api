@@ -53,7 +53,7 @@ export async function updateProfileByUserId(
   const profile = await Profile.findOne({ where: { userId } });
   if (!profile) return null;
 
-  const allowedFields: Array<keyof Profile> = ["bio", "avatarUrl", "address"];
+  const allowedFields: Array<keyof Profile> = ["bio", "address"];
   const filteredUpdates: Partial<Profile> = {};
 
   for (const key of allowedFields) {
