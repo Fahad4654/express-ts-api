@@ -6,6 +6,8 @@ import { createBalance } from "./balance.service";
 import * as accountService from "./account.service";
 import { Op } from "sequelize";
 import { ADMIN_NAME } from "../config";
+import { Account } from "../models/Account";
+import { Balance } from "../models/Balance";
 
 export const generateToken = (id: string): string => {
   return id.slice(-9).toUpperCase(); // Take last 9 chars and uppercase
@@ -27,6 +29,20 @@ export async function findAllUsers(order = "id", asc = "ASC") {
             "updatedAt",
           ],
         },
+      },
+      {
+        model: Account,
+        attributes: {
+          exclude: ["userId", "currency", "createdAt", "updatedAt"],
+        },
+        include: [
+          {
+            model: Balance, // 👈 bring balance under account
+            attributes: {
+              exclude: ["accountId", "createdAt", "updatedAt"],
+            },
+          },
+        ],
       },
     ],
     nest: true,
