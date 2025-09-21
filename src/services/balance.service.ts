@@ -4,7 +4,13 @@ import { User } from "../models/User";
 import { sequelize } from "../config/database";
 import { BalanceTransaction } from "../models/BalanceTransaction";
 
-export async function findAllBalances(order = "createdAt", asc = "ASC") {
+export async function findAllBalances(
+  order = "createdAt",
+  asc = "ASC",
+  page = 1,
+  pageSize = 10
+) {
+  const offset = (page - 1) * pageSize;
   return Balance.findAll({
     include: [
       {
@@ -20,6 +26,8 @@ export async function findAllBalances(order = "createdAt", asc = "ASC") {
     ],
     nest: true,
     raw: true,
+    limit: pageSize,
+    offset,
     order: [[order, asc]],
   });
 }

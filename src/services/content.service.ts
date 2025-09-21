@@ -1,8 +1,16 @@
 import { Contents } from "../models/Contents";
 
-export async function findAllContents(order = "id", asc = "ASC") {
+export async function findAllContents(
+  order = "id",
+  asc = "ASC",
+  page = 1,
+  pageSize = 10
+) {
+  const offset = (page - 1) * pageSize;
   return Contents.findAll({
     raw: true,
+    limit: pageSize,
+    offset,
     order: [[order, asc]],
   });
 }

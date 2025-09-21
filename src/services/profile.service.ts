@@ -2,7 +2,13 @@ import { Profile } from "../models/Profile";
 import { User } from "../models/User";
 import { generateToken } from "./user.service";
 
-export async function findAllProfiles(order = "id", asc = "ASC") {
+export async function findAllProfiles(
+  order = "id",
+  asc = "ASC",
+  page = 1,
+  pageSize = 10
+) {
+  const offset = (page - 1) * pageSize;
   return Profile.findAll({
     include: [
       {
@@ -12,6 +18,8 @@ export async function findAllProfiles(order = "id", asc = "ASC") {
     ],
     nest: true,
     raw: true,
+    limit: pageSize,
+    offset,
     order: [[order, asc]],
   });
 }

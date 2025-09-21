@@ -7,7 +7,13 @@ export function generateAccountNumber(): string {
   return `AC-${timestamp}${random}`;
 }
 
-export async function getAccounts(order: string, asc: string) {
+export async function getAccounts(
+  order: string,
+  asc: string,
+  page = 1,
+  pageSize = 10
+) {
+  const offset = (page - 1) * pageSize;
   return await Account.findAll({
     include: [
       {
@@ -17,6 +23,8 @@ export async function getAccounts(order: string, asc: string) {
     ],
     nest: true,
     raw: true,
+    limit: pageSize,
+    offset,
     order: [[order, asc]],
   });
 }

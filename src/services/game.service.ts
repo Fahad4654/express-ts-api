@@ -6,10 +6,18 @@ import { GameHistory } from "../models/GameHistory";
 import { findByDynamicId } from "./find.service";
 import { sequelize } from "../config/database";
 
-export async function findAllGame(order: string, asc: string) {
+export async function findAllGame(
+  order: string,
+  asc: string,
+  page = 1,
+  pageSize = 10
+) {
+  const offset = (page - 1) * pageSize;
   console.log(`Fetching all games, order: ${order}, asc: ${asc}`);
   const games = await Game.findAll({
     raw: true,
+    limit: pageSize,
+    offset,
     order: [[order || "id", asc || "ASC"]],
   });
   console.log(`Found ${games.length} games`);
