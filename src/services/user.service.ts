@@ -13,13 +13,19 @@ export const generateToken = (id: string): string => {
   return id.slice(-9).toUpperCase(); // Take last 9 chars and uppercase
 };
 
-export async function findAllUsers(order = "id", asc = "ASC") {
-  return User.findAll({
+export async function findAllUsers(
+  order = "id",
+  asc: "ASC" | "DESC" = "ASC",
+  page = 1,
+  pageSize = 10
+) {
+  const offset = (page - 1) * pageSize;
+
+  const { count, rows } = await User.findAndCountAll({
     attributes: { exclude: ["password"] },
     include: [
       {
         model: Profile,
-        // Optionally exclude profile fields if needed
         attributes: {
           exclude: [
             "userId",
@@ -37,7 +43,7 @@ export async function findAllUsers(order = "id", asc = "ASC") {
         },
         include: [
           {
-            model: Balance, // 👈 bring balance under account
+            model: Balance,
             attributes: {
               exclude: ["accountId", "createdAt", "updatedAt"],
             },
@@ -46,9 +52,21 @@ export async function findAllUsers(order = "id", asc = "ASC") {
       },
     ],
     nest: true,
-    raw: true,
+    raw: false, // remove raw so nested JSON works correctly
+    limit: pageSize,
+    offset,
     order: [[order, asc]],
   });
+
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
 
 export async function createUser(data: {
