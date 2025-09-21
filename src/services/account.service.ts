@@ -7,8 +7,14 @@ export function generateAccountNumber(): string {
   return `AC-${timestamp}${random}`;
 }
 
-export async function getAccounts(order: string, asc: string) {
-  return await Account.findAll({
+export async function getAccounts(
+  order: string,
+  asc: string,
+  page = 1,
+  pageSize = 10
+) {
+  const offset = (page - 1) * pageSize;
+  const { count, rows } = await Account.findAndCountAll({
     include: [
       {
         model: User,
@@ -17,8 +23,19 @@ export async function getAccounts(order: string, asc: string) {
     ],
     nest: true,
     raw: true,
+    limit: pageSize,
+    offset,
     order: [[order, asc]],
   });
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
 
 export async function createAccount(userId: string, currency: string) {

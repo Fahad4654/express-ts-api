@@ -24,9 +24,14 @@ export async function getContentsController(req: Request, res: Response) {
       ]);
       if (!reqBodyValidation) return;
 
-      const { order, asc } = req.body;
+      const { order, asc, page = 1, pageSize = 10 } = req.body;
 
-      const contentsList = await findAllContents(order, asc);
+      const contentsList = await findAllContents(
+        order,
+        asc,
+        Number(page),
+        Number(pageSize)
+      );
       console.log("Contents fetched successfully", contentsList);
       res.status(201).json({
         message: "Contents fetched successfully",

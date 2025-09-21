@@ -4,9 +4,15 @@ import { Balance } from "../models/Balance";
 import { BalanceTransaction } from "../models/BalanceTransaction";
 import { findByDynamicId } from "./find.service";
 
-export async function findAllTransactions(order: string, asc: string) {
+export async function findAllTransactions(
+  order: string,
+  asc: string,
+  page = 1,
+  pageSize = 10
+) {
+  const offset = (page - 1) * pageSize;
   console.log(`Fetching all transactions, order: ${order}, asc: ${asc}`);
-  const transactions = await BalanceTransaction.findAll({
+  const { count, rows } = await BalanceTransaction.findAndCountAll({
     include: [
       {
         model: User,
@@ -19,10 +25,20 @@ export async function findAllTransactions(order: string, asc: string) {
     ],
     nest: true,
     raw: true,
+    limit: pageSize,
+    offset,
     order: [[order || "id", asc || "ASC"]],
   });
-  console.log(`Found ${transactions.length} transactions`);
-  return transactions;
+  console.log(`Found ${rows.length} transactions`);
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
 
 export async function createNewTransaction(data: any) {

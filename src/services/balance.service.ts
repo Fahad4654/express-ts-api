@@ -4,8 +4,14 @@ import { User } from "../models/User";
 import { sequelize } from "../config/database";
 import { BalanceTransaction } from "../models/BalanceTransaction";
 
-export async function findAllBalances(order = "createdAt", asc = "ASC") {
-  return Balance.findAll({
+export async function findAllBalances(
+  order = "createdAt",
+  asc = "ASC",
+  page = 1,
+  pageSize = 10
+) {
+  const offset = (page - 1) * pageSize;
+  const { count, rows } = await Balance.findAndCountAll({
     include: [
       {
         model: Account,
@@ -20,8 +26,19 @@ export async function findAllBalances(order = "createdAt", asc = "ASC") {
     ],
     nest: true,
     raw: true,
+    limit: pageSize,
+    offset,
     order: [[order, asc]],
   });
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
 
 export async function createBalance(data: Partial<Balance>) {

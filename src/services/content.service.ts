@@ -1,10 +1,27 @@
 import { Contents } from "../models/Contents";
 
-export async function findAllContents(order = "id", asc = "ASC") {
-  return Contents.findAll({
+export async function findAllContents(
+  order = "id",
+  asc = "ASC",
+  page = 1,
+  pageSize = 10
+) {
+  const offset = (page - 1) * pageSize;
+  const { count, rows } = await Contents.findAndCountAll({
     raw: true,
+    limit: pageSize,
+    offset,
     order: [[order, asc]],
   });
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
 
 export async function createContent(data: Partial<Contents>) {

@@ -24,9 +24,9 @@ export const getGameController = async (req: Request, res: Response) => {
     const reqBodyValidation = validateRequiredBody(req, res, ["order", "asc"]);
     if (!reqBodyValidation) return;
 
-    const { order, asc } = req.body;
+    const { order, asc, page = 1, pageSize = 10 } = req.body;
 
-    const games = await findAllGame(order, asc);
+    const games = await findAllGame(order, asc, Number(page), Number(pageSize));
     console.log("Game list fetched successfully", games);
     res.status(200).json({
       message: "Game list fetched successfully",
@@ -56,9 +56,14 @@ export const getGameHistoryController = async (req: Request, res: Response) => {
       ]);
       if (!reqBodyValidation) return;
 
-      const { order, asc } = req.body;
+      const { order, asc, page = 1, pageSize = 10 } = req.body;
 
-      const gamesHistorys = await findAllGameHistory(order, asc);
+      const gamesHistorys = await findAllGameHistory(
+        order,
+        asc,
+        Number(page),
+        Number(pageSize)
+      );
       console.log("Game history list fetched successfully", gamesHistorys);
       res.status(200).json({
         message: "Game history list fetched successfully",

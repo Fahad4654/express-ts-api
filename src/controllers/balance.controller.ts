@@ -27,9 +27,14 @@ export async function getBalanceController(req: Request, res: Response) {
         "asc",
       ]);
       if (!reqBodyValidation) return;
-      const { order, asc } = req.body;
+      const { order, asc, page = 1, pageSize = 10 } = req.body;
 
-      const balanceList = await findAllBalances(order, asc);
+      const balanceList = await findAllBalances(
+        order,
+        asc,
+        Number(page),
+        Number(pageSize)
+      );
       console.log("Balance list fetched successfully", balanceList);
 
       res.status(201).json({

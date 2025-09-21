@@ -19,9 +19,14 @@ export async function getAccountsController(req: Request, res: Response) {
       ]);
       if (!reqBodyValidation) return;
 
-      const { order, asc } = req.body;
+      const { order, asc, page = 1, pageSize = 10 } = req.body;
 
-      const userAccounts = await accountService.getAccounts(order, asc);
+      const userAccounts = await accountService.getAccounts(
+        order,
+        asc,
+        Number(page),
+        Number(pageSize)
+      );
       console.log("User's Accounts fetched successfully", userAccounts);
       res.status(201).json({
         message: "User's Accounts fetched successfully",

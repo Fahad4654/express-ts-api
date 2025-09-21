@@ -26,9 +26,14 @@ export async function getUsersController(req: Request, res: Response) {
       ]);
       if (!reqBodyValidation) return;
 
-      const { order, asc } = req.body;
+      const { order, asc, page = 1, pageSize = 10 } = req.body;
 
-      const usersList = await findAllUsers(order, asc);
+      const usersList = await findAllUsers(
+        order,
+        asc,
+        Number(page),
+        Number(pageSize)
+      );
       console.log("User fetched successfully");
       console.log("usersList", usersList);
       res.status(200).json({
