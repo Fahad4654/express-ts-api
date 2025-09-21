@@ -25,9 +25,14 @@ export async function getUsersProfileController(req: Request, res: Response) {
       ]);
       if (!reqBodyValidation) return;
 
-      const { order, asc } = req.body;
+      const { order, asc, page = 1, pageSize = 10 } = req.body;
 
-      const profiles = await findAllProfiles(order, asc);
+      const profiles = await findAllProfiles(
+        order,
+        asc,
+        Number(page),
+        Number(pageSize)
+      );
       console.log("User Profile fetched successfully", profiles);
 
       res.status(200).json({

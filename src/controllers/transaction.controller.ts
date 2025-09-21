@@ -25,9 +25,14 @@ export const getTransactionController = async (req: Request, res: Response) => {
       ]);
       if (!reqBodyValidation) return;
 
-      const { order, asc } = req.body;
+      const { order, asc, page = 1, pageSize = 10 } = req.body;
 
-      const transactions = await findAllTransactions(order, asc);
+      const transactions = await findAllTransactions(
+        order,
+        asc,
+        Number(page),
+        Number(pageSize)
+      );
       console.log("Transaction list fetched successfully", transactions);
       res.status(200).json({
         message: "Transaction list fetched successfully",
