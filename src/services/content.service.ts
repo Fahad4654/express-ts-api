@@ -7,12 +7,21 @@ export async function findAllContents(
   pageSize = 10
 ) {
   const offset = (page - 1) * pageSize;
-  return Contents.findAll({
+  const { count, rows } = await Contents.findAndCountAll({
     raw: true,
     limit: pageSize,
     offset,
     order: [[order, asc]],
   });
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
 
 export async function createContent(data: Partial<Contents>) {

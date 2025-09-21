@@ -9,7 +9,7 @@ export async function findAllProfiles(
   pageSize = 10
 ) {
   const offset = (page - 1) * pageSize;
-  return Profile.findAll({
+  const { count, rows } = await Profile.findAndCountAll({
     include: [
       {
         model: User,
@@ -22,6 +22,15 @@ export async function findAllProfiles(
     offset,
     order: [[order, asc]],
   });
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
 export function referralCode(userId: string) {
   return `FK-${generateToken(userId)}`;

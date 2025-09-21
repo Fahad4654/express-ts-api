@@ -14,24 +14,48 @@ export async function findAllGame(
 ) {
   const offset = (page - 1) * pageSize;
   console.log(`Fetching all games, order: ${order}, asc: ${asc}`);
-  const games = await Game.findAll({
+  const { count, rows } = await Game.findAndCountAll({
     raw: true,
     limit: pageSize,
     offset,
     order: [[order || "id", asc || "ASC"]],
   });
-  console.log(`Found ${games.length} games`);
-  return games;
+  console.log(`Found ${rows.length} games`);
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
 
-export async function findAllGameHistory(order: string, asc: string) {
+export async function findAllGameHistory(
+  order: string,
+  asc: string,
+  page = 1,
+  pageSize = 10
+) {
+  const offset = (page - 1) * pageSize;
   console.log(`Fetching all game history, order: ${order}, asc: ${asc}`);
-  const gamesHistory = await GameHistory.findAll({
+  const { count, rows } = await GameHistory.findAndCountAll({
     raw: true,
+    limit: pageSize,
+    offset,
     order: [[order || "createdAt", asc || "DESC"]],
   });
-  console.log(`Found ${gamesHistory.length} game history`);
-  return gamesHistory;
+  console.log(`Found ${rows.length} game history`);
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
 
 export async function createGame(data: any) {

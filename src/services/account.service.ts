@@ -14,7 +14,7 @@ export async function getAccounts(
   pageSize = 10
 ) {
   const offset = (page - 1) * pageSize;
-  return await Account.findAll({
+  const { count, rows } = await Account.findAndCountAll({
     include: [
       {
         model: User,
@@ -27,6 +27,15 @@ export async function getAccounts(
     offset,
     order: [[order, asc]],
   });
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
 
 export async function createAccount(userId: string, currency: string) {

@@ -11,7 +11,7 @@ export async function findAllBalances(
   pageSize = 10
 ) {
   const offset = (page - 1) * pageSize;
-  return Balance.findAll({
+  const { count, rows } = await Balance.findAndCountAll({
     include: [
       {
         model: Account,
@@ -30,6 +30,15 @@ export async function findAllBalances(
     offset,
     order: [[order, asc]],
   });
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
 
 export async function createBalance(data: Partial<Balance>) {

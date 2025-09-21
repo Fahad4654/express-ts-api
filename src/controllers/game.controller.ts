@@ -56,9 +56,14 @@ export const getGameHistoryController = async (req: Request, res: Response) => {
       ]);
       if (!reqBodyValidation) return;
 
-      const { order, asc } = req.body;
+      const { order, asc, page = 1, pageSize = 10 } = req.body;
 
-      const gamesHistorys = await findAllGameHistory(order, asc);
+      const gamesHistorys = await findAllGameHistory(
+        order,
+        asc,
+        Number(page),
+        Number(pageSize)
+      );
       console.log("Game history list fetched successfully", gamesHistorys);
       res.status(200).json({
         message: "Game history list fetched successfully",

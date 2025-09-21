@@ -12,7 +12,7 @@ export async function findAllTransactions(
 ) {
   const offset = (page - 1) * pageSize;
   console.log(`Fetching all transactions, order: ${order}, asc: ${asc}`);
-  const transactions = await BalanceTransaction.findAll({
+  const { count, rows } = await BalanceTransaction.findAndCountAll({
     include: [
       {
         model: User,
@@ -29,8 +29,16 @@ export async function findAllTransactions(
     offset,
     order: [[order || "id", asc || "ASC"]],
   });
-  console.log(`Found ${transactions.length} transactions`);
-  return transactions;
+  console.log(`Found ${rows.length} transactions`);
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
 
 export async function createNewTransaction(data: any) {
