@@ -9,9 +9,11 @@ import {
   Default,
   HasOne,
   Validate,
+  HasMany,
 } from "sequelize-typescript";
 import { Profile } from "./Profile";
 import { Account } from "./Account";
+import { GameHistory } from "./GameHistory";
 
 @Table({
   tableName: "users",
@@ -70,4 +72,7 @@ export class User extends Model {
 
   @HasOne(() => Account, { onDelete: "CASCADE" }) // 👈 Add this
   account!: Account;
+
+  @HasMany(() => GameHistory, { onDelete: "CASCADE" }) // 👈 Add this
+  gameHistory!: GameHistory;
 }
