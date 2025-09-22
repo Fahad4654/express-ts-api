@@ -9,6 +9,10 @@ import {
   PrimaryKey,
   Default,
   Index,
+  BeforeCreate,
+  BeforeUpdate,
+  AfterCreate,
+  AfterUpdate,
 } from "sequelize-typescript";
 import { Balance } from "./Balance";
 import { Account } from "./Account";
@@ -24,6 +28,7 @@ import { Game } from "./Game";
     { fields: ["balanceId"] },
     { fields: ["type"] },
     { fields: ["gameId"] },
+    { fields: ["gameName"] },
   ],
 })
 export class GameHistory extends Model {
@@ -64,6 +69,11 @@ export class GameHistory extends Model {
   @BelongsTo(() => Game, { onDelete: "CASCADE" })
   game!: Game;
 
+  /** Game Name (auto populated from Game model) */
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  gameName!: string;
+
   /** Transaction type */
   @AllowNull(false)
   @Column(DataType.ENUM("win", "loss"))
@@ -93,4 +103,18 @@ export class GameHistory extends Model {
 
   @Column(DataType.DATE)
   updatedAt!: Date;
+
+  /** Hook to auto-fill gameName from Game */
+  @BeforeCreate
+  @BeforeUpdate
+  @AfterCreate
+  @AfterUpdate
+  static async setGameName(instance: GameHistory) {
+    if (instance.gameId) {
+      const game = await Game.findByPk(instance.gameId);
+      if (game) {
+        instance.gameName = game.name;
+      }
+    }
+  }
 }
