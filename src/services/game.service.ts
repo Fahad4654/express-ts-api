@@ -41,7 +41,13 @@ export async function findAllGameHistory(
   const offset = (page - 1) * pageSize;
   console.log(`Fetching all game history, order: ${order}, asc: ${asc}`);
   const { count, rows } = await GameHistory.findAndCountAll({
-    raw: true,
+    include: [
+      {
+        model: User,
+        attributes: ["id", "name", "email", "phoneNumber"],
+      },
+    ],
+    raw: false,
     limit: pageSize,
     offset,
     order: [[order || "createdAt", asc || "DESC"]],
