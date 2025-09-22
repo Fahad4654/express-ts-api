@@ -6,17 +6,109 @@ import { Balance } from "../models/Balance";
 import { BalanceTransaction } from "../models/BalanceTransaction";
 import { GameHistory } from "../models/GameHistory";
 import { Profile } from "../models/Profile";
+import { Contents } from "../models/Contents";
 
 // Allowed identifiers per model
 const allowedKeys: Record<string, string[]> = {
-  Account: ["id", "userId", "accountNumber"],
-  Balance: ["id", "accountId"],
-  BalanceTransaction: ["id", "userId", "balanceId", "accountId", "trxId"],
-  GameHistory: ["id", "userId", "balanceId", "accountId", "gameId"],
-  Profile: ["id", "userId", "referralCode", "referredCode"],
-  User: ["id", "name", "email", "phoneNumber"],
-  Game: ["id", "name"],
-  Contents: ["id", "userId", "name"],
+  Account: [
+    "id",
+    "userId",
+    "accountNumber",
+    "currency",
+    "accountType",
+    "status",
+    "createdAt",
+    "updatedAt",
+  ],
+  Balance: [
+    "id",
+    "accountId",
+    "availableBalance",
+    "holdBalance",
+    "withdrawableBalance",
+    "currency",
+    "lastTransactionAt",
+    "createdAt",
+    "updatedAt",
+  ],
+  BalanceTransaction: [
+    "id",
+    "balanceId",
+    "accountId",
+    "userId",
+    "type",
+    "direction",
+    "amount",
+    "currency",
+    "description",
+    "trxId",
+    "status",
+    "createdAt",
+    "updatedAt",
+  ],
+  Contents: [
+    "id",
+    "userId",
+    "name",
+    "text",
+    "type",
+    "mediaUrl",
+    "status",
+    "exclusive",
+    "createdBy",
+    "updatedBy",
+    "createdAt",
+    "updatedAt",
+  ],
+  GameHistory: [
+    "id",
+    "balanceId",
+    "accountId",
+    "userId",
+    "gameId",
+    "type",
+    "direction",
+    "amount",
+    "currency",
+    "description",
+    "createdAt",
+    "updatedAt",
+  ],
+  Profile: [
+    "id",
+    "userId",
+    "bio",
+    "avatarUrl",
+    "address",
+    "referralCode",
+    "referredCode",
+    "createdBy",
+    "updatedBy",
+    "createdAt",
+    "updatedAt",
+  ],
+  User: [
+    "id",
+    "name",
+    "email",
+    "password",
+    "isAdmin",
+    "phoneNumber",
+    "createdBy",
+    "updatedBy",
+    "createdAt",
+    "updatedAt",
+  ],
+  Game: [
+    "id",
+    "name",
+    "description",
+    "minimumBet",
+    "maximumBet",
+    "gameStatus",
+    "createdAt",
+    "updatedAt",
+  ],
 };
 
 // Keys that always return ONE record
@@ -33,15 +125,24 @@ export function findController<T extends Model>(
 ) {
   return async (req: Request, res: Response): Promise<void> => {
     try {
-      // Extract pagination params and identifiers
+      // Extract pagination params, ordering, and identifiers
       const rawPage = Number(req.body.page ?? 1);
       const rawPageSize = Number(req.body.pageSize ?? 10);
+      const orderBy = req.body.orderBy as string | undefined;
+      const sortOrder = (req.body.sortOrder as "ASC" | "DESC") || "DESC";
       const page = rawPage > 0 ? rawPage : 1;
       const pageSize = rawPageSize > 0 ? rawPageSize : 10;
       const offset = (page - 1) * pageSize;
 
-      // Separate pagination params from identifiers
-      const { page: _, pageSize: __, ...identifierFields } = req.body;
+      // Separate all special params from identifiers
+      const {
+        page: _,
+        pageSize: __,
+        orderBy: ___,
+        sortOrder: ____,
+        ...identifierFields
+      } = req.body;
+
       const keys = Object.keys(identifierFields);
 
       // Must provide exactly one identifier
@@ -59,6 +160,23 @@ export function findController<T extends Model>(
         res
           .status(400)
           .json({ error: `Invalid identifier '${key}' for ${model.name}` });
+        return;
+      }
+
+      // Validate orderBy field if provided
+      if (orderBy && !allowedKeys[model.name]?.includes(orderBy)) {
+        console.log(model);
+        res
+          .status(400)
+          .json({
+            error: `Invalid order field '${orderBy}' for ${model.name}`,
+          });
+        return;
+      }
+
+      // Validate sortOrder
+      if (sortOrder && !["ASC", "DESC"].includes(sortOrder.toUpperCase())) {
+        res.status(400).json({ error: "sortOrder must be 'ASC' or 'DESC'" });
         return;
       }
 
@@ -98,11 +216,15 @@ export function findController<T extends Model>(
         );
       }
 
+      // Build order clause with proper typing
+      const order = orderBy ? ([[orderBy, sortOrder]] as any) : undefined;
+
       if (singleResultKeys.includes(key)) {
         // Single record
         const record = await model.findOne({
           where: { [key]: identifierFields[key] },
           include: includeModels,
+          order,
         });
         records = record as unknown as T | null;
       } else {
@@ -112,6 +234,7 @@ export function findController<T extends Model>(
           limit: pageSize,
           offset,
           include: includeModels,
+          order,
         });
         records = rows as T[];
         pagination = {
