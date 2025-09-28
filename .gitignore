@@ -3,7 +3,7 @@
 .env
 .env*
 node_modules
-media
+# media
 build
 pgdata
 data
