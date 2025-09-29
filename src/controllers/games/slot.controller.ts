@@ -28,7 +28,8 @@ export async function spinSlotController(req: Request, res: Response) {
       userId,
       amount,
       gameId,
-      type
+      type,
+      `${type} ${amount} by playing Slot`
     );
     await gameBalanceforGames(gameHistory.id);
     console.log(result);
