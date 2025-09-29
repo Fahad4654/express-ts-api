@@ -9,6 +9,7 @@ import { User } from "../models/User";
 import { findByDynamicId } from "../services/find.service";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../services/reqBodyValidation.service";
+import { Profile } from "../models/Profile";
 
 export async function getUsersController(req: Request, res: Response) {
   const adminMiddleware = isAdmin();
@@ -162,5 +163,51 @@ export async function deleteUserController(req: Request, res: Response) {
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ message: "Error deleting user", error });
+  }
+}
+
+export async function getUsersByRefController(req: Request, res: Response) {
+  try {
+    const referralCode = req.body.ref;
+    if (!referralCode) {
+      res.status(400).json({
+        status: 400,
+        error: "Referral Code is required",
+      });
+      return;
+    }
+
+    const foundtypedProfile = await findByDynamicId(
+      Profile,
+      { referralCode },
+      false
+    );
+    const foundProfile = foundtypedProfile as Profile | null;
+    if (!foundProfile) {
+      res.status(400).json({
+        status: 400,
+        error: "Referral Code is not valid",
+      });
+      return;
+    }
+    // const user = await findByDynamicId(User, { id: foundProfile.userId }, false);
+    const foundtypedUser = await findByDynamicId(
+      User,
+      { id: foundProfile.userId },
+      false
+    );
+    const user = foundtypedUser as User | null;
+    if (!user) {
+      console.log("User not found");
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    console.log("User found:", user);
+    res.status(200).json({ user: user, status: "success" });
+    return;
+  } catch (error) {
+    console.error("Error finding user:", error);
+    res.status(500).json({ message: "Error fetching users:", error });
   }
 }
