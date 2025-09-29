@@ -5,12 +5,14 @@ import {
   updateUserController,
   deleteUserController,
   getUsersByIdController,
+  getUsersByRefController,
 } from "../controllers/users.controller";
 
 const router = Router();
 
 router.post("/all", getUsersController);
 router.get("/:id", getUsersByIdController);
+router.post("/byRef",getUsersByRefController)
 router.post("/", createUserController);
 router.put("/", updateUserController);
 router.delete("/", deleteUserController);
