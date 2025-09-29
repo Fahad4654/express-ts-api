@@ -56,7 +56,8 @@ export async function rollDiceController(req: Request, res: Response) {
       userId,
       amount,
       gameId,
-      type
+      type,
+      `${type} ${amount} by playing Dice roller`
     );
     await gameBalanceforGames(gameHistory.id);
     console.log(result);

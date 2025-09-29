@@ -166,11 +166,9 @@ export function findController<T extends Model>(
       // Validate orderBy field if provided
       if (orderBy && !allowedKeys[model.name]?.includes(orderBy)) {
         console.log(model);
-        res
-          .status(400)
-          .json({
-            error: `Invalid order field '${orderBy}' for ${model.name}`,
-          });
+        res.status(400).json({
+          error: `Invalid order field '${orderBy}' for ${model.name}`,
+        });
         return;
       }
 
@@ -269,8 +267,8 @@ export function findController<T extends Model>(
               (record as unknown as BalanceTransaction).userId === user.id,
             GameHistory: async () =>
               (record as unknown as GameHistory).userId === user.id,
-            Profile: async () =>
-              (record as unknown as Profile).userId === user.id,
+            // Profile: async () =>
+            //   (record as unknown as Profile).userId === user.id,
             User: async () => (record as unknown as User).id === user.id,
             Game: async () => true,
             Contents: async () => true,

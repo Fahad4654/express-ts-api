@@ -90,7 +90,8 @@ export async function faCashoutController(req: Request, res: Response) {
       userId,
       amount,
       gameId,
-      type
+      type,
+      `${type} ${amount} by playing Fortune Apple`
     );
     await gameBalanceforGames(gameHistory.id);
     console.log(`${userId} cashed out`);
