@@ -7,6 +7,8 @@ node_modules
 build
 pgdata
 data
+backups
+media
 
 package-lock.json
 

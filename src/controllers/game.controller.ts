@@ -9,6 +9,7 @@ import {
   updatGameHistoryById,
   updateGameById,
   gameBalance,
+  deleteAllGameHistory,
 } from "../services/game.service";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../services/reqBodyValidation.service";
@@ -256,6 +257,32 @@ export const updateGameHistoryController = async (
     } catch (error) {
       console.error("Error updating game history:", error);
       res.status(500).json({ status: 500, message: String(error) });
+    }
+  });
+};
+
+
+export const deleteALLGameHistoryController = async (
+  req: Request,
+  res: Response
+) => {
+  const adminMiddleware = isAdmin();
+
+  adminMiddleware(req, res, async () => {
+    try {
+      const result = await deleteAllGameHistory(); // ✅ renamed
+
+      console.log(result.message);
+
+      return res.status(200).json(result); // ✅ using Express res
+    } catch (error) {
+      console.error("Error deleting game history:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to delete Game History records",
+        error: String(error),
+      });
     }
   });
 };

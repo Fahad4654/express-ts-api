@@ -5,6 +5,9 @@ import { Game } from "../models/Game";
 import { GameHistory } from "../models/GameHistory";
 import { findByDynamicId } from "./find.service";
 import { sequelize } from "../config/database";
+import fs from "fs";
+import path from "path";
+import { Parser } from "json2csv";
 
 export async function findAllGame(
   order: string,
@@ -299,4 +302,44 @@ export async function gameBalance(gameHistoryId: string) {
 
     return { balance, gameHistory };
   });
+}
+
+export async function deleteAllGameHistory() {
+  try {
+    const histories = await GameHistory.findAll({ raw: true });
+
+    if (histories.length > 0) {
+      const parser = new Parser();
+      const csv = parser.parse(histories);
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const backupDir = path.join(process.cwd(), "backups");
+      if (!fs.existsSync(backupDir))
+        fs.mkdirSync(backupDir, { recursive: true });
+
+      const filePath = path.join(
+        backupDir,
+        `game_history_backup-${timestamp}.csv`
+      );
+      fs.writeFileSync(filePath, csv);
+      console.log(`[Service] Backup saved: ${filePath}`);
+    }
+
+    const count = await GameHistory.destroy({ where: {}, truncate: false });
+    console.log(`[Service] ${count} Game History record(s) deleted`);
+
+    return {
+      success: true,
+      message: `${count} Game History record(s) deleted`,
+      deletedCount: count,
+      backupCreated: histories.length > 0,
+    };
+  } catch (error: any) {
+    console.error(`[Service] Failed to delete Game History records:`, error);
+    return {
+      success: false,
+      message: "Failed to delete Game History records",
+      error: error.message,
+    };
+  }
 }

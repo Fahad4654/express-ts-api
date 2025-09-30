@@ -8,6 +8,7 @@ import {
   deleteGameHistoryController,
   updateGameController,
   updateGameHistoryController,
+  deleteALLGameHistoryController,
 } from "../controllers/game.controller";
 
 const router = Router();
@@ -20,6 +21,7 @@ router.delete("/", deleteGameController);
 
 router.post("/history/all", getGameHistoryController);
 router.post("/history", createGameHistoryController);
+router.delete("/history/all", deleteALLGameHistoryController);
 router.put("/history", updateGameHistoryController);
 router.delete("/history", deleteGameHistoryController);
 
