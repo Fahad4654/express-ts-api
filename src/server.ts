@@ -9,6 +9,7 @@ import { refreshProfit, incrementProfit } from "./services/profit.refresh";
 import { createMonthlySnapshot } from "./services/profit.snapshot";
 import { Op } from "sequelize";
 import cron from "node-cron";
+import { deleteAllGameHistory } from "./services/game.service";
 
 // 🔹 Register hooks
 const registerHooks = () => {
@@ -113,13 +114,14 @@ const registerCronJobs = () => {
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 
-    await GameHistory.destroy({
-      where: { createdAt: { [Op.lt]: threeMonthsAgo } },
-    });
+    // await GameHistory.destroy({
+    //   where: { createdAt: { [Op.lt]: threeMonthsAgo } },
+    // });
+    await deleteAllGameHistory();
 
-    await BalanceTransaction.destroy({
-      where: { createdAt: { [Op.lt]: threeMonthsAgo } },
-    });
+    // await BalanceTransaction.destroy({
+    //   where: { createdAt: { [Op.lt]: threeMonthsAgo } },
+    // });
 
     console.log("✅ Monthly snapshot + cleanup done.");
   });
