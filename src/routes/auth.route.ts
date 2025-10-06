@@ -4,6 +4,9 @@ import {
   login,
   logout,
   refreshToken,
+  requestPasswordResetController,
+  verifyOtpController,
+  resetPasswordController
 } from "../controllers/auth.controller";
 
 const router = Router();
@@ -11,6 +14,9 @@ const router = Router();
 // Public routes
 router.post("/register", register);
 router.post("/login", login);
+router.post("/request-reset", requestPasswordResetController);
+router.post("/verify-otp", verifyOtpController);
+router.post("/reset-password", resetPasswordController);
 
 // Requires valid refresh token
 router.post("/logout", logout);

@@ -13,6 +13,10 @@ import { createBalance } from "./balance.service";
 import { createProfile } from "./profile.service";
 import { Op } from "sequelize";
 import { Profile } from "../models/Profile";
+import { MailService } from "./mail.service";
+import { PasswordResetToken } from "../models/PasswordResetToken";
+
+const mailService = new MailService();
 
 export class AuthService {
   static async hashPassword(password: string): Promise<string> {
@@ -171,4 +175,85 @@ export class AuthService {
       throw error;
     }
   }
+}
+
+export async function requestPasswordReset(identifier: string) {
+  const user = await User.findOne({
+    where: { [identifier.includes("@") ? "email" : "phoneNumber"]: identifier },
+  });
+  if (!user) throw new Error("User not found");
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  await PasswordResetToken.destroy({ where: { userId: user.id } });
+  await PasswordResetToken.create({
+    userId: user.id,
+    otp,
+    expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+    verified: false,
+  });
+
+  await mailService.sendMail(
+    user.email,
+    "Password Reset OTP",
+    `Your OTP is ${otp}`,
+    `<p>Your OTP for password reset is <b>${otp}</b>. It expires in 10 minutes.</p>`
+  );
+
+  return { message: "OTP sent successfully" };
+}
+
+/**
+ * Step 2: Verify OTP and reset password
+ */
+export async function verifyOtp(identifier: string, otp: string) {
+  const user = await User.findOne({
+    where: { [identifier.includes("@") ? "email" : "phoneNumber"]: identifier },
+  });
+  if (!user) throw new Error("User not found");
+
+  const token = await PasswordResetToken.findOne({
+    where: { userId: user.id, otp },
+  });
+  if (!token) throw new Error("Invalid OTP");
+  if (token.expiresAt.getTime() < Date.now()) {
+    await token.destroy();
+    throw new Error("OTP expired");
+  }
+
+  token.verified = true;
+  await token.save();
+
+  return { message: "OTP verified successfully" };
+}
+
+export async function resetPassword(identifier: string, newPassword: string) {
+  const user = await User.findOne({
+    where: { [identifier.includes("@") ? "email" : "phoneNumber"]: identifier },
+  });
+  if (!user) throw new Error("User not found");
+
+  const token = await PasswordResetToken.findOne({
+    where: { userId: user.id },
+  });
+  if (!token) throw new Error("No OTP verification found");
+  if (!token.verified) throw new Error("OTP not verified");
+  if (token.expiresAt.getTime() < Date.now()) {
+    await token.destroy();
+    throw new Error("OTP expired");
+  }
+
+  user.password = await bcrypt.hash(newPassword, 10);
+  await user.save();
+
+  await token.destroy(); // remove after successful reset
+
+  await mailService.sendMail(
+    user.email,
+    "Password Reset Successful",
+    "Your password has been successfully reset.",
+    `<p>Your password has been successfully reset. You can now log in.</p>`
+  );
+
+  return { message: "Password reset successful" };
 }

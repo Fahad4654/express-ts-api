@@ -11,6 +11,7 @@ import { Game } from "../models/Game";
 import { GameHistory } from "../models/GameHistory";
 import { Profit } from "../models/Profit";
 import { ProfitSnapshot } from "../models/ProfitSnapshot";
+import { PasswordResetToken } from "../models/PasswordResetToken";
 
 const sequelize = new Sequelize({
   database: DB_NAME,
@@ -19,7 +20,7 @@ const sequelize = new Sequelize({
   password: DB_PASSWORD,
   host: DB_HOST,
   port: DB_PORT,
-  models: [User, Profile, Token, Contents, Account, Balance, BalanceTransaction, Game, GameHistory, Profit, ProfitSnapshot], // Add all models here
+  models: [User, Profile, Token, Contents, Account, Balance, BalanceTransaction, Game, GameHistory, Profit, ProfitSnapshot, PasswordResetToken], // Add all models here
   logging: false,
   dialectOptions: {
     ssl:

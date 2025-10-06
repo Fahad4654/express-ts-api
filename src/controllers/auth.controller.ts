@@ -1,7 +1,13 @@
 import { RequestHandler } from "express";
-import { AuthService } from "../services/auth.service";
 import { Token } from "../models/Token";
 import { User } from "../models/User";
+import { Request, Response } from "express";
+import {
+  AuthService,
+  requestPasswordReset,
+  resetPassword,
+} from "../services/auth.service";
+import { verifyOtp } from "../services/auth.service";
 
 export const register: RequestHandler = async (req, res) => {
   try {
@@ -127,3 +133,50 @@ export const refreshToken: RequestHandler = async (req, res) => {
     return;
   }
 };
+
+// controllers/requestPasswordResetController.ts
+
+export async function requestPasswordResetController(
+  req: Request,
+  res: Response
+) {
+  try {
+    const { identifier } = req.body;
+    if (!identifier) {
+      res.status(400).json({ error: "Email or phone number is required" });
+      return;
+    }
+
+    const result = await requestPasswordReset(identifier);
+    res.status(200).json({ status: "success", ...result });
+  } catch (error: any) {
+    console.error("Error requesting password reset:", error);
+    res.status(400).json({ status: "failed", error: error.message });
+  }
+}
+
+export async function verifyOtpController(req: Request, res: Response) {
+  try {
+    const { identifier, otp } = req.body;
+    if (!identifier || !otp) {
+      res.status(400).json({ error: "All fields are required" });
+      return;
+    }
+
+    const result = await verifyOtp(identifier, otp);
+    res.status(200).json({ status: "success", ...result });
+  } catch (error: any) {
+    console.error("Error verifying OTP:", error);
+    res.status(400).json({ status: "failed", error: error.message });
+  }
+}
+
+export async function resetPasswordController(req: Request, res: Response) {
+  try {
+    const { identifier, newPassword } = req.body;
+    const result = await resetPassword(identifier, newPassword);
+    res.status(200).json({ status: "success", ...result });
+  } catch (error: any) {
+    res.status(400).json({ status: "failed", error: error.message });
+  }
+}
