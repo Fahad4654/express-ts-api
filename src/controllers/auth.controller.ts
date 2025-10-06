@@ -134,7 +134,7 @@ export const refreshToken: RequestHandler = async (req, res) => {
   }
 };
 
-// controllers/requestPasswordResetController.ts
+//requestPasswordResetController.ts
 
 export async function requestPasswordResetController(
   req: Request,
@@ -171,6 +171,8 @@ export async function verifyOtpController(req: Request, res: Response) {
   }
 }
 
+
+//reset Password controller
 export async function resetPasswordController(req: Request, res: Response) {
   try {
     const { identifier, newPassword } = req.body;
