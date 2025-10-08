@@ -94,23 +94,6 @@ export class AuthService {
 
     await await sendOtp(newUser.email, "register");
 
-    await mailService.sendMail(
-      newUser.email,
-      "User Created",
-      `User Creation is completed`,
-      `<!DOCTYPE html>
-      <html>
-        <body>
-          <p>Hi <strong>${newUser.name}</strong>,</p>
-          <p>Welcome to <strong>Game App</strong>! Your account has been successfully created.</p>
-          <p>You can log in using your email: <strong>${newUser.email}</strong></p>
-          <p>We hope you enjoy playing games and earning rewards!</p>
-          <br/>
-          <p>Best regards,<br/>Game App Team</p>
-        </body>
-      </html>`
-    );
-
     const admin = await User.findOne({ where: { name: `${ADMIN_NAME}` } });
     const adminProfile = await Profile.findOne({
       where: { userId: admin?.id },
@@ -148,7 +131,7 @@ export class AuthService {
       throw new Error("User doesn't exist");
     }
 
-    if(!user.isVerified){
+    if (!user.isVerified) {
       throw new Error("User is not verfied yet");
     }
 
@@ -219,7 +202,6 @@ export async function resetPassword(identifier: string, newPassword: string) {
 
   user.password = await bcrypt.hash(newPassword, 10);
   await user.save();
-
   await token.destroy(); // remove after successful reset
 
   await mailService.sendMail(
