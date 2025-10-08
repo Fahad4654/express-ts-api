@@ -1,6 +1,6 @@
 import { Otp } from "../models/Otp";
 import { User } from "../models/User";
-import { MailService } from "./mail.service";
+import { MailService } from "./mail/mail.service";
 
 const mailService = new MailService();
 
