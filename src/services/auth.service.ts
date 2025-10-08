@@ -14,7 +14,8 @@ import { createProfile } from "./profile.service";
 import { Op } from "sequelize";
 import { Profile } from "../models/Profile";
 import { MailService } from "./mail.service";
-import { PasswordResetToken } from "../models/PasswordResetToken";
+import { Otp } from "../models/Otp";
+import { sendOtp } from "./otp.services";
 
 const mailService = new MailService();
 
@@ -91,6 +92,25 @@ export class AuthService {
       isAdmin: false,
     });
 
+    await await sendOtp(newUser.email, "register");
+
+    await mailService.sendMail(
+      newUser.email,
+      "User Created",
+      `User Creation is completed`,
+      `<!DOCTYPE html>
+      <html>
+        <body>
+          <p>Hi <strong>${newUser.name}</strong>,</p>
+          <p>Welcome to <strong>Game App</strong>! Your account has been successfully created.</p>
+          <p>You can log in using your email: <strong>${newUser.email}</strong></p>
+          <p>We hope you enjoy playing games and earning rewards!</p>
+          <br/>
+          <p>Best regards,<br/>Game App Team</p>
+        </body>
+      </html>`
+    );
+
     const admin = await User.findOne({ where: { name: `${ADMIN_NAME}` } });
     const adminProfile = await Profile.findOne({
       where: { userId: admin?.id },
@@ -126,6 +146,10 @@ export class AuthService {
 
     if (!user) {
       throw new Error("User doesn't exist");
+    }
+
+    if(!user.isVerified){
+      throw new Error("User is not verfied yet");
     }
 
     const isMatch = await this.comparePassword(password, user.password);
@@ -177,63 +201,13 @@ export class AuthService {
   }
 }
 
-export async function requestPasswordReset(identifier: string) {
-  const user = await User.findOne({
-    where: { [identifier.includes("@") ? "email" : "phoneNumber"]: identifier },
-  });
-  if (!user) throw new Error("User not found");
-
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-  await PasswordResetToken.destroy({ where: { userId: user.id } });
-  await PasswordResetToken.create({
-    userId: user.id,
-    otp,
-    expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min
-    verified: false,
-  });
-
-  await mailService.sendMail(
-    user.email,
-    "Password Reset OTP",
-    `Your OTP is ${otp}`,
-    `<p>Your OTP for password reset is <b>${otp}</b>. It expires in 10 minutes.</p>`
-  );
-
-  return { message: "OTP sent successfully" };
-}
-
-/**
- * Step 2: Verify OTP and reset password
- */
-export async function verifyOtp(identifier: string, otp: string) {
-  const user = await User.findOne({
-    where: { [identifier.includes("@") ? "email" : "phoneNumber"]: identifier },
-  });
-  if (!user) throw new Error("User not found");
-
-  const token = await PasswordResetToken.findOne({
-    where: { userId: user.id, otp },
-  });
-  if (!token) throw new Error("Invalid OTP");
-  if (token.expiresAt.getTime() < Date.now()) {
-    await token.destroy();
-    throw new Error("OTP expired");
-  }
-
-  token.verified = true;
-  await token.save();
-
-  return { message: "OTP verified successfully" };
-}
-
 export async function resetPassword(identifier: string, newPassword: string) {
   const user = await User.findOne({
     where: { [identifier.includes("@") ? "email" : "phoneNumber"]: identifier },
   });
   if (!user) throw new Error("User not found");
 
-  const token = await PasswordResetToken.findOne({
+  const token = await Otp.findOne({
     where: { userId: user.id },
   });
   if (!token) throw new Error("No OTP verification found");

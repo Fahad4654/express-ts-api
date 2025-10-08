@@ -44,6 +44,11 @@ export class User extends Model {
   isAdmin!: boolean;
 
   @AllowNull(false)
+  @Default(false)
+  @Column(DataType.BOOLEAN)
+  isVerified!: boolean;
+
+  @AllowNull(false)
   @Unique
   @Validate({
     isNumeric: { msg: "Phone number must contain only digits 0-9" },
