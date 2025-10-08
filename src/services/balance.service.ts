@@ -3,6 +3,10 @@ import { Account } from "../models/Account";
 import { User } from "../models/User";
 import { sequelize } from "../config/database";
 import { BalanceTransaction } from "../models/BalanceTransaction";
+import { MailService } from "./mail/mail.service";
+import { findByDynamicId } from "./find.service";
+
+const mailService = new MailService();
 
 export async function findAllBalances(
   order = "createdAt",
@@ -156,6 +160,23 @@ export async function finalizeTransaction(
 
     balance.lastTransactionAt = new Date();
     await balance.save({ transaction: t });
+
+    const foundUser = await findByDynamicId(
+      User,
+      { id: transaction.userId },
+      false
+    );
+    const user = foundUser as User | null;
+    if (user) {
+      console.log("+++++", user.email);
+      await mailService.sendMail(
+        user.email,
+        "Transaction is Successful",
+        "Your Transaction is completed successfully.",
+        `<p>Your Transaction is completed successfully...</p>
+        <p> Your Current Balance is: <strong>${balance.availableBalance}</strong>.</p>`
+      );
+    }
 
     return { balance, transaction };
   });
