@@ -8,7 +8,7 @@ import { Op } from "sequelize";
 import { ADMIN_NAME } from "../config";
 import { Account } from "../models/Account";
 import { Balance } from "../models/Balance";
-import { MailService } from "./mail.service";
+import { MailService } from "./mail/mail.service";
 
 const mailService = new MailService();
 

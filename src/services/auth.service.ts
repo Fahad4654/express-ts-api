@@ -13,7 +13,7 @@ import { createBalance } from "./balance.service";
 import { createProfile } from "./profile.service";
 import { Op } from "sequelize";
 import { Profile } from "../models/Profile";
-import { MailService } from "./mail.service";
+import { MailService } from "./mail/mail.service";
 import { Otp } from "../models/Otp";
 import { sendOtp } from "./otp.services";
 
