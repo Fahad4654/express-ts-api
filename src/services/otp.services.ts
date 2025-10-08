@@ -25,6 +25,16 @@ export async function sendOtp(identifier: string, type: string) {
     verified: false,
   });
 
+  if (type == "register") {
+    await mailService.sendMail(
+      user.email,
+      "User Verification OTP",
+      `Your OTP is ${otp}`,
+      `<p>Your OTP for User verification is <b>${otp}</b>. It expires in 10 minutes.</p>`
+    );
+    return { message: "OTP sent successfully" };
+  }
+
   await mailService.sendMail(
     user.email,
     "Password Reset OTP",
@@ -57,7 +67,23 @@ export async function verifyOtp(identifier: string, otp: string) {
   await token.save();
   if (token.type == "register") {
     user.isVerified = true;
-    user.save;
+    user.save();
+    await mailService.sendMail(
+      user.email,
+      "User Created",
+      `User Creation is completed`,
+      `<!DOCTYPE html>
+      <html>
+        <body>
+          <p>Hi <strong>${user.email}</strong>,</p>
+          <p>Welcome to <strong>Game App</strong>! Your account has been successfully created.</p>
+          <p>You can log in using your email: <strong>${user.email}</strong></p>
+          <p>We hope you enjoy playing games and earning rewards!</p>
+          <br/>
+          <p>Best regards,<br/>Game App Team</p>
+        </body>
+      </html>`
+    );
     return {
       status: "success",
       message: "OTP verified successfully & User verified successfully!",
