@@ -1,4 +1,4 @@
-// models/PasswordResetToken.ts
+// models/Otp.ts
 import {
   Table,
   Column,
@@ -10,10 +10,10 @@ import {
 import { User } from "./User";
 
 @Table({
-  tableName: "password_reset_tokens",
+  tableName: "otp",
   timestamps: true,
 })
-export class PasswordResetToken extends Model {
+export class Otp extends Model {
   @ForeignKey(() => User)
   @Column(DataType.UUID)
   userId!: string;
@@ -23,6 +23,9 @@ export class PasswordResetToken extends Model {
 
   @Column(DataType.DATE)
   expiresAt!: Date;
+
+  @Column(DataType.STRING)
+  type!: string;
 
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
   verified!: boolean;

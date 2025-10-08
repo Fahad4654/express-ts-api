@@ -4,10 +4,9 @@ import { User } from "../models/User";
 import { Request, Response } from "express";
 import {
   AuthService,
-  requestPasswordReset,
   resetPassword,
 } from "../services/auth.service";
-import { verifyOtp } from "../services/auth.service";
+import { sendOtp, verifyOtp } from "../services/otp.services"
 
 export const register: RequestHandler = async (req, res) => {
   try {
@@ -147,7 +146,7 @@ export async function requestPasswordResetController(
       return;
     }
 
-    const result = await requestPasswordReset(identifier);
+    const result = await sendOtp(identifier,"password");
     res.status(200).json({ status: "success", ...result });
   } catch (error: any) {
     console.error("Error requesting password reset:", error);
