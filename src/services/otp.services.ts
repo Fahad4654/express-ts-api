@@ -1,6 +1,7 @@
 import { Otp } from "../models/Otp";
 import { User } from "../models/User";
 import { MailService } from "./mail/mail.service";
+import { ADMIN_MAIL, CLIENT_URL } from "../config";
 
 const mailService = new MailService();
 
@@ -29,17 +30,33 @@ export async function sendOtp(identifier: string, type: string) {
     await mailService.sendMail(
       user.email,
       "User Verification OTP",
-      `Your OTP is ${otp}`,
-      `<p>Your OTP for User verification is <b>${otp}</b>. It expires in 10 minutes.</p>`
+      "User Verification OTP.",
+      undefined, // HTML will come from template
+      "otp-user", // Handlebars template
+      {
+        name: user.name,
+        expiry: "10",
+        otp,
+        year: new Date().getFullYear(),
+        supportEmail: ADMIN_MAIL,
+      }
     );
     return { message: "OTP sent successfully" };
   }
 
   await mailService.sendMail(
     user.email,
-    "Password Reset OTP",
-    `Your OTP is ${otp}`,
-    `<p>Your OTP for password reset is <b>${otp}</b>. It expires in 10 minutes.</p>`
+    "User Verification OTP",
+    "User Verification OTP.",
+    undefined, // HTML will come from template
+    "otp-user", // Handlebars template
+    {
+      name: user.name,
+      expiry: "10",
+      otp,
+      year: new Date().getFullYear(),
+      supportEmail: ADMIN_MAIL,
+    }
   );
 
   return { message: "OTP sent successfully" };
@@ -71,18 +88,18 @@ export async function verifyOtp(identifier: string, otp: string) {
     await mailService.sendMail(
       user.email,
       "User Created",
-      `User Creation is completed`,
-      `<!DOCTYPE html>
-      <html>
-        <body>
-          <p>Hi <strong>${user.email}</strong>,</p>
-          <p>Welcome to <strong>Game App</strong>! Your account has been successfully created.</p>
-          <p>You can log in using your email: <strong>${user.email}</strong></p>
-          <p>We hope you enjoy playing games and earning rewards!</p>
-          <br/>
-          <p>Best regards,<br/>Game App Team</p>
-        </body>
-      </html>`
+      "User Creation is completed.",
+      undefined, // HTML will come from template
+      "user-created", // Handlebars template
+      {
+        companyName: "Lucky Seven",
+        user: user.get({ plain: true }),
+        loginUrl: `${CLIENT_URL}/login`,
+        expiry: "10",
+        otp,
+        year: new Date().getFullYear(),
+        supportEmail: ADMIN_MAIL,
+      }
     );
     return {
       status: "success",
