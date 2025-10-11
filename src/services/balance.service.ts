@@ -3,6 +3,13 @@ import { Account } from "../models/Account";
 import { User } from "../models/User";
 import { sequelize } from "../config/database";
 import { BalanceTransaction } from "../models/BalanceTransaction";
+import { MailService } from "./mail/mail.service";
+import { findByDynamicId } from "./find.service";
+import fs from "fs";
+import path from "path";
+import { ADMIN_MAIL } from "../config";
+
+const mailService = new MailService();
 
 export async function findAllBalances(
   order = "createdAt",
@@ -142,6 +149,30 @@ export async function finalizeTransaction(
         // Insufficient funds → mark as failed and save first
         transaction.status = "failed";
         await transaction.save({ transaction: t });
+
+        const foundUser = await findByDynamicId(
+          User,
+          { id: transaction.userId },
+          false
+        );
+        const user = foundUser as User | null;
+
+        if (user) {
+          await mailService.sendMail(
+            user.email,
+            "Transaction Failed",
+            "Your transaction could not be completed.",
+            undefined, // HTML will come from template
+            "transaction-failed", // Handlebars template
+            {
+              user: user.get({ plain: true }),
+              transaction: transaction.get({ plain: true }),
+              balance: balance.get({ plain: true }),
+              year: new Date().getFullYear(),
+              supportEmail: ADMIN_MAIL,
+            }
+          );
+        }
         // Stop further execution without throwing inside the same transaction
         return { balance, transaction, error: "Insufficient funds" };
       }
@@ -156,6 +187,29 @@ export async function finalizeTransaction(
 
     balance.lastTransactionAt = new Date();
     await balance.save({ transaction: t });
+
+    const foundUser = await findByDynamicId(
+      User,
+      { id: transaction.userId },
+      false
+    );
+    const user = foundUser as User | null;
+    if (user) {
+      await mailService.sendMail(
+        user.email,
+        "Transaction Successful",
+        "Your transaction has been completed successfully.",
+        undefined, // HTML will come from template
+        "transaction-success", // Handlebars template name
+        {
+          user: user.get({ plain: true }),
+          transaction: transaction.get({ plain: true }),
+          balance: balance.get({ plain: true }),
+          year: new Date().getFullYear(),
+          supportEmail: ADMIN_MAIL,
+        }
+      );
+    }
 
     return { balance, transaction };
   });

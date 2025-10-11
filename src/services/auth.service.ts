@@ -8,6 +8,8 @@ import {
   ACCESS_TOKEN_EXPIRATION,
   REFRESH_TOKEN_EXPIRATION,
   ADMIN_NAME,
+  CLIENT_URL,
+  ADMIN_MAIL,
 } from "../config";
 import { createBalance } from "./balance.service";
 import { createProfile } from "./profile.service";
@@ -204,11 +206,25 @@ export async function resetPassword(identifier: string, newPassword: string) {
   await user.save();
   await token.destroy(); // remove after successful reset
 
+  // await mailService.sendMail(
+  //   user.email,
+  //   "Password Reset Successful",
+  //   "Your password has been successfully reset.",
+  //   `<p>Your password has been successfully reset. You can now log in.</p>`
+  // );
   await mailService.sendMail(
     user.email,
     "Password Reset Successful",
-    "Your password has been successfully reset.",
-    `<p>Your password has been successfully reset. You can now log in.</p>`
+    "Password Reset Successful.",
+    undefined, // HTML will come from template
+    "resset-pass-success", // Handlebars template
+    {
+      name: user.name,
+      loginUrl: `${CLIENT_URL}/login`,
+      companyName: "Lucky Seven",
+      year: new Date().getFullYear(),
+      supportEmail: ADMIN_MAIL,
+    }
   );
 
   return { message: "Password reset successful" };
