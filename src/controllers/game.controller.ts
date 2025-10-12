@@ -261,7 +261,6 @@ export const updateGameHistoryController = async (
   });
 };
 
-
 export const deleteALLGameHistoryController = async (
   req: Request,
   res: Response

@@ -6,7 +6,7 @@ import {
   refreshToken,
   requestPasswordResetController,
   verifyOtpController,
-  resetPasswordController
+  resetPasswordController,
 } from "../controllers/auth.controller";
 
 const router = Router();

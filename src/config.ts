@@ -19,7 +19,8 @@ const ADMIN_NAME = process.env.ADMIN_NAME || "superadmin";
 const ADMIN_MAIL = process.env.ADMIN_MAIL || "superadmin@mail.com";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "password";
 const ADMIN_PHONENUMBER = process.env.ADMIN_PHONENUMBER || "+8801711223344";
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000/login"
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000/login";
+const COMPANY_NAME = process.env.COMPANY_NAME || "Game App"
 
 export {
   PORT,
@@ -37,5 +38,6 @@ export {
   ADMIN_PASSWORD,
   ADMIN_PHONENUMBER,
   CREATE_ADMIN,
-  CLIENT_URL
+  CLIENT_URL,
+  COMPANY_NAME
 };

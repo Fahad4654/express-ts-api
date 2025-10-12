@@ -5,7 +5,7 @@ import { createProfile, referralCode } from "./profile.service";
 import { createBalance } from "./balance.service";
 import * as accountService from "./account.service";
 import { Op } from "sequelize";
-import { ADMIN_NAME } from "../config";
+import { ADMIN_MAIL, ADMIN_NAME, CLIENT_URL, COMPANY_NAME } from "../config";
 import { Account } from "../models/Account";
 import { Balance } from "../models/Balance";
 import { MailService } from "./mail/mail.service";
@@ -87,24 +87,22 @@ export async function createUser(data: {
     password: hashedPassword,
     phoneNumber: data.phoneNumber,
     isAdmin: data.isAdmin,
+    isVerified: true,
   });
   console.log("user created", newUser);
-
   await mailService.sendMail(
     newUser.email,
     "User Created",
-    `User Creation is completed`,
-    `<!DOCTYPE html>
-      <html>
-        <body>
-          <p>Hi <strong>${newUser.name}</strong>,</p>
-          <p>Welcome to <strong>Game App</strong>! Your account has been successfully created.</p>
-          <p>You can log in using your email: <strong>${newUser.email}</strong></p>
-          <p>We hope you enjoy playing games and earning rewards!</p>
-          <br/>
-          <p>Best regards,<br/>Game App Team</p>
-        </body>
-      </html>`
+    "User Creation is completed.",
+    undefined, // HTML will come from template
+    "user-created", // Handlebars template
+    {
+      companyName: `${COMPANY_NAME}`,
+      user: newUser.get({ plain: true }),
+      loginUrl: `${CLIENT_URL}/login`,
+      year: new Date().getFullYear(),
+      supportEmail: ADMIN_MAIL,
+    }
   );
 
   const admin = await User.findOne({ where: { name: `${ADMIN_NAME}` } });

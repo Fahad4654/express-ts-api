@@ -18,7 +18,14 @@ export class MailService {
     try {
       // If templateName is provided, compile HTML from Handlebars template
       if (templateName) {
-        const templatePath = path.join(process.cwd(), "src", "services", "mail", "templates", `${templateName}.hbs`);
+        const templatePath = path.join(
+          process.cwd(),
+          "src",
+          "services",
+          "mail",
+          "templates",
+          `${templateName}.hbs`
+        );
 
         const source = fs.readFileSync(templatePath, "utf-8");
         const template = handlebars.compile(source);

@@ -8,7 +8,7 @@ import {
   AllowNull,
   PrimaryKey,
   Default,
-  Unique
+  Unique,
 } from "sequelize-typescript";
 import { Balance } from "./Balance";
 import { Account } from "./Account";

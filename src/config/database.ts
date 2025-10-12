@@ -20,7 +20,20 @@ const sequelize = new Sequelize({
   password: DB_PASSWORD,
   host: DB_HOST,
   port: DB_PORT,
-  models: [User, Profile, Token, Contents, Account, Balance, BalanceTransaction, Game, GameHistory, Profit, ProfitSnapshot, Otp], // Add all models here
+  models: [
+    User,
+    Profile,
+    Token,
+    Contents,
+    Account,
+    Balance,
+    BalanceTransaction,
+    Game,
+    GameHistory,
+    Profit,
+    ProfitSnapshot,
+    Otp,
+  ], // Add all models here
   logging: false,
   dialectOptions: {
     ssl:

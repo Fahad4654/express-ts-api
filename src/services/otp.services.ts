@@ -1,7 +1,7 @@
 import { Otp } from "../models/Otp";
 import { User } from "../models/User";
 import { MailService } from "./mail/mail.service";
-import { ADMIN_MAIL, CLIENT_URL } from "../config";
+import { ADMIN_MAIL, CLIENT_URL, COMPANY_NAME } from "../config";
 
 const mailService = new MailService();
 
@@ -39,6 +39,7 @@ export async function sendOtp(identifier: string, type: string) {
         otp,
         year: new Date().getFullYear(),
         supportEmail: ADMIN_MAIL,
+        companyName: `${COMPANY_NAME}`,
       }
     );
     return { message: "OTP sent successfully" };
@@ -46,16 +47,17 @@ export async function sendOtp(identifier: string, type: string) {
 
   await mailService.sendMail(
     user.email,
-    "User Verification OTP",
-    "User Verification OTP.",
+    "Password Reset OTP",
+    "Password Reset OTP.",
     undefined, // HTML will come from template
-    "otp-user", // Handlebars template
+    "otp-password", // Handlebars template
     {
       name: user.name,
       expiry: "10",
       otp,
       year: new Date().getFullYear(),
       supportEmail: ADMIN_MAIL,
+      companyName: `${COMPANY_NAME}`,
     }
   );
 
@@ -92,11 +94,9 @@ export async function verifyOtp(identifier: string, otp: string) {
       undefined, // HTML will come from template
       "user-created", // Handlebars template
       {
-        companyName: "Lucky Seven",
+        companyName: `${COMPANY_NAME}`,
         user: user.get({ plain: true }),
         loginUrl: `${CLIENT_URL}/login`,
-        expiry: "10",
-        otp,
         year: new Date().getFullYear(),
         supportEmail: ADMIN_MAIL,
       }

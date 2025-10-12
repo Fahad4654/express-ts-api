@@ -1,7 +1,10 @@
 import { Profit } from "../models/Profit";
 import { ProfitSnapshot } from "../models/ProfitSnapshot";
 
-export async function createMonthlySnapshot(periodStart: Date, periodEnd: Date) {
+export async function createMonthlySnapshot(
+  periodStart: Date,
+  periodEnd: Date
+) {
   const profit = await Profit.findOne();
   if (!profit) return null;
 

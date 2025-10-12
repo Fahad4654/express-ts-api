@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { faStartController, faPickController, faCashoutController } from "../controllers/games/fortuneApple.controller";
+import {
+  faStartController,
+  faPickController,
+  faCashoutController,
+} from "../controllers/games/fortuneApple.controller";
 
 const router = Router();
 router.post("/start", faStartController);
