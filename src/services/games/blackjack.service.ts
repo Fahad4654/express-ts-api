@@ -99,9 +99,9 @@ export function bjDeal(userId: string, betAmount: number, cheatMode = false) {
   let dealer: Card[];
 
   if (cheatMode) {
-    // Make dealer likely to win
+    // Make dealer likely to win or tie
     const playerScore = score(player);
-    const dealerCards = deck.filter((c) => value(c.rank) + 10 >= playerScore); // simple cheat
+    const dealerCards = deck.filter((c) => value(c.rank) + 10 >= playerScore);
     dealer = [
       dealerCards.length ? dealerCards[0] : draw(deck),
       { ...draw(deck), hidden: true },
@@ -126,7 +126,7 @@ export function bjDeal(userId: string, betAmount: number, cheatMode = false) {
 }
 
 // --- Hit ---
-export function bjHit(userId: string, cheatMode = false) {
+export function bjHit(userId: string) {
   const s = sessions.get(userId);
   if (!s) throw new Error("No blackjack session");
   if (s.state !== "playerTurn") throw new Error("Not player's turn");
@@ -134,24 +134,47 @@ export function bjHit(userId: string, cheatMode = false) {
   s.player.push(draw(s.deck));
   refreshSessionTimer(userId, s);
 
-  if (score(s.player) >= 21) return bjStand(userId, cheatMode);
+  if (score(s.player) >= 21) return bjStand(userId);
   return serialize(userId);
 }
 
 // --- Stand ---
-export function bjStand(userId: string, cheatMode = false) {
+export function bjStand(userId: string) {
   const s = sessions.get(userId);
   if (!s) throw new Error("No blackjack session");
 
   s.state = "gameOver";
 
-  // Reveal dealer card
+  // Reveal dealer's hidden card
   s.dealer = s.dealer.map((c, i) => (i === 1 ? { ...c, hidden: false } : c));
 
+  const cheatMode = s.cheatMode;
   if (cheatMode) {
-    // Dealer plays to beat player
-    while (score(s.dealer) <= score(s.player) && score(s.dealer) < 21) {
-      s.dealer.push(draw(s.deck));
+    const playerScore = score(s.player);
+    let dealerScoreNow = score(s.dealer);
+
+    // Dealer target: beat player or push (max 21)
+    const targetScore = playerScore >= 21 ? 21 : Math.min(playerScore + 1, 21);
+
+    while (dealerScoreNow < targetScore && s.deck.length > 0) {
+      const needed = targetScore - dealerScoreNow;
+
+      // Try to find exact needed card
+      let card = s.deck.find((c) => value(c.rank) === needed);
+
+      // If not found, find smallest card that keeps dealer ≤ target
+      if (!card) {
+        card = s.deck
+          .filter((c) => value(c.rank) + dealerScoreNow <= targetScore)
+          .sort((a, b) => value(a.rank) - value(b.rank))[0];
+      }
+
+      // If still not found, just take next safe card
+      if (!card) card = draw(s.deck);
+
+      s.dealer.push(card);
+      s.deck.splice(s.deck.indexOf(card), 1);
+      dealerScoreNow = score(s.dealer);
     }
   } else {
     while (score(s.dealer) < 17) s.dealer.push(draw(s.deck));
