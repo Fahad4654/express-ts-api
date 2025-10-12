@@ -8,6 +8,7 @@ import {
   AllowNull,
   PrimaryKey,
   Default,
+  BeforeValidate,
   Unique,
 } from "sequelize-typescript";
 import { Balance } from "./Balance";
@@ -81,10 +82,22 @@ export class BalanceTransaction extends Model {
   @Column(DataType.STRING)
   description!: string;
 
-  /** Reference to external payment/order */
-  @Unique
+  /** Reference ID (unique for deposit only) */
   @Column(DataType.STRING)
-  trxId!: string;
+  trxId?: string | null;
+
+  /** Withdrawal details */
+  @Column(DataType.STRING)
+  bkashNo?: string;
+
+  @Column(DataType.STRING)
+  accountNo?: string;
+
+  @Column(DataType.STRING)
+  branch?: string;
+
+  @Column(DataType.STRING)
+  bankName?: string;
 
   /** Status */
   @Default("pending")
@@ -96,4 +109,42 @@ export class BalanceTransaction extends Model {
 
   @Column(DataType.DATE)
   updatedAt!: Date;
+
+  /** Validation rules before saving */
+  @BeforeValidate
+  static async validateTransaction(instance: BalanceTransaction) {
+    if (instance.type === "withdrawal") {
+      const hasBkash = !!instance.bkashNo;
+      const hasAccount = !!instance.accountNo;
+
+      if (!hasBkash && !hasAccount) {
+        throw new Error("Withdrawal must include either bkashNo or accountNo.");
+      }
+
+      if (hasAccount) {
+        if (!instance.branch || !instance.bankName) {
+          throw new Error(
+            "When withdrawal uses accountNo, both branch and bankName are required."
+          );
+        }
+      }
+
+      // trxId optional for withdrawal
+      instance.trxId = instance.trxId || null;
+    }
+
+    if (instance.type === "deposit") {
+      if (!instance.trxId) {
+        throw new Error("Deposit must include a unique trxId.");
+      }
+
+      // Check uniqueness for deposits
+      const existing = await BalanceTransaction.findOne({
+        where: { trxId: instance.trxId, type: "deposit" },
+      });
+      if (existing && existing.id !== instance.id) {
+        throw new Error("trxId must be unique for deposits.");
+      }
+    }
+  }
 }
