@@ -95,7 +95,7 @@ export class AuthService {
       isAdmin: false,
     });
 
-    await await sendOtp(newUser.email, "register");
+    await sendOtp(newUser.email, "register");
 
     const admin = await User.findOne({ where: { name: `${ADMIN_NAME}` } });
     const adminProfile = await Profile.findOne({
