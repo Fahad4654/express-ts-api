@@ -1,7 +1,7 @@
 import { Otp } from "../models/Otp";
 import { User } from "../models/User";
 import { MailService } from "./mail/mail.service";
-import { ADMIN_MAIL, CLIENT_URL } from "../config";
+import { ADMIN_MAIL, CLIENT_URL, COMPANY_NAME } from "../config";
 
 const mailService = new MailService();
 
@@ -92,7 +92,7 @@ export async function verifyOtp(identifier: string, otp: string) {
       undefined, // HTML will come from template
       "user-created", // Handlebars template
       {
-        companyName: "Lucky Seven",
+        companyName: `${COMPANY_NAME}`,
         user: user.get({ plain: true }),
         loginUrl: `${CLIENT_URL}/login`,
         year: new Date().getFullYear(),

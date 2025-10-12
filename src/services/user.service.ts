@@ -5,7 +5,7 @@ import { createProfile, referralCode } from "./profile.service";
 import { createBalance } from "./balance.service";
 import * as accountService from "./account.service";
 import { Op } from "sequelize";
-import { ADMIN_MAIL, ADMIN_NAME, CLIENT_URL } from "../config";
+import { ADMIN_MAIL, ADMIN_NAME, CLIENT_URL, COMPANY_NAME } from "../config";
 import { Account } from "../models/Account";
 import { Balance } from "../models/Balance";
 import { MailService } from "./mail/mail.service";
@@ -97,7 +97,7 @@ export async function createUser(data: {
     undefined, // HTML will come from template
     "user-created", // Handlebars template
     {
-      companyName: "Lucky Seven",
+      companyName: `${COMPANY_NAME}`,
       user: newUser.get({ plain: true }),
       loginUrl: `${CLIENT_URL}/login`,
       year: new Date().getFullYear(),

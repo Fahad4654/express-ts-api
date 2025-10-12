@@ -10,6 +10,7 @@ import {
   ADMIN_NAME,
   CLIENT_URL,
   ADMIN_MAIL,
+  COMPANY_NAME,
 } from "../config";
 import { createBalance } from "./balance.service";
 import { createProfile } from "./profile.service";
@@ -221,7 +222,7 @@ export async function resetPassword(identifier: string, newPassword: string) {
     {
       name: user.name,
       loginUrl: `${CLIENT_URL}/login`,
-      companyName: "Lucky Seven",
+      companyName: `${COMPANY_NAME}`,
       year: new Date().getFullYear(),
       supportEmail: ADMIN_MAIL,
     }
