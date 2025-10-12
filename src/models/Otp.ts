@@ -30,6 +30,6 @@ export class Otp extends Model {
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
   verified!: boolean;
 
-  @BelongsTo(() => User)
+  @BelongsTo(() => User, { onDelete: "CASCADE" }) // If user is deleted → account is deleted
   user!: User;
 }
