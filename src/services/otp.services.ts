@@ -95,8 +95,6 @@ export async function verifyOtp(identifier: string, otp: string) {
         companyName: "Lucky Seven",
         user: user.get({ plain: true }),
         loginUrl: `${CLIENT_URL}/login`,
-        expiry: "10",
-        otp,
         year: new Date().getFullYear(),
         supportEmail: ADMIN_MAIL,
       }
