@@ -31,10 +31,12 @@ export async function findByDynamicId<T extends Model>(
   page = 1,
   pageSize = 10,
   orderBy?: string,
-  sortOrder: 'ASC' | 'DESC' = 'ASC'
+  sortOrder: "ASC" | "DESC" = "ASC"
 ): Promise<T | T[] | PaginationResult<T> | null> {
   // Filter out undefined values
-  const providedKeys = Object.entries(identifiers).filter(([_, v]) => v !== undefined);
+  const providedKeys = Object.entries(identifiers).filter(
+    ([_, v]) => v !== undefined
+  );
 
   if (providedKeys.length !== 1) {
     throw new Error("Exactly one valid identifier must be provided");
@@ -44,7 +46,9 @@ export async function findByDynamicId<T extends Model>(
   const whereClause = { [key]: value };
 
   // Build order clause with proper typing
-  const order: OrderItem[] | undefined = orderBy ? [[orderBy, sortOrder]] as OrderItem[] : undefined;
+  const order: OrderItem[] | undefined = orderBy
+    ? ([[orderBy, sortOrder]] as OrderItem[])
+    : undefined;
 
   if (multiple) {
     const offset = (page - 1) * pageSize;

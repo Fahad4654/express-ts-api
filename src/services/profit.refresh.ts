@@ -29,7 +29,6 @@ export async function incrementProfit(updates: Partial<Profit>) {
   return profit.reload();
 }
 
-
 export async function updateProfit(updates: Partial<Profit>) {
   const profit = await Profit.findOne();
   if (!profit) return null;

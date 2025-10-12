@@ -12,7 +12,7 @@ export interface DashboardStatsInterface {
 
 export async function getDashboardStats(): Promise<DashboardStatsInterface> {
   // Profit from games
-  const profitResult = await GameHistory.findOne({
+  const profitResult = (await GameHistory.findOne({
     attributes: [
       [
         Sequelize.fn(
@@ -33,34 +33,42 @@ export async function getDashboardStats(): Promise<DashboardStatsInterface> {
       ],
     ],
     raw: true,
-  }) as unknown as { total_profit: number };
+  })) as unknown as { total_profit: number };
 
   // Total deposits (completed)
-  const depositResult = await BalanceTransaction.findOne({
+  const depositResult = (await BalanceTransaction.findOne({
     attributes: [
       [
-        Sequelize.fn("COALESCE", Sequelize.fn("SUM", Sequelize.col("amount")), 0),
+        Sequelize.fn(
+          "COALESCE",
+          Sequelize.fn("SUM", Sequelize.col("amount")),
+          0
+        ),
         "total_deposits",
       ],
     ],
     where: { type: "deposit", status: "completed" },
     raw: true,
-  }) as unknown as { total_deposits: number };
+  })) as unknown as { total_deposits: number };
 
   // Total withdrawals (completed)
-  const withdrawalResult = await BalanceTransaction.findOne({
+  const withdrawalResult = (await BalanceTransaction.findOne({
     attributes: [
       [
-        Sequelize.fn("COALESCE", Sequelize.fn("SUM", Sequelize.col("amount")), 0),
+        Sequelize.fn(
+          "COALESCE",
+          Sequelize.fn("SUM", Sequelize.col("amount")),
+          0
+        ),
         "total_withdrawals",
       ],
     ],
     where: { type: "withdrawal", status: "completed" },
     raw: true,
-  }) as unknown as { total_withdrawals: number };
+  })) as unknown as { total_withdrawals: number };
 
   // Withdrawable balance - FIXED: using findOne instead of findAll
-  const withdrawableResult = await Balance.findOne({
+  const withdrawableResult = (await Balance.findOne({
     attributes: [
       [
         Sequelize.fn(
@@ -72,7 +80,7 @@ export async function getDashboardStats(): Promise<DashboardStatsInterface> {
       ],
     ],
     raw: true,
-  }) as unknown as { total_withdrawable_balance: number };
+  })) as unknown as { total_withdrawable_balance: number };
 
   return {
     total_profit: Number(profitResult?.total_profit || 0),

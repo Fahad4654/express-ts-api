@@ -19,7 +19,7 @@ export async function bjDealController(req: Request, res: Response) {
         ? true
         : false;
 
-    console.log("cheatmode: ",cheatMode);
+    console.log("cheatmode: ", cheatMode);
     const { userId, betAmount, gameId } = validation;
     const result = bjDeal(userId, Number(betAmount), cheatMode);
     const amount = betAmount;
