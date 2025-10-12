@@ -207,12 +207,6 @@ export async function resetPassword(identifier: string, newPassword: string) {
   await user.save();
   await token.destroy(); // remove after successful reset
 
-  // await mailService.sendMail(
-  //   user.email,
-  //   "Password Reset Successful",
-  //   "Your password has been successfully reset.",
-  //   `<p>Your password has been successfully reset. You can now log in.</p>`
-  // );
   await mailService.sendMail(
     user.email,
     "Password Reset Successful",

@@ -39,6 +39,7 @@ export async function sendOtp(identifier: string, type: string) {
         otp,
         year: new Date().getFullYear(),
         supportEmail: ADMIN_MAIL,
+        companyName: `${COMPANY_NAME}`,
       }
     );
     return { message: "OTP sent successfully" };
@@ -56,6 +57,7 @@ export async function sendOtp(identifier: string, type: string) {
       otp,
       year: new Date().getFullYear(),
       supportEmail: ADMIN_MAIL,
+      companyName: `${COMPANY_NAME}`,
     }
   );
 

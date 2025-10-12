@@ -7,7 +7,7 @@ import { MailService } from "./mail/mail.service";
 import { findByDynamicId } from "./find.service";
 import fs from "fs";
 import path from "path";
-import { ADMIN_MAIL } from "../config";
+import { ADMIN_MAIL, COMPANY_NAME } from "../config";
 
 const mailService = new MailService();
 
@@ -169,6 +169,7 @@ export async function finalizeTransaction(
               transaction: transaction.get({ plain: true }),
               balance: balance.get({ plain: true }),
               year: new Date().getFullYear(),
+              companyName: `${COMPANY_NAME}`,
               supportEmail: ADMIN_MAIL,
             }
           );
@@ -207,6 +208,7 @@ export async function finalizeTransaction(
           balance: balance.get({ plain: true }),
           year: new Date().getFullYear(),
           supportEmail: ADMIN_MAIL,
+          companyName: `${COMPANY_NAME}`,
         }
       );
     }

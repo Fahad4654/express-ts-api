@@ -1,6 +1,7 @@
 import { Queue, Worker, Job } from "bullmq";
 import Redis from "ioredis";
 import nodemailer from "nodemailer";
+import { COMPANY_NAME } from "../../config";
 
 const connection = new Redis({
   host: process.env.REDIS_HOST || "127.0.0.1",
@@ -50,6 +51,8 @@ const transporter = nodemailer.createTransport({
 // Queue for sending emails
 export const mailQueue = new Queue("mailQueue", { connection });
 
+const companyName = `${COMPANY_NAME}`;
+
 // Worker that processes email jobs
 export const mailWorker = new Worker(
   "mailQueue",
@@ -57,11 +60,11 @@ export const mailWorker = new Worker(
     const { to, subject, text, html } = job.data;
     try {
       await transporter.sendMail({
-        from: `"Game App" <${process.env.SMTP_USER}>`,
+        from: `"${companyName}" <${process.env.SMTP_USER}>`,
         to,
         subject,
         text,
-        html, 
+        html,
       });
       console.log(`[MailWorker] Mail sent to ${to}`);
     } catch (err) {
