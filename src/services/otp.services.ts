@@ -49,7 +49,7 @@ export async function sendOtp(identifier: string, type: string) {
     "User Verification OTP",
     "User Verification OTP.",
     undefined, // HTML will come from template
-    "otp-user", // Handlebars template
+    "otp-password", // Handlebars template
     {
       name: user.name,
       expiry: "10",
