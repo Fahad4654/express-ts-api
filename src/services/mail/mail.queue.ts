@@ -1,7 +1,7 @@
 import { Queue, Worker, Job } from "bullmq";
 import Redis from "ioredis";
 import nodemailer from "nodemailer";
-import { COMPANY_NAME } from "../../config";
+import { ADMIN_NAME, COMPANY_NAME } from "../../config";
 
 const connection = new Redis({
   host: process.env.REDIS_HOST || "127.0.0.1",
@@ -60,7 +60,7 @@ export const mailWorker = new Worker(
     const { to, subject, text, html } = job.data;
     try {
       await transporter.sendMail({
-        from: `"${companyName}" <${process.env.SMTP_USER}>`,
+        from: `"${companyName}" <${ADMIN_NAME}>`,
         to,
         subject,
         text,
