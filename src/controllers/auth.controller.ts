@@ -2,11 +2,8 @@ import { RequestHandler } from "express";
 import { Token } from "../models/Token";
 import { User } from "../models/User";
 import { Request, Response } from "express";
-import {
-  AuthService,
-  resetPassword,
-} from "../services/auth.service";
-import { sendOtp, verifyOtp } from "../services/otp.services"
+import { AuthService, resetPassword } from "../services/auth.service";
+import { sendOtp, verifyOtp } from "../services/otp.services";
 
 export const register: RequestHandler = async (req, res) => {
   try {
@@ -146,7 +143,7 @@ export async function requestPasswordResetController(
       return;
     }
 
-    const result = await sendOtp(identifier,"password");
+    const result = await sendOtp(identifier, "password");
     res.status(200).json({ status: "success", ...result });
   } catch (error: any) {
     console.error("Error requesting password reset:", error);
@@ -169,7 +166,6 @@ export async function verifyOtpController(req: Request, res: Response) {
     res.status(400).json({ status: "failed", error: error.message });
   }
 }
-
 
 //reset Password controller
 export async function resetPasswordController(req: Request, res: Response) {
