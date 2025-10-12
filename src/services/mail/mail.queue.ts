@@ -61,7 +61,7 @@ export const mailWorker = new Worker(
         to,
         subject,
         text,
-        html,
+        html, 
       });
       console.log(`[MailWorker] Mail sent to ${to}`);
     } catch (err) {

@@ -217,7 +217,7 @@ export async function resetPassword(identifier: string, newPassword: string) {
     "Password Reset Successful",
     "Password Reset Successful.",
     undefined, // HTML will come from template
-    "resset-pass-success", // Handlebars template
+    "reset-pass-success", // Handlebars template
     {
       name: user.name,
       loginUrl: `${CLIENT_URL}/login`,

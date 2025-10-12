@@ -46,8 +46,8 @@ export async function sendOtp(identifier: string, type: string) {
 
   await mailService.sendMail(
     user.email,
-    "User Verification OTP",
-    "User Verification OTP.",
+    "Password Reset OTP",
+    "Password Reset OTP.",
     undefined, // HTML will come from template
     "otp-password", // Handlebars template
     {
