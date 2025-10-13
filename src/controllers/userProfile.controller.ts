@@ -7,12 +7,13 @@ import {
 } from "../services/profile.service";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../services/reqBodyValidation.service";
+import { isAdminOrAgent } from "../middlewares/isAgentOrAdmin.middleware";
 
 // User Profile List
 export async function getUsersProfileController(req: Request, res: Response) {
-  const adminMiddleware = isAdmin();
-
-  adminMiddleware(req, res, async () => {
+  const agentOrAdminMiddleware = isAdminOrAgent();
+  
+    agentOrAdminMiddleware(req, res, async () => {
     try {
       if (!req.body) {
         console.log("Request body is required");

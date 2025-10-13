@@ -1,0 +1,7 @@
+ALTER TABLE public.users
+ALTER COLUMN "createdBy" TYPE uuid USING "createdBy"::uuid,
+ALTER COLUMN "updatedBy" TYPE uuid USING "updatedBy"::uuid;
+
+
+
+Date: 13 oct 2025

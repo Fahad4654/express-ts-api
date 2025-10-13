@@ -13,12 +13,13 @@ import {
   COMPANY_NAME,
 } from "../config";
 import { createBalance } from "./balance.service";
-import { createProfile } from "./profile.service";
+import { createProfile, referralCode } from "./profile.service";
 import { Op } from "sequelize";
 import { Profile } from "../models/Profile";
 import { MailService } from "./mail/mail.service";
 import { Otp } from "../models/Otp";
 import { sendOtp } from "./otp.services";
+import { findByDynamicId } from "./find.service";
 
 const mailService = new MailService();
 
@@ -36,7 +37,12 @@ export class AuthService {
 
   static async generateTokens(user: User) {
     const accessToken = jwt.sign(
-      { id: user.id, email: user.email, isAdmin: user.isAdmin },
+      {
+        id: user.id,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        isAgent: user.isAgent,
+      },
       SECRET,
       { expiresIn: ACCESS_TOKEN_EXPIRATION } as SignOptions
     );
@@ -86,6 +92,27 @@ export class AuthService {
     }
 
     const hashedPassword = await this.hashPassword(password);
+    const admin = await User.findOne({ where: { name: `${ADMIN_NAME}` } });
+    const adminProfile = await Profile.findOne({
+      where: { userId: admin?.id },
+    });
+
+    let refferedBy = null;
+    if (data.referredCode) {
+      let typedRefferedBy = await findByDynamicId(
+        Profile,
+        { referralCode: data.referredCode },
+        false
+      );
+      refferedBy = typedRefferedBy as Profile | null;
+    }
+
+    console.log(refferedBy?.userId);
+    let createdBy = null;
+    if (refferedBy) {
+      createdBy = refferedBy.userId;
+    }
+    console.log(createdBy);
 
     const newUser = await User.create({
       name,
@@ -93,14 +120,13 @@ export class AuthService {
       password: hashedPassword,
       phoneNumber,
       isAdmin: false,
+      isAgent: false,
+      createdBy: createdBy ? createdBy : admin?.id,
+      updatedBy: createdBy ? createdBy : admin?.id,
     });
 
     await sendOtp(newUser.email, "register");
 
-    const admin = await User.findOne({ where: { name: `${ADMIN_NAME}` } });
-    const adminProfile = await Profile.findOne({
-      where: { userId: admin?.id },
-    });
     await createProfile({
       userId: newUser.id,
       bio: "Please Edit",
@@ -175,6 +201,7 @@ export class AuthService {
           id: tokenRecord.user.id,
           email: tokenRecord.user.email,
           isAdmin: tokenRecord.user.isAdmin,
+          isAgent: tokenRecord.user.isAgent,
         },
         SECRET,
         { expiresIn: ACCESS_TOKEN_EXPIRATION } as SignOptions

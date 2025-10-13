@@ -7,12 +7,13 @@ import {
 } from "../services/transaction.service";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../services/reqBodyValidation.service";
+import { isAdminOrAgent } from "../middlewares/isAgentOrAdmin.middleware";
 
 // GET ALL
 export const getTransactionController = async (req: Request, res: Response) => {
-  const adminMiddleware = isAdmin();
+  const agentOrAdminMiddleware = isAdminOrAgent();
 
-  adminMiddleware(req, res, async () => {
+  agentOrAdminMiddleware(req, res, async () => {
     try {
       if (!req.body) {
         console.log("Request body is required");

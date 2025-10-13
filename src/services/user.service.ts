@@ -9,6 +9,7 @@ import { ADMIN_MAIL, ADMIN_NAME, CLIENT_URL, COMPANY_NAME } from "../config";
 import { Account } from "../models/Account";
 import { Balance } from "../models/Balance";
 import { MailService } from "./mail/mail.service";
+import { findByDynamicId } from "./find.service";
 
 const mailService = new MailService();
 
@@ -20,11 +21,25 @@ export async function findAllUsers(
   order = "id",
   asc: "ASC" | "DESC" = "ASC",
   page = 1,
-  pageSize = 10
+  pageSize = 10,
+  userId: string
 ) {
   const offset = (page - 1) * pageSize;
+  const typedUser = await findByDynamicId(User, { id: userId }, false);
+  const user = typedUser as User | null;
+  console.log(user);
+  if (!user) throw new Error("User not found");
+
+  const whereClause: any = {};
+
+  if (user.isAgent) {
+    // Example logic:
+    // only show users belonging to the same business or assigned to this agent
+    whereClause.createdBy = user.id; // or `whereClause.businessId = user.businessId`
+  }
 
   const { count, rows } = await User.findAndCountAll({
+    where: whereClause, // ✅ Apply condition
     attributes: { exclude: ["password"] },
     include: [
       {

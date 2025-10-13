@@ -104,6 +104,18 @@ export class BalanceTransaction extends Model {
   @Column(DataType.ENUM("pending", "completed", "failed"))
   status!: "pending" | "completed" | "failed";
 
+  /** Admin who approved */
+  @ForeignKey(() => User)
+  @Column(DataType.UUID)
+  approvedBy?: string;
+
+  @BelongsTo(() => User, { as: "approver", foreignKey: "approvedBy" })
+  approver?: User;
+
+  /** Approval timestamp */
+  @Column(DataType.DATE)
+  approvedAt?: Date;
+
   @Column(DataType.DATE)
   createdAt!: Date;
 

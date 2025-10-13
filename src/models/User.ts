@@ -10,6 +10,7 @@ import {
   HasOne,
   Validate,
   HasMany,
+  ForeignKey,
 } from "sequelize-typescript";
 import { Profile } from "./Profile";
 import { Account } from "./Account";
@@ -46,6 +47,11 @@ export class User extends Model {
   @AllowNull(false)
   @Default(false)
   @Column(DataType.BOOLEAN)
+  isAgent!: boolean;
+
+  @AllowNull(false)
+  @Default(false)
+  @Column(DataType.BOOLEAN)
   isVerified!: boolean;
 
   @AllowNull(false)
@@ -60,10 +66,18 @@ export class User extends Model {
   @Column(DataType.STRING(11))
   phoneNumber!: string;
 
-  @Column(DataType.STRING)
+  @ForeignKey(() => User)
+  @AllowNull(true)
+  @Column({
+    type: DataType.UUID,
+  })
   createdBy?: string;
 
-  @Column(DataType.STRING)
+  @ForeignKey(() => User)
+  @AllowNull(true)
+  @Column({
+    type: DataType.UUID,
+  })
   updatedBy?: string;
 
   @Column(DataType.DATE)

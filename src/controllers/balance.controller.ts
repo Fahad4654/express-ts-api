@@ -11,6 +11,7 @@ import { Balance } from "../models/Balance";
 import { User } from "../models/User";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../services/reqBodyValidation.service";
+import { isAdminOrAgent } from "../middlewares/isAgentOrAdmin.middleware";
 
 export async function getBalanceController(req: Request, res: Response) {
   const adminMiddleware = isAdmin();
@@ -171,9 +172,9 @@ export async function finalizeTransactionController(
   req: Request,
   res: Response
 ) {
-  const adminMiddleware = isAdmin();
+  const agentOrAdminMiddleware = isAdminOrAgent();
 
-  adminMiddleware(req, res, async () => {
+  agentOrAdminMiddleware(req, res, async () => {
     try {
       const { balanceId, transactionId } = req.body;
 
@@ -195,7 +196,11 @@ export async function finalizeTransactionController(
         return;
       }
 
-      const result = await finalizeTransaction(balanceId, transactionId);
+      const result = await finalizeTransaction(
+        balanceId,
+        transactionId,
+        req.user?.id
+      );
 
       // Handle failed transaction case
       if (result.error) {

@@ -8,6 +8,7 @@ declare module "express" {
       id: string;
       email: string;
       isAdmin: boolean;
+      isAgent: boolean;
     };
   }
 }
@@ -33,6 +34,7 @@ export const authenticate = async (
       id: string;
       email: string;
       isAdmin: boolean;
+      isAgent: boolean;
     };
 
     // Optional: Verify user still exists
