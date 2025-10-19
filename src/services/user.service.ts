@@ -94,8 +94,16 @@ export async function createUser(data: {
   phoneNumber?: string;
   isAdmin?: boolean;
   referredCode?: string;
+  createdBy?: string;
+  updatedBy?: string;
 }) {
   const hashedPassword = await bcrypt.hash(data.password, 10);
+  let creator = null;
+  if(!data.createdBy){
+    const tyedCreator = await findByDynamicId(User, {email: ADMIN_MAIL}, false)
+    creator = tyedCreator as User | null;
+    console.log(creator);
+  }
   const newUser = await User.create({
     name: data.name,
     email: data.email,
@@ -103,6 +111,8 @@ export async function createUser(data: {
     phoneNumber: data.phoneNumber,
     isAdmin: data.isAdmin,
     isVerified: true,
+    createdBy: data.createdBy ? data.createdBy : creator?.id,
+    updatedBy: data.updatedBy ? data.updatedBy : creator?.id,
   });
   console.log("user created", newUser);
   await mailService.sendMail(
