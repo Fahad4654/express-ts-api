@@ -123,7 +123,28 @@ export async function updateUserController(req: Request, res: Response) {
         res.status(400).json({ error: "UserId is required" });
         return;
       }
+      const typedWantUpUser = await findByDynamicId(
+        User,
+        { id: req.body.id },
+        false
+      );
+      const wantUpUser = typedWantUpUser as User | null;
 
+      if (!req.user) {
+
+        res.status(400).json({ error: "Login is required" });
+        return;
+      }
+      if (!wantUpUser) {
+        res.status(400).json({ error: "User Not found" });
+        return;
+      }
+      if (req.user.id !== req.body.id && wantUpUser.createdBy !== req.user.id) {
+        res
+          .status(400)
+          .json({ error: "You are not permitted to update this user" });
+        return;
+      }
       const updatedUser = await updateUser(req.body);
 
       if (!updatedUser) {
