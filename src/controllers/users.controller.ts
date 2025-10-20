@@ -115,58 +115,55 @@ export async function createUserController(req: Request, res: Response) {
 }
 
 export async function updateUserController(req: Request, res: Response) {
-  const agentOrAdminMiddleware = isAdminOrAgent();
+  try {
+    if (!req.body.id) {
+      res.status(400).json({ error: "UserId is required" });
+      return;
+    }
+    const typedWantUpUser = await findByDynamicId(
+      User,
+      { id: req.body.id },
+      false
+    );
+    const wantUpUser = typedWantUpUser as User | null;
 
-  agentOrAdminMiddleware(req, res, async () => {
-    try {
-      if (!req.body.id) {
-        res.status(400).json({ error: "UserId is required" });
-        return;
-      }
-      const typedWantUpUser = await findByDynamicId(
-        User,
-        { id: req.body.id },
-        false
-      );
-      const wantUpUser = typedWantUpUser as User | null;
-
-      if (!req.user) {
-
-        res.status(400).json({ error: "Login is required" });
-        return;
-      }
-      if (!wantUpUser) {
-        res.status(400).json({ error: "User Not found" });
-        return;
-      }
+    if (!req.user) {
+      res.status(400).json({ error: "Login is required" });
+      return;
+    }
+    if (!wantUpUser) {
+      res.status(400).json({ error: "User Not found" });
+      return;
+    }
+    if (!req.user.isAdmin) {
       if (req.user.id !== req.body.id && wantUpUser.createdBy !== req.user.id) {
         res
           .status(400)
           .json({ error: "You are not permitted to update this user" });
         return;
       }
-      const updatedUser = await updateUser(req.body);
-
-      if (!updatedUser) {
-        console.log("No valid fields to update or user not found");
-        res
-          .status(400)
-          .json({ error: "No valid fields to update or user not found" });
-        return;
-      }
-
-      console.log("User updated successfully", updatedUser);
-      res.status(200).json({
-        message: "User updated successfully",
-        user: updatedUser,
-        status: "success",
-      });
-      return;
-    } catch (error) {
-      console.error("Error updating user:", error);
-      res.status(500).json({ message: "Error updating users:", error });
     }
-  });
+    const updatedUser = await updateUser(req.body);
+
+    if (!updatedUser) {
+      console.log("No valid fields to update or user not found");
+      res
+        .status(400)
+        .json({ error: "No valid fields to update or user not found" });
+      return;
+    }
+
+    console.log("User updated successfully", updatedUser);
+    res.status(200).json({
+      message: "User updated successfully",
+      user: updatedUser,
+      status: "success",
+    });
+    return;
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Error updating users:", error });
+  }
 }
 
 export async function deleteUserController(req: Request, res: Response) {
