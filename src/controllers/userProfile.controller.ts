@@ -12,8 +12,8 @@ import { isAdminOrAgent } from "../middlewares/isAgentOrAdmin.middleware";
 // User Profile List
 export async function getUsersProfileController(req: Request, res: Response) {
   const agentOrAdminMiddleware = isAdminOrAgent();
-  
-    agentOrAdminMiddleware(req, res, async () => {
+
+  agentOrAdminMiddleware(req, res, async () => {
     try {
       if (!req.body) {
         console.log("Request body is required");
