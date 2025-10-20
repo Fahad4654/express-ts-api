@@ -94,4 +94,10 @@ export class User extends Model {
 
   @HasMany(() => GameHistory, { onDelete: "CASCADE" }) // 👈 Add this
   gameHistory!: GameHistory;
+
+  @HasOne(() => User, { foreignKey: "createdBy", as: "creator" })
+  creator?: User;
+
+  @HasOne(() => User, { foreignKey: "updatedBy", as: "updater" })
+  updater?: User;
 }

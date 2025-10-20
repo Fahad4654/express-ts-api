@@ -93,23 +93,50 @@ export async function createUser(data: {
   password: string;
   phoneNumber?: string;
   isAdmin?: boolean;
+  isAgent?: boolean;
   referredCode?: string;
   createdBy?: string;
   updatedBy?: string;
 }) {
   const hashedPassword = await bcrypt.hash(data.password, 10);
-  let creator = null;
-  if(!data.createdBy){
-    const tyedCreator = await findByDynamicId(User, {email: ADMIN_MAIL}, false)
+  let creator: User | null = null;
+  if (data.referredCode) {
+    const typedCreatorProfile = await findByDynamicId(
+      Profile,
+      { referralCode: data.referredCode },
+      false
+    );
+    const creatorProfileCheck = typedCreatorProfile as Profile | null;
+    const admin = await User.findOne({ where: { name: `${ADMIN_NAME}` } });
+    const adminProfile = await Profile.findOne({
+      where: { userId: admin?.id },
+    });
+    const creatorProfile = creatorProfileCheck
+      ? creatorProfileCheck
+      : adminProfile;
+    const typedCreator = await findByDynamicId(
+      User,
+      { id: creatorProfile?.userId },
+      false
+    );
+    creator = typedCreator as User | null;
+    console.log("Created by:", creator);
+  } else {
+    const tyedCreator = await findByDynamicId(
+      User,
+      { email: ADMIN_MAIL },
+      false
+    );
     creator = tyedCreator as User | null;
-    console.log(creator);
+    console.log("Created by:", creator);
   }
   const newUser = await User.create({
     name: data.name,
     email: data.email,
     password: hashedPassword,
     phoneNumber: data.phoneNumber,
-    isAdmin: data.isAdmin,
+    isAdmin: data.isAdmin ? true : false,
+    isAgent: data.isAgent ? true : false,
     isVerified: true,
     createdBy: data.createdBy ? data.createdBy : creator?.id,
     updatedBy: data.updatedBy ? data.updatedBy : creator?.id,
@@ -117,16 +144,17 @@ export async function createUser(data: {
   console.log("user created", newUser);
   await mailService.sendMail(
     newUser.email,
-    "User Created",
+    data.isAgent ? "Agent Created" : "User Created",
     "User Creation is completed.",
     undefined, // HTML will come from template
-    "user-created", // Handlebars template
+    data.isAgent ? "agent-created" : "user-created", // Handlebars template
     {
       companyName: `${COMPANY_NAME}`,
       user: newUser.get({ plain: true }),
       loginUrl: `${CLIENT_URL}/login`,
       year: new Date().getFullYear(),
       supportEmail: ADMIN_MAIL,
+      password: data.password,
     }
   );
 
