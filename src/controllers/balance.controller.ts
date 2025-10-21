@@ -14,9 +14,9 @@ import { validateRequiredBody } from "../services/reqBodyValidation.service";
 import { isAdminOrAgent } from "../middlewares/isAgentOrAdmin.middleware";
 
 export async function getBalanceController(req: Request, res: Response) {
-  const adminMiddleware = isAdmin();
+  const agentOrAdminMiddleware = isAdminOrAgent();
 
-  adminMiddleware(req, res, async () => {
+  agentOrAdminMiddleware(req, res, async () => {
     try {
       if (!req.body) {
         console.log("Request body is required");
