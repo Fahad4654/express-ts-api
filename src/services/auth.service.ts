@@ -13,7 +13,7 @@ import {
   COMPANY_NAME,
 } from "../config";
 import { createBalance } from "./balance.service";
-import { createProfile, referralCode } from "./profile.service";
+import { createProfile } from "./profile.service";
 import { Op } from "sequelize";
 import { Profile } from "../models/Profile";
 import { MailService } from "./mail/mail.service";

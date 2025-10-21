@@ -7,7 +7,6 @@ import { BalanceTransaction } from "./models/BalanceTransaction";
 import { GameHistory } from "./models/GameHistory";
 import { refreshProfit, incrementProfit } from "./services/profit.refresh";
 import { createMonthlySnapshot } from "./services/profit.snapshot";
-import { Op } from "sequelize";
 import cron from "node-cron";
 import { deleteAllGameHistory } from "./services/game.service";
 

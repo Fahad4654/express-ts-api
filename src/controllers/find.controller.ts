@@ -6,7 +6,6 @@ import { Balance } from "../models/Balance";
 import { BalanceTransaction } from "../models/BalanceTransaction";
 import { GameHistory } from "../models/GameHistory";
 import { Profile } from "../models/Profile";
-import { Contents } from "../models/Contents";
 
 // Allowed identifiers per model
 const allowedKeys: Record<string, string[]> = {

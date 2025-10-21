@@ -5,8 +5,6 @@ import { sequelize } from "../config/database";
 import { BalanceTransaction } from "../models/BalanceTransaction";
 import { MailService } from "./mail/mail.service";
 import { findByDynamicId } from "./find.service";
-import fs from "fs";
-import path from "path";
 import { ADMIN_MAIL, COMPANY_NAME } from "../config";
 
 const mailService = new MailService();
