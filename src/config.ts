@@ -20,7 +20,16 @@ const ADMIN_MAIL = process.env.ADMIN_MAIL || "superadmin@mail.com";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "password";
 const ADMIN_PHONENUMBER = process.env.ADMIN_PHONENUMBER || "+8801711223344";
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000/login";
-const COMPANY_NAME = process.env.COMPANY_NAME || "Game App"
+const COMPANY_NAME = process.env.COMPANY_NAME || "Game App";
+const MAIL_SEND = JSON.parse(process.env.MAIL_SEND || "true");
+
+const SMTP_USER = process.env.SMTP_USER || "kabirkaife@gmail.com";
+const SMTP_PASS = process.env.SMTP_PASS || "rnusgrnqcxvkmgnp";
+const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
+const SMTP_PORT = process.env.SMTP_PORT || "465";
+const REDIS_HOST = process.env.REDIS_HOST || "127.0.0.1";
+const REDIS_PORT = process.env.REDIS_PORT || "6379";
+const REDIS_PASSWORD = process.env.REDIS_PASSWORD || "";
 
 export {
   PORT,
@@ -39,5 +48,13 @@ export {
   ADMIN_PHONENUMBER,
   CREATE_ADMIN,
   CLIENT_URL,
-  COMPANY_NAME
+  COMPANY_NAME,
+  MAIL_SEND,
+  SMTP_USER,
+  SMTP_PASS,
+  SMTP_HOST,
+  SMTP_PORT,
+  REDIS_HOST,
+  REDIS_PORT,
+  REDIS_PASSWORD,
 };

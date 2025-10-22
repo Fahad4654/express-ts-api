@@ -2,6 +2,7 @@ import { mailQueue } from "./mail.queue";
 import fs from "fs";
 import path from "path";
 import handlebars from "handlebars";
+import { NODE_ENV, MAIL_SEND } from "../../config";
 
 export class MailService {
   /**
@@ -17,8 +18,8 @@ export class MailService {
   ) {
     try {
       const sendEnabled =
-        process.env.MAIL_SEND === "true" &&
-        process.env.NODE_ENV !== "development";
+        MAIL_SEND === "true" &&
+        NODE_ENV !== "development";
 
       // Prevent mail sending if disabled
       if (!sendEnabled) {
