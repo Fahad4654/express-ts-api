@@ -8,6 +8,7 @@ import {
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../services/reqBodyValidation.service";
 import { isAdminOrAgent } from "../middlewares/isAgentOrAdmin.middleware";
+import { User } from "../models/User";
 
 // GET ALL
 export const getTransactionController = async (req: Request, res: Response) => {
@@ -15,6 +16,12 @@ export const getTransactionController = async (req: Request, res: Response) => {
 
   agentOrAdminMiddleware(req, res, async () => {
     try {
+      const user = req.user;
+      if (!user) {
+        console.log("User is required");
+        res.status(400).json({ error: "User is required" });
+        return;
+      }
       if (!req.body) {
         console.log("Request body is required");
         res.status(400).json({ error: "Request body is required" });
@@ -25,15 +32,36 @@ export const getTransactionController = async (req: Request, res: Response) => {
         "asc",
       ]);
       if (!reqBodyValidation) return;
+      let where: any = {};
 
       const { order, asc, page = 1, pageSize = 10 } = req.body;
+      if (user.isAgent) {
+        const createdUsers = await User.findAll({
+          where: { createdBy: user.id },
+          attributes: ["id"],
+        });
+
+        const userIds = createdUsers.map((u) => u.id);
+
+        if (userIds.length === 0) {
+          return res.status(200).json({
+            success: true,
+            message: "No transactions found for your users.",
+            data: [],
+          });
+        }
+        console.log("*****", userIds);
+        where = { userId: userIds };
+      }
 
       const transactions = await findAllTransactions(
         order,
         asc,
-        Number(page),
-        Number(pageSize)
+        page,
+        pageSize,
+        where
       );
+
       console.log("Transaction list fetched successfully", transactions);
       res.status(200).json({
         message: "Transaction list fetched successfully",
