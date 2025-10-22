@@ -21,7 +21,7 @@ export async function spinSlotController(req: Request, res: Response) {
     const { userId, betAmount, gameId } = validation;
 
     const result = await spinSlot(betAmount, cheatMode);
-    const type = result.isWin ? "win" : "loss";
+    const type = result.isWin ? "win" : "lose";
 
     const amount = result.isWin ? result.winAmount : betAmount;
     const gameHistory = await createGameHistoryforGames(

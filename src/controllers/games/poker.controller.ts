@@ -26,7 +26,7 @@ export async function pokerDealController(req: Request, res: Response) {
       userId,
       amount,
       gameId,
-      "loss",
+      "lose",
       "First Deal"
     );
     await gameBalanceforGames(gameHistory.id);
@@ -63,7 +63,7 @@ export async function pokerDrawController(req: Request, res: Response) {
       res.status(200).json(result);
       return;
     }
-    const type = result.winner === "Dealer" ? "loss" : "win";
+    const type = result.winner === "Dealer" ? "lose" : "win";
     const description =
       result.winner === "Push" ? "it's a draw" : `Winner is ${result.winner}`;
     const gameHistory = await createGameHistoryforGames(

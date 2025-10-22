@@ -49,7 +49,7 @@ export async function rollDiceController(req: Request, res: Response) {
       cheatMode
     );
 
-    const type = result.isWin ? "win" : "loss";
+    const type = result.isWin ? "win" : "lose";
 
     const amount = result.isWin ? result.winAmount : betAmount;
     const gameHistory = await createGameHistoryforGames(

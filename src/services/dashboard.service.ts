@@ -21,7 +21,7 @@ export async function getDashboardStats(): Promise<DashboardStatsInterface> {
             "SUM",
             Sequelize.literal(`
               CASE
-                WHEN "type" = 'loss' AND "direction" = 'debit' THEN "amount"
+                WHEN "type" = 'lose' AND "direction" = 'debit' THEN "amount"
                 WHEN "type" = 'win' AND "direction" = 'credit' THEN -"amount"
                 ELSE 0
               END

@@ -76,8 +76,8 @@ export class GameHistory extends Model {
 
   /** Transaction type */
   @AllowNull(false)
-  @Column(DataType.ENUM("win", "loss"))
-  type!: "win" | "loss";
+  @Column(DataType.ENUM("win", "lose"))
+  type!: "win" | "lose";
 
   /** Direction of funds */
   @AllowNull(false)
