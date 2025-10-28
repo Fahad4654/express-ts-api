@@ -9,6 +9,7 @@ import { ADMIN_MAIL, ADMIN_NAME, CLIENT_URL, COMPANY_NAME } from "../config";
 import { Account } from "../models/Account";
 import { Balance } from "../models/Balance";
 import { MailService } from "./mail/mail.service";
+import { findByDynamicId } from "./find.service";
 
 const mailService = new MailService();
 
@@ -20,11 +21,25 @@ export async function findAllUsers(
   order = "id",
   asc: "ASC" | "DESC" = "ASC",
   page = 1,
-  pageSize = 10
+  pageSize = 10,
+  userId: string
 ) {
   const offset = (page - 1) * pageSize;
+  const typedUser = await findByDynamicId(User, { id: userId }, false);
+  const user = typedUser as User | null;
+  console.log(user);
+  if (!user) throw new Error("User not found");
+
+  const whereClause: any = {};
+
+  if (user.isAgent) {
+    // Example logic:
+    // only show users belonging to the same business or assigned to this agent
+    whereClause.createdBy = user.id; // or `whereClause.businessId = user.businessId`
+  }
 
   const { count, rows } = await User.findAndCountAll({
+    where: whereClause, // ✅ Apply condition
     attributes: { exclude: ["password"] },
     include: [
       {
@@ -78,30 +93,68 @@ export async function createUser(data: {
   password: string;
   phoneNumber?: string;
   isAdmin?: boolean;
+  isAgent?: boolean;
   referredCode?: string;
+  createdBy?: string;
+  updatedBy?: string;
 }) {
   const hashedPassword = await bcrypt.hash(data.password, 10);
+  let creator: User | null = null;
+  if (data.referredCode) {
+    const typedCreatorProfile = await findByDynamicId(
+      Profile,
+      { referralCode: data.referredCode },
+      false
+    );
+    const creatorProfileCheck = typedCreatorProfile as Profile | null;
+    const admin = await User.findOne({ where: { name: `${ADMIN_NAME}` } });
+    const adminProfile = await Profile.findOne({
+      where: { userId: admin?.id },
+    });
+    const creatorProfile = creatorProfileCheck
+      ? creatorProfileCheck
+      : adminProfile;
+    const typedCreator = await findByDynamicId(
+      User,
+      { id: creatorProfile?.userId },
+      false
+    );
+    creator = typedCreator as User | null;
+    console.log("Created by:", creator);
+  } else {
+    const tyedCreator = await findByDynamicId(
+      User,
+      { email: ADMIN_MAIL },
+      false
+    );
+    creator = tyedCreator as User | null;
+    console.log("Created by:", creator);
+  }
   const newUser = await User.create({
     name: data.name,
     email: data.email,
     password: hashedPassword,
     phoneNumber: data.phoneNumber,
-    isAdmin: data.isAdmin,
+    isAdmin: data.isAdmin ? true : false,
+    isAgent: data.isAgent ? true : false,
     isVerified: true,
+    createdBy: data.createdBy ? data.createdBy : creator?.id,
+    updatedBy: data.updatedBy ? data.updatedBy : creator?.id,
   });
   console.log("user created", newUser);
   await mailService.sendMail(
     newUser.email,
-    "User Created",
+    data.isAgent ? "Agent Created" : "User Created",
     "User Creation is completed.",
     undefined, // HTML will come from template
-    "user-created", // Handlebars template
+    data.isAgent ? "agent-created" : "user-created", // Handlebars template
     {
       companyName: `${COMPANY_NAME}`,
       user: newUser.get({ plain: true }),
       loginUrl: `${CLIENT_URL}/login`,
       year: new Date().getFullYear(),
       supportEmail: ADMIN_MAIL,
+      password: data.password,
     }
   );
 

@@ -6,6 +6,7 @@ import {
   deleteUserController,
   getUsersByIdController,
   getUsersByRefController,
+  userGameSummaryController,
 } from "../controllers/users.controller";
 
 const router = Router();
@@ -16,6 +17,7 @@ router.post("/byRef", getUsersByRefController);
 router.post("/", createUserController);
 router.put("/", updateUserController);
 router.delete("/", deleteUserController);
+router.get("/game-summary/:userId", userGameSummaryController);
 
 export { router as userCreateRouter };
 export { router };

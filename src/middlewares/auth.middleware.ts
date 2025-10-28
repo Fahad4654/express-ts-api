@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User";
+import { SECRET as JWT_SECRET } from "../config";
 
 declare module "express" {
   interface Request {
@@ -8,11 +9,12 @@ declare module "express" {
       id: string;
       email: string;
       isAdmin: boolean;
+      isAgent: boolean;
     };
   }
 }
 
-const SECRET = process.env.JWT_SECRET || "your_jwt_secret";
+const SECRET = JWT_SECRET || "your_jwt_secret";
 
 export const authenticate = async (
   req: Request,
@@ -33,6 +35,7 @@ export const authenticate = async (
       id: string;
       email: string;
       isAdmin: boolean;
+      isAgent: boolean;
     };
 
     // Optional: Verify user still exists

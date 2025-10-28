@@ -1,5 +1,4 @@
 import { User } from "../models/User"; // Adjust path
-import bcrypt from "bcryptjs";
 import {
   ADMIN_NAME,
   ADMIN_MAIL,

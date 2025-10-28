@@ -8,14 +8,16 @@ export async function findAllTransactions(
   order: string,
   asc: string,
   page = 1,
-  pageSize = 10
+  pageSize = 10,
+  where ={}
 ) {
   const offset = (page - 1) * pageSize;
   console.log(`Fetching all transactions, order: ${order}, asc: ${asc}`);
-  const { count, rows } = await BalanceTransaction.findAndCountAll({
+  const { count, rows } = await BalanceTransaction.findAndCountAll({where,
     include: [
       {
         model: User,
+        as: "user",
         attributes: ["id", "name", "email", "phoneNumber"],
       },
       {

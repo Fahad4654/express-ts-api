@@ -6,9 +6,9 @@ import {
   ForeignKey,
   BelongsTo,
   AllowNull,
-  Unique,
   PrimaryKey,
   Default,
+  Index,
 } from "sequelize-typescript";
 import { User } from "./User";
 
@@ -16,10 +16,8 @@ import { User } from "./User";
   tableName: "profiles",
   timestamps: true,
   indexes: [
-    {
-      unique: true,
-      fields: ["userId"],
-    },
+    { unique: true, fields: ["userId"] },
+    { unique: true, fields: ["referralCode"] },
   ],
 })
 export class Profile extends Model {
@@ -30,15 +28,17 @@ export class Profile extends Model {
 
   @ForeignKey(() => User)
   @AllowNull(false)
-  @Column({
-    type: DataType.UUID,
-    unique: true,
-  })
+  @Column(DataType.UUID)
   userId!: string;
 
+  @BelongsTo(() => User, { onDelete: "CASCADE" })
+  user!: User;
+
+  @AllowNull(true)
   @Column(DataType.STRING(100))
   bio?: string;
 
+  @AllowNull(true)
   @Column(DataType.STRING(100))
   avatarUrl?: string;
 
@@ -46,26 +46,11 @@ export class Profile extends Model {
   @Column(DataType.STRING(256))
   address?: string;
 
-  @Unique
   @AllowNull(false)
   @Column(DataType.STRING)
   referralCode!: string;
 
+  @AllowNull(true)
   @Column(DataType.STRING)
   referredCode?: string;
-
-  @BelongsTo(() => User, { onDelete: "CASCADE" })
-  user!: User;
-
-  @Column(DataType.STRING)
-  createdBy?: string;
-
-  @Column(DataType.STRING)
-  updatedBy?: string;
-
-  @Column(DataType.DATE)
-  createdAt!: Date;
-
-  @Column(DataType.DATE)
-  updatedAt!: Date;
 }

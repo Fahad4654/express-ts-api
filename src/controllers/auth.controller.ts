@@ -62,6 +62,7 @@ export const login: RequestHandler = async (req, res) => {
       user: userResponse,
       ...tokens,
     });
+    console.log("User:", userResponse);
     return;
   } catch (error: any) {
     res.status(401).json({ message: error.message || "Invalid credentials" });

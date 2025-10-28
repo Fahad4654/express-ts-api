@@ -3,13 +3,13 @@ import {
   Column,
   Model,
   DataType,
-  Default,
   PrimaryKey,
+  Default,
 } from "sequelize-typescript";
 
 @Table({
   tableName: "profit",
-  timestamps: true,
+  timestamps: true, // handles createdAt and updatedAt automatically
 })
 export class Profit extends Model {
   @PrimaryKey

@@ -2,6 +2,7 @@ import { mailQueue } from "./mail.queue";
 import fs from "fs";
 import path from "path";
 import handlebars from "handlebars";
+import { NODE_ENV, MAIL_SEND } from "../../config";
 
 export class MailService {
   /**
@@ -16,7 +17,19 @@ export class MailService {
     templateData?: any
   ) {
     try {
-      // If templateName is provided, compile HTML from Handlebars template
+      const sendEnabled =
+        MAIL_SEND === "true" &&
+        NODE_ENV !== "development";
+
+      // Prevent mail sending if disabled
+      if (!sendEnabled) {
+        console.log(
+          `[MailService] Skipped sending mail to ${to} (mail sending disabled)`
+        );
+        return;
+      }
+
+      // Compile HTML from Handlebars template if provided
       if (templateName) {
         const templatePath = path.join(
           process.cwd(),
@@ -36,8 +49,8 @@ export class MailService {
         "sendMail",
         { to, subject, text, html },
         {
-          attempts: 3, // retry 3 times on failure
-          backoff: { type: "exponential", delay: 5000 }, // 5s, 10s, 20s...
+          attempts: 3,
+          backoff: { type: "exponential", delay: 5000 },
           removeOnComplete: true,
           removeOnFail: false,
         }

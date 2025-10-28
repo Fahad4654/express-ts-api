@@ -31,7 +31,7 @@ export async function faStartController(req: Request, res: Response) {
       userId,
       amount,
       gameId,
-      "loss",
+      "lose",
       "First Deal"
     );
     await gameBalanceforGames(gameHistory.id);

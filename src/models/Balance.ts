@@ -9,14 +9,15 @@ import {
   PrimaryKey,
   Default,
   HasMany,
-  Unique,
+  Index,
 } from "sequelize-typescript";
 import { Account } from "./Account";
 import { BalanceTransaction } from "./BalanceTransaction";
 
 @Table({
   tableName: "balance",
-  timestamps: true,
+  timestamps: true, // handles createdAt and updatedAt automatically
+  indexes: [{ unique: true, fields: ["accountId"] }],
 })
 export class Balance extends Model {
   @PrimaryKey
@@ -26,11 +27,10 @@ export class Balance extends Model {
 
   @ForeignKey(() => Account)
   @AllowNull(false)
-  @Unique // One balance per account
   @Column(DataType.UUID)
   accountId!: string;
 
-  @BelongsTo(() => Account, { onDelete: "CASCADE" }) // Cascade delete from Account → Balance
+  @BelongsTo(() => Account, { onDelete: "CASCADE" }) // Delete balance if account is deleted
   account!: Account;
 
   /** Spendable amount */
@@ -43,6 +43,7 @@ export class Balance extends Model {
   @Column(DataType.DECIMAL(15, 2))
   holdBalance!: number;
 
+  /** Withdrawable funds */
   @Default(0.0)
   @Column(DataType.DECIMAL(15, 2))
   withdrawableBalance!: number;
@@ -53,15 +54,11 @@ export class Balance extends Model {
   currency!: string;
 
   /** Last transaction timestamp */
+  @AllowNull(true)
   @Column(DataType.DATE)
-  lastTransactionAt!: Date;
+  lastTransactionAt!: Date | null;
 
+  /** All transactions related to this balance */
   @HasMany(() => BalanceTransaction)
   transactions!: BalanceTransaction[];
-
-  @Column(DataType.DATE)
-  createdAt!: Date;
-
-  @Column(DataType.DATE)
-  updatedAt!: Date;
 }

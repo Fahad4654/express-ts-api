@@ -2,11 +2,15 @@ import { Request, Response } from "express";
 import * as accountService from "../services/account.service";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../services/reqBodyValidation.service";
+import { isAdminOrAgent } from "../middlewares/isAgentOrAdmin.middleware";
 
 export async function getAccountsController(req: Request, res: Response) {
-  const adminMiddleware = isAdmin();
+  // const adminMiddleware = isAdmin();
 
-  adminMiddleware(req, res, async () => {
+  // adminMiddleware(req, res, async () => {
+  const agentOrAdminMiddleware = isAdminOrAgent();
+
+  agentOrAdminMiddleware(req, res, async () => {
     try {
       if (!req.body) {
         console.log("Request body is required");

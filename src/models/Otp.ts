@@ -1,4 +1,3 @@
-// models/Otp.ts
 import {
   Table,
   Column,
@@ -6,6 +5,9 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
+  PrimaryKey,
+  Default,
+  AllowNull,
 } from "sequelize-typescript";
 import { User } from "./User";
 
@@ -14,22 +16,32 @@ import { User } from "./User";
   timestamps: true,
 })
 export class Otp extends Model {
+  @PrimaryKey
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  id!: string;
+
   @ForeignKey(() => User)
+  @AllowNull(false)
   @Column(DataType.UUID)
   userId!: string;
 
+  @BelongsTo(() => User, { onDelete: "CASCADE" })
+  user!: User;
+
+  @AllowNull(false)
   @Column(DataType.STRING)
   otp!: string;
 
+  @AllowNull(false)
   @Column(DataType.DATE)
   expiresAt!: Date;
 
+  @AllowNull(false)
   @Column(DataType.STRING)
   type!: string;
 
-  @Column({ type: DataType.BOOLEAN, defaultValue: false })
+  @Default(false)
+  @Column(DataType.BOOLEAN)
   verified!: boolean;
-
-  @BelongsTo(() => User, { onDelete: "CASCADE" }) // If user is deleted → account is deleted
-  user!: User;
 }

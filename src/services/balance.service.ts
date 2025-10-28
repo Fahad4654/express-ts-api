@@ -5,8 +5,6 @@ import { sequelize } from "../config/database";
 import { BalanceTransaction } from "../models/BalanceTransaction";
 import { MailService } from "./mail/mail.service";
 import { findByDynamicId } from "./find.service";
-import fs from "fs";
-import path from "path";
 import { ADMIN_MAIL, COMPANY_NAME } from "../config";
 
 const mailService = new MailService();
@@ -113,7 +111,8 @@ export async function updateBalanceByAccountId(
 
 export async function finalizeTransaction(
   balanceId: string,
-  transactionId: string
+  transactionId: string,
+  approvedBy?: string
 ) {
   return sequelize.transaction(async (t) => {
     const balance = await Balance.findByPk(balanceId, {
@@ -184,6 +183,8 @@ export async function finalizeTransaction(
       transaction.status = "completed";
     }
 
+    transaction.approvedAt = new Date();
+    transaction.approvedBy = approvedBy;
     await transaction.save({ transaction: t });
 
     balance.lastTransactionAt = new Date();

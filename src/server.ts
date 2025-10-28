@@ -7,7 +7,6 @@ import { BalanceTransaction } from "./models/BalanceTransaction";
 import { GameHistory } from "./models/GameHistory";
 import { refreshProfit, incrementProfit } from "./services/profit.refresh";
 import { createMonthlySnapshot } from "./services/profit.snapshot";
-import { Op } from "sequelize";
 import cron from "node-cron";
 import { deleteAllGameHistory } from "./services/game.service";
 
@@ -66,7 +65,7 @@ const registerHooks = () => {
   // GameHistory hooks
   GameHistory.addHook("afterCreate", async (game: GameHistory) => {
     const delta =
-      game.type === "loss" && game.direction === "debit"
+      game.type === "lose" && game.direction === "debit"
         ? Number(game.amount)
         : game.type === "win" && game.direction === "credit"
         ? -Number(game.amount)
@@ -80,14 +79,14 @@ const registerHooks = () => {
     const prevDirection = game.previous("direction");
 
     const oldDelta =
-      prevType === "loss" && prevDirection === "debit"
+      prevType === "lose" && prevDirection === "debit"
         ? prevAmount
         : prevType === "win" && prevDirection === "credit"
         ? -prevAmount
         : 0;
 
     const newDelta =
-      game.type === "loss" && game.direction === "debit"
+      game.type === "lose" && game.direction === "debit"
         ? Number(game.amount)
         : game.type === "win" && game.direction === "credit"
         ? -Number(game.amount)

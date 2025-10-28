@@ -11,11 +11,13 @@ import { Balance } from "../models/Balance";
 import { User } from "../models/User";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../services/reqBodyValidation.service";
+import { isAdminOrAgent } from "../middlewares/isAgentOrAdmin.middleware";
+import { BalanceTransaction } from "../models/BalanceTransaction";
 
 export async function getBalanceController(req: Request, res: Response) {
-  const adminMiddleware = isAdmin();
+  const agentOrAdminMiddleware = isAdminOrAgent();
 
-  adminMiddleware(req, res, async () => {
+  agentOrAdminMiddleware(req, res, async () => {
     try {
       if (!req.body) {
         console.log("Request body is required");
@@ -171,15 +173,22 @@ export async function finalizeTransactionController(
   req: Request,
   res: Response
 ) {
-  const adminMiddleware = isAdmin();
+  const agentOrAdminMiddleware = isAdminOrAgent();
 
-  adminMiddleware(req, res, async () => {
+  agentOrAdminMiddleware(req, res, async () => {
     try {
       const { balanceId, transactionId } = req.body;
 
       if (!req.body) {
         console.log("Request body is required");
         res.status(400).json({ error: "Request body is required" });
+        return;
+      }
+
+      if (!req.user) {
+        res.status(500).json({
+          message: "You must Login first",
+        });
         return;
       }
 
@@ -195,7 +204,36 @@ export async function finalizeTransactionController(
         return;
       }
 
-      const result = await finalizeTransaction(balanceId, transactionId);
+      const transaction = await BalanceTransaction.findOne({
+        where: { id: transactionId },
+      });
+      console.log("ttttttttttt", transaction);
+      if (!transaction) {
+        console.log("Transaction not found");
+        res.status(404).json({ error: "Transaction not found" });
+        return;
+      }
+
+      const transactionUser = await User.findOne({
+        where: { id: transaction.userId },
+      });
+      console.log(transactionUser);
+      if (!transactionUser) {
+        console.log("User not found");
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+
+      if (!req.user.isAdmin && transactionUser.createdBy !== req.user.id) {
+        res.status(400).json({ error: "Permission Denied" });
+        return;
+      }
+
+      const result = await finalizeTransaction(
+        balanceId,
+        transactionId,
+        req.user?.id
+      );
 
       // Handle failed transaction case
       if (result.error) {

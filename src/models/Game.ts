@@ -5,13 +5,14 @@ import {
   DataType,
   PrimaryKey,
   Default,
-  Unique,
+  AllowNull,
+  Index,
 } from "sequelize-typescript";
 
 @Table({
   tableName: "game",
-  timestamps: true,
-  indexes: [{ fields: ["gameStatus"] }],
+  timestamps: true, // handles createdAt and updatedAt automatically
+  indexes: [{ fields: ["gameStatus"] }, { unique: true, fields: ["name"] }],
 })
 export class Game extends Model {
   @PrimaryKey
@@ -19,13 +20,13 @@ export class Game extends Model {
   @Column(DataType.UUID)
   id!: string;
 
-  @Unique
+  @AllowNull(false)
   @Column(DataType.STRING)
   name!: string;
 
-  /** Description */
+  @AllowNull(true)
   @Column(DataType.STRING)
-  description!: string;
+  description?: string;
 
   @Default(10.0)
   @Column(DataType.DECIMAL(15, 2))
@@ -35,14 +36,7 @@ export class Game extends Model {
   @Column(DataType.DECIMAL(15, 2))
   maximumBet!: number;
 
-  /** Status */
   @Default("active")
   @Column(DataType.ENUM("active", "closed", "exclusive"))
   gameStatus!: "active" | "closed" | "exclusive";
-
-  @Column(DataType.DATE)
-  createdAt!: Date;
-
-  @Column(DataType.DATE)
-  updatedAt!: Date;
 }
