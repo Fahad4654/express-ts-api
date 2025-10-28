@@ -6,12 +6,13 @@ import {
   PrimaryKey,
   Default,
   AllowNull,
+  Index,
 } from "sequelize-typescript";
 
 @Table({
   tableName: "game",
   timestamps: true, // handles createdAt and updatedAt automatically
-  indexes: [{ fields: ["gameStatus"] }, { fields: ["name"] }],
+  indexes: [{ fields: ["gameStatus"] }, { unique: true, fields: ["name"] }],
 })
 export class Game extends Model {
   @PrimaryKey

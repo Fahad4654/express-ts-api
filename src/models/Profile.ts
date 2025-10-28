@@ -8,6 +8,7 @@ import {
   AllowNull,
   PrimaryKey,
   Default,
+  Index,
 } from "sequelize-typescript";
 import { User } from "./User";
 

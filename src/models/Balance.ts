@@ -9,6 +9,7 @@ import {
   PrimaryKey,
   Default,
   HasMany,
+  Index,
 } from "sequelize-typescript";
 import { Account } from "./Account";
 import { BalanceTransaction } from "./BalanceTransaction";

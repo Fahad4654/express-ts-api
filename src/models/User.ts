@@ -10,6 +10,7 @@ import {
   HasMany,
   ForeignKey,
   Validate,
+  Index,
 } from "sequelize-typescript";
 import { Profile } from "./Profile";
 import { Account } from "./Account";

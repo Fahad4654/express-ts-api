@@ -17,6 +17,10 @@ import { Balance } from "./Balance";
 @Table({
   tableName: "account",
   timestamps: true,
+  indexes: [
+    { unique: true, fields: ["userId"] },
+    { unique: true, fields: ["accountNumber"] }
+  ],
 })
 export class Account extends Model {
   @PrimaryKey
@@ -26,7 +30,6 @@ export class Account extends Model {
 
   @ForeignKey(() => User)
   @AllowNull(false)
-  @Index({ unique: true }) // each user can have only one account
   @Column(DataType.UUID)
   userId!: string;
 
@@ -34,7 +37,6 @@ export class Account extends Model {
   user!: User;
 
   @AllowNull(false)
-  @Index({ unique: true })
   @Column(DataType.STRING)
   accountNumber!: string;
 
