@@ -207,7 +207,6 @@ export async function finalizeTransactionController(
       const transaction = await BalanceTransaction.findOne({
         where: { id: transactionId },
       });
-      console.log("ttttttttttt", transaction);
       if (!transaction) {
         console.log("Transaction not found");
         res.status(404).json({ error: "Transaction not found" });
