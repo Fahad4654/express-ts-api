@@ -7,18 +7,14 @@ import {
   AllowNull,
   PrimaryKey,
   Default,
-  Unique,
+  BelongsTo,
 } from "sequelize-typescript";
 import { User } from "./User";
 
 @Table({
   tableName: "contents",
-  timestamps: true,
-  indexes: [
-    {
-      fields: ["userId"],
-    },
-  ],
+  timestamps: true, // handles createdAt and updatedAt automatically
+  indexes: [{ fields: ["userId"] }, { fields: ["name"] }],
 })
 export class Contents extends Model {
   @PrimaryKey
@@ -28,15 +24,17 @@ export class Contents extends Model {
 
   @ForeignKey(() => User)
   @AllowNull(false)
-  @Column({
-    type: DataType.UUID,
-  })
+  @Column(DataType.UUID)
   userId!: string;
 
-  @Unique
+  @BelongsTo(() => User, { onDelete: "CASCADE" })
+  user!: User;
+
+  @AllowNull(true)
   @Column(DataType.STRING(100))
   name?: string;
 
+  @AllowNull(true)
   @Column(DataType.STRING(100))
   text?: string;
 
@@ -44,6 +42,7 @@ export class Contents extends Model {
   @Column(DataType.ENUM("profilepicture", "normal", "others"))
   type!: "profilepicture" | "normal" | "others";
 
+  @AllowNull(true)
   @Column(DataType.STRING(100))
   mediaUrl?: string;
 
@@ -55,15 +54,11 @@ export class Contents extends Model {
   @Column(DataType.BOOLEAN)
   exclusive?: boolean;
 
+  @AllowNull(true)
   @Column(DataType.STRING)
   createdBy?: string;
 
+  @AllowNull(true)
   @Column(DataType.STRING)
   updatedBy?: string;
-
-  @Column(DataType.DATE)
-  createdAt!: Date;
-
-  @Column(DataType.DATE)
-  updatedAt!: Date;
 }

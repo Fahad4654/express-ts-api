@@ -9,7 +9,6 @@ import {
   PrimaryKey,
   Default,
   BeforeValidate,
-  Unique,
 } from "sequelize-typescript";
 import { Balance } from "./Balance";
 import { Account } from "./Account";
@@ -56,37 +55,30 @@ export class BalanceTransaction extends Model {
   @BelongsTo(() => User, { onDelete: "CASCADE" })
   user!: User;
 
-  /** Transaction type */
   @AllowNull(false)
   @Column(
     DataType.ENUM("deposit", "withdrawal", "payment", "refund", "adjustment")
   )
   type!: "deposit" | "withdrawal" | "payment" | "refund" | "adjustment";
 
-  /** Direction of funds */
   @AllowNull(false)
   @Column(DataType.ENUM("credit", "debit"))
   direction!: "credit" | "debit";
 
-  /** Amount */
   @AllowNull(false)
   @Column(DataType.DECIMAL(15, 2))
   amount!: number;
 
-  /** Currency */
   @Default("BDT")
   @Column(DataType.STRING(3))
   currency!: string;
 
-  /** Description */
   @Column(DataType.STRING)
   description!: string;
 
-  /** Reference ID (unique for deposit only) */
   @Column(DataType.STRING)
   trxId?: string | null;
 
-  /** Withdrawal details */
   @Column(DataType.STRING)
   bkashNo?: string;
 
@@ -99,12 +91,10 @@ export class BalanceTransaction extends Model {
   @Column(DataType.STRING)
   bankName?: string;
 
-  /** Status */
   @Default("pending")
   @Column(DataType.ENUM("pending", "completed", "failed"))
   status!: "pending" | "completed" | "failed";
 
-  /** Admin who approved */
   @ForeignKey(() => User)
   @Column(DataType.UUID)
   approvedBy?: string;
@@ -112,17 +102,10 @@ export class BalanceTransaction extends Model {
   @BelongsTo(() => User, { as: "approver", foreignKey: "approvedBy" })
   approver?: User;
 
-  /** Approval timestamp */
   @Column(DataType.DATE)
   approvedAt?: Date;
 
-  @Column(DataType.DATE)
-  createdAt!: Date;
-
-  @Column(DataType.DATE)
-  updatedAt!: Date;
-
-  /** Validation rules before saving */
+  /** Validate withdrawals and deposits */
   @BeforeValidate
   static async validateTransaction(instance: BalanceTransaction) {
     if (instance.type === "withdrawal") {
@@ -141,7 +124,6 @@ export class BalanceTransaction extends Model {
         }
       }
 
-      // trxId optional for withdrawal
       instance.trxId = instance.trxId || null;
     }
 
@@ -150,7 +132,6 @@ export class BalanceTransaction extends Model {
         throw new Error("Deposit must include a unique trxId.");
       }
 
-      // Check uniqueness for deposits
       const existing = await BalanceTransaction.findOne({
         where: { trxId: instance.trxId, type: "deposit" },
       });

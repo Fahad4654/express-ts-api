@@ -8,11 +8,7 @@ import {
   AllowNull,
   PrimaryKey,
   Default,
-  Index,
-  BeforeCreate,
-  BeforeUpdate,
-  AfterCreate,
-  AfterUpdate,
+  BeforeSave,
 } from "sequelize-typescript";
 import { Balance } from "./Balance";
 import { Account } from "./Account";
@@ -21,7 +17,7 @@ import { Game } from "./Game";
 
 @Table({
   tableName: "gameHistory",
-  timestamps: true,
+  timestamps: true, // handles createdAt and updatedAt automatically
   indexes: [
     { fields: ["userId"] },
     { fields: ["accountId"] },
@@ -69,10 +65,10 @@ export class GameHistory extends Model {
   @BelongsTo(() => Game, { onDelete: "CASCADE" })
   game!: Game;
 
-  /** Game Name (auto populated from Game model) */
+  /** Game Name (auto-populated from Game model) */
   @AllowNull(true)
   @Column(DataType.STRING)
-  gameName!: string;
+  gameName?: string;
 
   /** Transaction type */
   @AllowNull(false)
@@ -95,20 +91,12 @@ export class GameHistory extends Model {
   currency!: string;
 
   /** Description */
+  @AllowNull(true)
   @Column(DataType.STRING)
-  description!: string;
+  description?: string;
 
-  @Column(DataType.DATE)
-  createdAt!: Date;
-
-  @Column(DataType.DATE)
-  updatedAt!: Date;
-
-  /** Hook to auto-fill gameName from Game */
-  @BeforeCreate
-  @BeforeUpdate
-  @AfterCreate
-  @AfterUpdate
+  /** Auto-fill gameName from Game model */
+  @BeforeSave
   static async setGameName(instance: GameHistory) {
     if (instance.gameId) {
       const game = await Game.findByPk(instance.gameId);

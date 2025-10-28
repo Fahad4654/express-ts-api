@@ -4,13 +4,12 @@ import {
   Model,
   DataType,
   PrimaryKey,
-  Unique,
-  AllowNull,
   Default,
+  AllowNull,
   HasOne,
-  Validate,
   HasMany,
   ForeignKey,
+  Validate,
 } from "sequelize-typescript";
 import { Profile } from "./Profile";
 import { Account } from "./Account";
@@ -19,6 +18,10 @@ import { GameHistory } from "./GameHistory";
 @Table({
   tableName: "users",
   timestamps: true,
+  indexes: [
+    { unique: true, fields: ["email"] },
+    { unique: true, fields: ["phoneNumber"] },
+  ],
 })
 export class User extends Model {
   @PrimaryKey
@@ -30,10 +33,22 @@ export class User extends Model {
   @Column(DataType.STRING(100))
   name!: string;
 
-  @Unique
   @AllowNull(false)
   @Column(DataType.STRING(100))
   email!: string;
+
+  @AllowNull(false)
+  @Validate({
+    isNumeric: {
+      msg: "Phone number must contain only digits 0-9",
+    },
+    len: {
+      args: [11, 11],
+      msg: "Phone number must be exactly 11 digits, e.g., 017XXXXXXXX",
+    },
+  })
+  @Column(DataType.STRING(11))
+  phoneNumber!: string;
 
   @AllowNull(false)
   @Column(DataType.STRING(100))
@@ -54,46 +69,24 @@ export class User extends Model {
   @Column(DataType.BOOLEAN)
   isVerified!: boolean;
 
-  @AllowNull(false)
-  @Unique
-  @Validate({
-    isNumeric: { msg: "Phone number must contain only digits 0-9" },
-    len: {
-      args: [11, 11],
-      msg: "Phone number must be exactly 11 digits, Ex: 017XXXXXXXX",
-    },
-  })
-  @Column(DataType.STRING(11))
-  phoneNumber!: string;
-
   @ForeignKey(() => User)
   @AllowNull(true)
-  @Column({
-    type: DataType.UUID,
-  })
+  @Column(DataType.UUID)
   createdBy?: string;
 
   @ForeignKey(() => User)
   @AllowNull(true)
-  @Column({
-    type: DataType.UUID,
-  })
+  @Column(DataType.UUID)
   updatedBy?: string;
 
-  @Column(DataType.DATE)
-  createdAt!: Date;
-
-  @Column(DataType.DATE)
-  updatedAt!: Date;
-
-  @HasOne(() => Profile)
+  @HasOne(() => Profile, { onDelete: "CASCADE" })
   profile!: Profile;
 
-  @HasOne(() => Account, { onDelete: "CASCADE" }) // 👈 Add this
+  @HasOne(() => Account, { onDelete: "CASCADE" })
   account!: Account;
 
-  @HasMany(() => GameHistory, { onDelete: "CASCADE" }) // 👈 Add this
-  gameHistory!: GameHistory;
+  @HasMany(() => GameHistory, { onDelete: "CASCADE" })
+  gameHistory!: GameHistory[];
 
   @HasOne(() => User, { foreignKey: "createdBy", as: "creator" })
   creator?: User;
