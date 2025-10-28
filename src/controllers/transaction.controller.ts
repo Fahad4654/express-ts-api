@@ -95,7 +95,18 @@ export const createTransactionController = async (
       "status",
     ]);
     if (!reqBodyValidation) return;
-
+    if (!req.user) {
+      res.status(500).json({
+        message: "You must Login first",
+      });
+      return;
+    }
+    if (req.body.userId !== req.user?.id) {
+      res.status(500).json({
+        message: "Permission Denied",
+      });
+      return;
+    }
     const transaction = await createNewTransaction(req.body);
     res.status(201).json({
       message: "Transaction created successfully",
