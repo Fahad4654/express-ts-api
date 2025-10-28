@@ -12,6 +12,7 @@ import { User } from "../models/User";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../services/reqBodyValidation.service";
 import { isAdminOrAgent } from "../middlewares/isAgentOrAdmin.middleware";
+import { BalanceTransaction } from "../models/BalanceTransaction";
 
 export async function getBalanceController(req: Request, res: Response) {
   const agentOrAdminMiddleware = isAdminOrAgent();
@@ -184,6 +185,13 @@ export async function finalizeTransactionController(
         return;
       }
 
+      if (!req.user) {
+        res.status(500).json({
+          message: "You must Login first",
+        });
+        return;
+      }
+
       if (!balanceId) {
         console.log("BalanceId is required");
         res.status(400).json({ error: "BalanceId is required" });
@@ -193,6 +201,31 @@ export async function finalizeTransactionController(
       if (!transactionId) {
         console.log("Transaction Id required");
         res.status(400).json({ error: "Transaction Id is required" });
+        return;
+      }
+
+      const transaction = await BalanceTransaction.findOne({
+        where: { id: transactionId },
+      });
+      console.log("ttttttttttt", transaction);
+      if (!transaction) {
+        console.log("Transaction not found");
+        res.status(404).json({ error: "Transaction not found" });
+        return;
+      }
+
+      const transactionUser = await User.findOne({
+        where: { id: transaction.userId },
+      });
+      console.log(transactionUser);
+      if (!transactionUser) {
+        console.log("User not found");
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+
+      if (!req.user.isAdmin && transactionUser.createdBy !== req.user.id) {
+        res.status(400).json({ error: "Permission Denied" });
         return;
       }
 

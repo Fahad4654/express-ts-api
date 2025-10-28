@@ -101,7 +101,11 @@ export const createTransactionController = async (
       });
       return;
     }
-    if (req.body.userId !== req.user?.id) {
+    if (
+      !req.user?.isAdmin &&
+      !req.user?.isAgent &&
+      req.body.userId !== req.user?.id
+    ) {
       res.status(500).json({
         message: "Permission Denied",
       });
