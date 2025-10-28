@@ -277,9 +277,7 @@ export async function getUsersByRefController(req: Request, res: Response) {
 
 export async function userGameSummaryController(req: Request, res: Response) {
   try {
-    console.log("------------------");
     const userId = req.params.userId;
-    console.log("*************", userId);
 
     if (!userId) {
       res.status(400).json({ error: "User ID is required" });
