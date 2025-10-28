@@ -17,7 +17,7 @@ router.post("/byRef", getUsersByRefController);
 router.post("/", createUserController);
 router.put("/", updateUserController);
 router.delete("/", deleteUserController);
-router.get("/users/:userId/game-summary", userGameSummaryController);
+router.get("/game-summary/:userId", userGameSummaryController);
 
 export { router as userCreateRouter };
 export { router };
