@@ -21,7 +21,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "password";
 const ADMIN_PHONENUMBER = process.env.ADMIN_PHONENUMBER || "+8801711223344";
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000/login";
 const COMPANY_NAME = process.env.COMPANY_NAME || "Game App";
-const MAIL_SEND = JSON.parse(process.env.MAIL_SEND || "true");
+const MAIL_SEND = process.env.MAIL_SEND || "true";
 
 const SMTP_USER = process.env.SMTP_USER || "";
 const SMTP_PASS = process.env.SMTP_PASS || "";
