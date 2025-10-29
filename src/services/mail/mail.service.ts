@@ -19,10 +19,6 @@ export class MailService {
     try {
       const sendEnabled = MAIL_SEND === "true";
 
-      console.log("MAIL_SEND", MAIL_SEND);
-      console.log("NODE_ENV", NODE_ENV);
-      console.log("sendEnabled", sendEnabled);
-
       // Prevent mail sending if disabled
       if (!sendEnabled) {
         console.log(
