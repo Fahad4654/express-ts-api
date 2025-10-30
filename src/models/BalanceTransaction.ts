@@ -55,6 +55,19 @@ export class BalanceTransaction extends Model {
   @BelongsTo(() => User, { onDelete: "CASCADE" })
   user!: User;
 
+  /** ✅ Every transaction must have a creator */
+  @ForeignKey(() => User)
+  @AllowNull(false)
+  @Column(DataType.UUID)
+  createdBy!: string;
+
+  @BelongsTo(() => User, {
+    as: "creator",
+    foreignKey: "createdBy",
+    onDelete: "RESTRICT",
+  })
+  creator!: User;
+
   @AllowNull(false)
   @Column(
     DataType.ENUM("deposit", "withdrawal", "payment", "refund", "adjustment")
