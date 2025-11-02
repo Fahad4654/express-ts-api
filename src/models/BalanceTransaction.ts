@@ -70,9 +70,22 @@ export class BalanceTransaction extends Model {
 
   @AllowNull(false)
   @Column(
-    DataType.ENUM("deposit", "withdrawal", "payment", "refund", "adjustment")
+    DataType.ENUM(
+      "deposit",
+      "withdrawal",
+      "payment",
+      "refund",
+      "adjustment",
+      "transfer"
+    )
   )
-  type!: "deposit" | "withdrawal" | "payment" | "refund" | "adjustment";
+  type!:
+    | "deposit"
+    | "withdrawal"
+    | "payment"
+    | "refund"
+    | "adjustment"
+    | "transfer";
 
   @AllowNull(false)
   @Column(DataType.ENUM("credit", "debit"))

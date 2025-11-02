@@ -70,6 +70,13 @@ export async function createBalanceController(req: Request, res: Response) {
         "availableBalance",
         "holdBalance",
         "currency",
+        "userId",
+        "type",
+        "direction",
+        "amount",
+        "trxId",
+        "balanceId",
+        "createdBy",
       ]);
       if (!reqBodyValidation) return;
       const newBalance = await createBalance(req.body);
