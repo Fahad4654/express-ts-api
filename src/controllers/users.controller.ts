@@ -231,8 +231,8 @@ export async function deleteUserController(req: Request, res: Response) {
 
 export async function getUsersByRefController(req: Request, res: Response) {
   try {
-    const referralCode = req.body.ref;
-    if (!referralCode) {
+    const playerId = req.body.ref;
+    if (!playerId) {
       res.status(400).json({
         status: 400,
         error: "Referral Code is required",
@@ -242,7 +242,7 @@ export async function getUsersByRefController(req: Request, res: Response) {
 
     const foundtypedProfile = await findByDynamicId(
       Profile,
-      { referralCode },
+      { playerId },
       false
     );
     const foundProfile = foundtypedProfile as Profile | null;

@@ -32,7 +32,7 @@ export async function findAllProfiles(
     },
   };
 }
-export function referralCode(userId: string) {
+export function playerId(userId: string) {
   return `FK-${generateToken(userId)}`;
 }
 
@@ -41,15 +41,15 @@ export async function createProfile(data: {
   bio?: string;
   avatarUrl?: string;
   address?: string;
-  referredCode?: string;
+  referredId?: string;
 }) {
   return Profile.create({
     userId: data.userId,
     bio: data.bio ?? "",
     avatarUrl: data.avatarUrl ?? "/media/none.jpg",
     address: data.address ?? "",
-    referralCode: referralCode(data.userId),
-    referredCode: data.referredCode ? `${data.referredCode}` : "None",
+    playerId: playerId(data.userId),
+    referredId: data.referredId ? `${data.referredId}` : "None",
   });
 }
 

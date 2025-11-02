@@ -66,7 +66,7 @@ export class AuthService {
     email: string;
     password: string;
     phoneNumber: string;
-    referredCode?: string;
+    referredId?: string;
   }) {
     const { name, email, password, phoneNumber } = data;
 
@@ -98,10 +98,10 @@ export class AuthService {
     });
 
     let refferedBy = null;
-    if (data.referredCode) {
+    if (data.referredId) {
       let typedRefferedBy = await findByDynamicId(
         Profile,
-        { referralCode: data.referredCode },
+        { playerId: data.referredId },
         false
       );
       refferedBy = typedRefferedBy as Profile | null;
@@ -131,9 +131,9 @@ export class AuthService {
       userId: newUser.id,
       bio: "Please Edit",
       address: "Please Edit",
-      referredCode: data.referredCode
-        ? data.referredCode
-        : adminProfile?.referralCode,
+      referredId: data.referredId
+        ? data.referredId
+        : adminProfile?.playerId,
     });
     console.log("Profile created for", newUser.email);
     const newAccount = await accountService.createAccount(newUser.id, "BDT");

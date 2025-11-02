@@ -17,7 +17,7 @@ import { User } from "./User";
   timestamps: true,
   indexes: [
     { unique: true, fields: ["userId"] },
-    { unique: true, fields: ["referralCode"] },
+    { unique: true, fields: ["playerId"] },
   ],
 })
 export class Profile extends Model {
@@ -48,9 +48,9 @@ export class Profile extends Model {
 
   @AllowNull(false)
   @Column(DataType.STRING)
-  referralCode!: string;
+  playerId!: string;
 
   @AllowNull(true)
   @Column(DataType.STRING)
-  referredCode?: string;
+  referredId?: string;
 }

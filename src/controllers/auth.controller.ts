@@ -7,7 +7,7 @@ import { sendOtp, verifyOtp } from "../services/otp.services";
 
 export const register: RequestHandler = async (req, res) => {
   try {
-    const { name, email, password, phoneNumber, referredCode } = req.body;
+    const { name, email, password, phoneNumber, referredId } = req.body;
 
     if (!name || !email || !password || !phoneNumber) {
       console.log("All fields are required");
@@ -20,7 +20,7 @@ export const register: RequestHandler = async (req, res) => {
       email,
       password,
       phoneNumber,
-      referredCode,
+      referredId,
     });
 
     const userResponse = newUser.toJSON();
