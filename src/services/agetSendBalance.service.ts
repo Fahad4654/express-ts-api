@@ -1,8 +1,13 @@
+import { ADMIN_MAIL, COMPANY_NAME } from "../config";
+import { MailService } from "./mail/mail.service";
+import { sequelize } from "../config/database";
 import { Account } from "../models/Account";
 import { Balance } from "../models/Balance";
 import { BalanceTransaction } from "../models/BalanceTransaction";
 import { User } from "../models/User";
 import { findByDynamicId } from "./find.service";
+
+const mailService = new MailService();
 
 export async function transferBalanceTranscationCreation(data: any) {
   console.log(`[Service] Creating new transaction`, data);
@@ -64,7 +69,7 @@ export async function transferBalanceTranscationCreation(data: any) {
     throw new Error("Balance does not belong to the specified account");
 
   if (!type) throw new Error("Type not found");
-  if (type !== "transfer"){
+  if (type !== "transfer") {
     throw new Error("Invalid type. Type must be 'transfer'");
   }
 
@@ -86,4 +91,214 @@ export async function transferBalanceTranscationCreation(data: any) {
     `[Service] Transaction created successfully with ID: ${newTransaction.id}`
   );
   return newTransaction;
+}
+
+export async function confirmTransfer(
+  balanceId: string,
+  transactionId: string,
+  approvedBy?: string
+) {
+  return sequelize.transaction(async (t) => {
+    const balance = await Balance.findByPk(balanceId, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+
+    const findSenderUser = await findByDynamicId(
+      User,
+      { id: approvedBy },
+      false
+    );
+    const senderUser = findSenderUser as User | null;
+    console.log(senderUser);
+    if (!senderUser) {
+      throw new Error("Approving user not found");
+    }
+    const findAccountOfsender = await findByDynamicId(
+      Account,
+      { userId: senderUser.id },
+      false
+    );
+    const accountOfSender = findAccountOfsender as Account | null;
+    console.log(accountOfSender);
+    if (!accountOfSender) {
+      throw new Error("Approving user account not found");
+    }
+
+    const findBalanceOfSender = await findByDynamicId(
+      Balance,
+      { accountId: accountOfSender.id },
+      false
+    );
+    const balanceOfSender = findBalanceOfSender as Balance | null;
+    console.log(balanceOfSender);
+    if (!balanceOfSender) {
+      throw new Error("Approving user balance not found");
+    }
+
+    if (!balance) {
+      throw new Error("Balance not found");
+    }
+
+    const transaction = await BalanceTransaction.findByPk(transactionId, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+    if (!transaction) {
+      throw new Error("Transaction not found");
+    }
+
+    if (transaction.type !== "transfer") {
+      throw new Error(
+        "Use standard panel to confirm non-transfer transactions"
+      );
+    }
+
+    if (transaction.status === "completed") {
+      console.log("Transaction is already completed");
+      throw new Error("Transaction is already completed");
+    }
+
+    if (transaction.direction === "credit") {
+      if (balanceOfSender.availableBalance < Number(transaction.amount)) {
+        // Insufficient funds → mark as failed and save first
+        transaction.status = "failed";
+        await transaction.save({ transaction: t });
+
+        const foundUser = await findByDynamicId(
+          User,
+          { id: transaction.userId },
+          false
+        );
+        const user = foundUser as User | null;
+
+        if (user) {
+          await mailService.sendMail(
+            user.email,
+            "Transaction Failed",
+            "Your transaction could not be completed.",
+            undefined, // HTML will come from template
+            "transaction-failed", // Handlebars template
+            {
+              user: user.get({ plain: true }),
+              transaction: transaction.get({ plain: true }),
+              balance: balance.get({ plain: true }),
+              year: new Date().getFullYear(),
+              companyName: `${COMPANY_NAME}`,
+              supportEmail: ADMIN_MAIL,
+            }
+          );
+        }
+        if (approvedBy && approvedBy !== transaction.userId) {
+          const approvingUser = await findByDynamicId(
+            User,
+            { id: approvedBy },
+            false
+          );
+          const appUser = approvingUser as User | null;
+
+          if (appUser) {
+            await mailService.sendMail(
+              appUser.email,
+              "Transaction Failed",
+              "The transaction you approved could not be completed due to insufficient funds.",
+              undefined, // HTML will come from template
+              "transaction-failed-approver", // Handlebars template
+              {
+                user: appUser.get({ plain: true }),
+                transaction: transaction.get({ plain: true }),
+                balance: balanceOfSender.get({ plain: true }),
+                year: new Date().getFullYear(),
+                companyName: `${COMPANY_NAME}`,
+                supportEmail: ADMIN_MAIL,
+              }
+            );
+          }
+        }
+        // Stop further execution without throwing inside the same transaction
+        return { balance, transaction, error: "Insufficient funds" };
+      }
+      balance.availableBalance =
+        Number(balance.availableBalance) + Number(transaction.amount);
+
+      balanceOfSender.availableBalance =
+        Number(balanceOfSender.availableBalance) - Number(transaction.amount);
+      transaction.status = "completed";
+    }
+    // else if (transaction.direction === "debit") {
+    //   if (
+    //     Number(balance.availableBalance) < Number(transaction.amount) ||
+    //     Number(balance.withdrawableBalance) < Number(transaction.amount)
+    //   ) {
+    //     // Insufficient funds → mark as failed and save first
+    //     transaction.status = "failed";
+    //     await transaction.save({ transaction: t });
+
+    //     const foundUser = await findByDynamicId(
+    //       User,
+    //       { id: transaction.userId },
+    //       false
+    //     );
+    //     const user = foundUser as User | null;
+
+    //     if (user) {
+    //       await mailService.sendMail(
+    //         user.email,
+    //         "Transaction Failed",
+    //         "Your transaction could not be completed.",
+    //         undefined, // HTML will come from template
+    //         "transaction-failed", // Handlebars template
+    //         {
+    //           user: user.get({ plain: true }),
+    //           transaction: transaction.get({ plain: true }),
+    //           balance: balance.get({ plain: true }),
+    //           year: new Date().getFullYear(),
+    //           companyName: `${COMPANY_NAME}`,
+    //           supportEmail: ADMIN_MAIL,
+    //         }
+    //       );
+    //     }
+    //     // Stop further execution without throwing inside the same transaction
+    //     return { balance, transaction, error: "Insufficient funds" };
+    //   }
+    //   balance.availableBalance =
+    //     Number(balance.availableBalance) - Number(transaction.amount);
+    //   balance.withdrawableBalance =
+    //     Number(balance.withdrawableBalance) - Number(transaction.amount);
+    //   transaction.status = "completed";
+    // }
+
+    transaction.approvedAt = new Date();
+    transaction.approvedBy = approvedBy;
+    await transaction.save({ transaction: t });
+
+    balance.lastTransactionAt = new Date();
+    await balance.save({ transaction: t });
+
+    const foundUser = await findByDynamicId(
+      User,
+      { id: transaction.userId },
+      false
+    );
+    const user = foundUser as User | null;
+    if (user) {
+      await mailService.sendMail(
+        user.email,
+        "Transaction Successful",
+        "Your transaction has been completed successfully.",
+        undefined, // HTML will come from template
+        "transaction-success", // Handlebars template name
+        {
+          user: user.get({ plain: true }),
+          transaction: transaction.get({ plain: true }),
+          balance: balance.get({ plain: true }),
+          year: new Date().getFullYear(),
+          supportEmail: ADMIN_MAIL,
+          companyName: `${COMPANY_NAME}`,
+        }
+      );
+    }
+
+    return { balance, transaction };
+  });
 }
