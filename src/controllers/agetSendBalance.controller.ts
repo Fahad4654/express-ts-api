@@ -29,15 +29,15 @@ export async function transferBalanceTranscationCreationController(
       ]);
       if (!reqBodyValidation) return;
       const newBalance = await transferBalanceTranscationCreation(req.body);
-      console.log("Balance created successfully", newBalance);
+      console.log("Balance Transaction created successfully", newBalance);
       res.status(201).json({
-        message: "Balance created successfully",
+        message: "Balance Transaction created successfully",
         balance: newBalance,
         status: "success",
       });
       return;
     } catch (error) {
-      console.error("Error creating balance:", error);
+      console.error("Error creating Balance Transaction:", error);
       res.status(500).json({
         status: 500,
         message: error instanceof Error ? error.message : error,

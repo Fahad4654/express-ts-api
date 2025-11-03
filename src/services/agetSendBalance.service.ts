@@ -25,12 +25,7 @@ export async function transferBalanceTranscationCreation(data: any) {
   const user = typedUser as User | null;
   console.log(user);
 
-  if (createdBy !== userId && !user?.isAdmin && !user?.isAgent) {
-    throw new Error(
-      "Only admin or agent can create transaction for other users"
-    );
-  }
-
+  if (!user) throw new Error("User not found");
   const senderUserId = createdBy;
   const typedSenderUser = await findByDynamicId(
     User,
@@ -39,9 +34,19 @@ export async function transferBalanceTranscationCreation(data: any) {
   );
   const senderUser = typedSenderUser as User | null;
   console.log(senderUser);
-  if (!senderUser) throw new Error("Sender not found");
+  if (!senderUser) {
+    throw new Error("Sender user not found");
+  }
 
-  if (!user) throw new Error("User not found");
+  if (
+    senderUser.id !== user.id &&
+    user.createdBy !== senderUser.id &&
+    !senderUser.isAdmin
+  ) {
+    throw new Error(
+      "Only admin or user's agent can create transaction for this user"
+    );
+  }
 
   const typedAccount = await findByDynamicId(Account, { id: accountId }, false);
   const account = typedAccount as Account | null;
