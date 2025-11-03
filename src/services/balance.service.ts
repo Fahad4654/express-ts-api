@@ -131,6 +131,10 @@ export async function finalizeTransaction(
       throw new Error("Transaction not found");
     }
 
+    if (transaction.type == "transfer") {
+      throw new Error("Use transfer panel to make a Balance transfer");
+    }
+
     if (transaction.status === "completed") {
       console.log("Transaction is already completed");
       throw new Error("Transaction is already completed");

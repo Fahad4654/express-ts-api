@@ -50,7 +50,6 @@ export const getTransactionController = async (req: Request, res: Response) => {
             data: [],
           });
         }
-        console.log("*****", userIds);
         where = { userId: userIds };
       }
 

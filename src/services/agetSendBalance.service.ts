@@ -64,6 +64,9 @@ export async function transferBalanceTranscationCreation(data: any) {
     throw new Error("Balance does not belong to the specified account");
 
   if (!type) throw new Error("Type not found");
+  if (type !== "transfer"){
+    throw new Error("Invalid type. Type must be 'transfer'");
+  }
 
   if (!direction) throw new Error("Direction not found");
 

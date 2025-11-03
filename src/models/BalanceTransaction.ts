@@ -131,7 +131,7 @@ export class BalanceTransaction extends Model {
   @Column(DataType.DATE)
   approvedAt?: Date;
 
-  /** Validate withdrawals and deposits */
+  /** Validate withdrawals and deposits and transfer*/
   @BeforeValidate
   static async validateTransaction(instance: BalanceTransaction) {
     if (instance.type === "withdrawal") {
@@ -153,16 +153,17 @@ export class BalanceTransaction extends Model {
       instance.trxId = instance.trxId || null;
     }
 
-    if (instance.type === "deposit") {
+    if (["deposit", "transfer"].includes(instance.type)) {
       if (!instance.trxId) {
-        throw new Error("Deposit must include a unique trxId.");
+        throw new Error(`${instance.type} must include a unique trxId.`);
       }
 
       const existing = await BalanceTransaction.findOne({
-        where: { trxId: instance.trxId, type: "deposit" },
+        where: { trxId: instance.trxId },
       });
+
       if (existing && existing.id !== instance.id) {
-        throw new Error("trxId must be unique for deposits.");
+        throw new Error(`trxId must be unique for ${instance.type}s.`);
       }
     }
   }

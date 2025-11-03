@@ -3,17 +3,25 @@ import { User } from "../models/User";
 import { Balance } from "../models/Balance";
 import { BalanceTransaction } from "../models/BalanceTransaction";
 import { findByDynamicId } from "./find.service";
+import { Op } from "sequelize";
 
 export async function findAllTransactions(
   order: string,
   asc: string,
   page = 1,
   pageSize = 10,
-  where ={}
+  where = {}
 ) {
   const offset = (page - 1) * pageSize;
   console.log(`Fetching all transactions, order: ${order}, asc: ${asc}`);
-  const { count, rows } = await BalanceTransaction.findAndCountAll({where,
+  // const { count, rows } = await BalanceTransaction.findAndCountAll({
+  //   where: {
+  //     ...where,
+  //     type: { [Op.ne]: "transfer" }, // exclude transfer type
+  //   },
+  //   include: [
+  const { count, rows } = await BalanceTransaction.findAndCountAll({
+    where,
     include: [
       {
         model: User,
