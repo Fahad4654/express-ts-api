@@ -30,12 +30,20 @@
             <td>{{transaction.trxId}}</td>
           </tr>
           <tr>
+            <th>Transfer To</th>
+            <td>{{transferTo.name}}</td>
+          </tr>
+          <tr>
             <th>Amount</th>
             <td>{{transaction.amount}} {{balance.currency}}</td>
           </tr>
           <tr>
             <th>Direction</th>
             <td>{{transaction.direction}}</td>
+          </tr>
+          <tr>
+            <th>Type</th>
+            <td>{{transaction.type}}</td>
           </tr>
           <tr>
             <th>Status</th>
@@ -68,10 +76,10 @@
       </div>
       <div class="footer">
         <p style="margin-top: 30px; font-size: 12px; color: #9ca3af;">
-        &copy;
-        {{year}}
-        {{companyName}}. All rights reserved.
-      </p>
+          &copy;
+          {{year}}
+          {{companyName}}. All rights reserved.
+        </p>
       </div>
     </div>
   </body>

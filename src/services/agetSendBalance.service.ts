@@ -175,30 +175,25 @@ export async function confirmTransfer(
         );
         const user = foundUser as User | null;
 
-        if (user) {
-          await mailService.sendMail(
-            user.email,
-            "Transaction Failed",
-            "Your transaction could not be completed.",
-            undefined, // HTML will come from template
-            "transaction-failed", // Handlebars template
-            {
-              user: user.get({ plain: true }),
-              transaction: transaction.get({ plain: true }),
-              balance: balance.get({ plain: true }),
-              year: new Date().getFullYear(),
-              companyName: `${COMPANY_NAME}`,
-              supportEmail: ADMIN_MAIL,
-            }
-          );
-        }
+        // if (user) {
+        //   await mailService.sendMail(
+        //     user.email,
+        //     "Transaction Failed",
+        //     "Your transaction could not be completed.",
+        //     undefined, // HTML will come from template
+        //     "transaction-failed", // Handlebars template
+        //     {
+        //       user: user.get({ plain: true }),
+        //       transaction: transaction.get({ plain: true }),
+        //       balance: balance.get({ plain: true }),
+        //       year: new Date().getFullYear(),
+        //       companyName: `${COMPANY_NAME}`,
+        //       supportEmail: ADMIN_MAIL,
+        //     }
+        //   );
+        // }
         if (approvedBy && approvedBy !== transaction.userId) {
-          const approvingUser = await findByDynamicId(
-            User,
-            { id: approvedBy },
-            false
-          );
-          const appUser = approvingUser as User | null;
+          const appUser = senderUser as User | null;
 
           if (appUser) {
             await mailService.sendMail(
@@ -214,6 +209,7 @@ export async function confirmTransfer(
                 year: new Date().getFullYear(),
                 companyName: `${COMPANY_NAME}`,
                 supportEmail: ADMIN_MAIL,
+                transferTo: user ? user.get({ plain: true }) : null,
               }
             );
           }
