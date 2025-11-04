@@ -303,6 +303,30 @@ export async function confirmTransfer(
         }
       );
     }
+    const senderUserFound = await findByDynamicId(
+      User,
+      { id: approvedBy },
+      false
+    );
+    const sUser = senderUserFound as User | null;
+    if (sUser && sUser.id !== transaction.userId) {
+      await mailService.sendMail(
+        sUser.email,
+        "Transaction Successful",
+        "The transaction you approved has been completed successfully.",
+        undefined, // HTML will come from template
+        "transaction-success-approver", // Handlebars template name
+        {
+          user: sUser.get({ plain: true }),
+          transaction: transaction.get({ plain: true }),
+          balance: balanceOfSender.get({ plain: true }),
+          year: new Date().getFullYear(),
+          supportEmail: ADMIN_MAIL,
+          companyName: `${COMPANY_NAME}`,
+          transferTo: user ? user.get({ plain: true }) : null,
+        }
+      );
+    }
 
     return { balance, transaction };
   });
