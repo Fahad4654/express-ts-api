@@ -125,11 +125,11 @@ export async function confirmTransfer(
       throw new Error("Approving user account not found");
     }
 
-    const findBalanceOfSender = await findByDynamicId(
-      Balance,
-      { accountId: accountOfSender.id },
-      false
-    );
+    const findBalanceOfSender = await Balance.findOne({
+      where: { accountId: accountOfSender.id },
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
     const balanceOfSender = findBalanceOfSender as Balance | null;
     console.log(balanceOfSender);
     if (!balanceOfSender) {
@@ -150,7 +150,7 @@ export async function confirmTransfer(
 
     if (transaction.type !== "transfer") {
       throw new Error(
-        "Use standard panel to confirm non-transfer transactions"
+        "Use standard panel to complete non-transfer transactions"
       );
     }
 
@@ -160,7 +160,10 @@ export async function confirmTransfer(
     }
 
     if (transaction.direction === "credit") {
-      if (balanceOfSender.availableBalance < Number(transaction.amount)) {
+      if (
+        balanceOfSender.availableBalance < Number(transaction.amount) &&
+        senderUser.isAdmin === false
+      ) {
         // Insufficient funds → mark as failed and save first
         transaction.status = "failed";
         await transaction.save({ transaction: t });
@@ -274,6 +277,8 @@ export async function confirmTransfer(
 
     balance.lastTransactionAt = new Date();
     await balance.save({ transaction: t });
+    balanceOfSender.lastTransactionAt = new Date();
+    await balanceOfSender.save({ transaction: t });
 
     const foundUser = await findByDynamicId(
       User,
